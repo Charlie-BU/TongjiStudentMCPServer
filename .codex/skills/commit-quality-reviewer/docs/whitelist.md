@@ -23,6 +23,30 @@
   owner: "TongjiStudentAgent"
   created_at: "2026-07-19"
   expires_at: "2026-08-19"
+
+- id: WL-20260725-001
+  enabled: true
+  severity: MEDIUM
+  type: import_time_network_demo
+  match:
+    file: src/integration/request-demo.ts
+    contains: "runRequestDemo();"
+  reason: "生成客户端的请求示例暂时保留，当前进程入口未导入该模块；首个正式工具落地时移除顶层执行并改为 fake HTTP 测试。"
+  owner: "TongjiStudentMCPServer"
+  created_at: "2026-07-25"
+  expires_at: "2026-08-25"
+
+- id: WL-20260725-002
+  enabled: true
+  severity: MEDIUM
+  type: test_gap
+  match:
+    file: src/transport/http.ts
+    contains: "createHttpServer"
+  reason: "工程骨架阶段暂未建立 TypeScript 测试基座；首个校园工具接入时补齐 health、MCP 初始化、认证拒绝、非法 JSON 和请求体上限测试。"
+  owner: "TongjiStudentMCPServer"
+  created_at: "2026-07-25"
+  expires_at: "2026-08-25"
 ```
 
 ## 条目模板

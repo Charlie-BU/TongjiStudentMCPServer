@@ -1,0 +1,9 @@
+{
+  "services": {
+    "tongji_openapi": "agent/tongjistudent/tongji_openapi@latest",
+    "tongji_poby": "agent/tongjistudent/poby@latest",
+    "yourtj": "agent/tongjistudent/yourtj@latest"
+  },
+  "outDir": "src/integration",
+  "generateConfig": {}
+}

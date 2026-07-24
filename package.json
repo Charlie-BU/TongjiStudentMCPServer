@@ -1,0 +1,28 @@
+{
+  "name": "tongji-student-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tongji campus-domain MCP server scaffold.",
+  "type": "commonjs",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.22.0",
+    "axios": "^1.18.1",
+    "cam-fe-code-generator": "^1.8.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.2",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3"
+  }
+}

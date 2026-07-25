@@ -6,7 +6,6 @@
 import type {
   CoursesQueryRequest,
   Courses200Response,
-  Calendars_detailsPathRequest,
   GetAllCalendar200Response,
   FindGradeByCalendarIdBodyRequest,
   FindGradeByCalendarId200Response,

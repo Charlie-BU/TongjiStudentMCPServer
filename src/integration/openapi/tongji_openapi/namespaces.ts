@@ -17,23 +17,7 @@ export interface Id_card_info_checkHeaderRequest {
   Authorization: string;
 }
 
-export interface User_data_statisticsQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface User_data_statisticsHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
 export interface Person_info_by_pidQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sincePid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
   /** 人员唯一编号 */
   pid?: string;
 }
@@ -43,26 +27,117 @@ export interface Person_info_by_pidHeaderRequest {
   Authorization: string;
 }
 
-export interface School_rollQueryRequest {
-  /** 姓名 */
-  xm: string;
-  /** 证件号码 */
-  zjhm: string;
+export interface Postgraduate_gpa_and_msQueryRequest {
+  /** 学工号 */
+  userId: string;
 }
 
-export interface School_rollHeaderRequest {
+export interface Postgraduate_gpa_and_msHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface EducationQueryRequest {
-  /** 姓名 */
-  xm?: string;
-  /** 证件号码 */
-  zjhm?: string;
+export interface Undergraduate_summarized_gradesQueryRequest {
+  /** 学工号 */
+  userId: string;
 }
 
-export interface EducationHeaderRequest {
+export interface Undergraduate_summarized_gradesHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Postgraduate_degree_course_creditQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Postgraduate_degree_course_creditHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Postgraduate_degree_course_msQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Postgraduate_degree_course_msHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Postgraduate_completed_creditQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Postgraduate_completed_creditHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Postgraduate_required_creditQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Postgraduate_required_creditHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface CountQueryRequest {
+  /** 学工号 */
+  userId?: string;
+}
+
+export interface CountHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface GetQueryRequest {
+  /** 学工号 */
+  userId?: string;
+}
+
+export interface GetHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Msg_detailHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Msg_listHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Grad_majorHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Ugrd_majorQueryRequest {
+  /** 专业年份，与学生的当前年级currentGrade关联，不传则默认返回当年的数据 */
+  grade?: string;
+}
+
+export interface Ugrd_majorHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Library_current_borrowQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Library_current_borrowHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
@@ -79,52 +154,178 @@ export interface Id_card_info_queryHeaderRequest {
   Authorization: string;
 }
 
-export interface All_address_infoQueryRequest {
+export interface EducationQueryRequest {
+  /** 姓名 */
+  xm?: string;
+  /** 证件号码 */
+  zjhm?: string;
+}
+
+export interface EducationHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface School_rollQueryRequest {
+  /** 姓名 */
+  xm: string;
+  /** 证件号码 */
+  zjhm: string;
+}
+
+export interface School_rollHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface All_classroom_listQueryRequest {
+  /** 校区编号，1-四平，2-沪北，3-嘉定，4-沪西，5-其他，为空默认全部校区 解释说明 */
+  campus?: string;
+}
+
+export interface All_classroom_listHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Course_listQueryRequest {
+  /** 查询开始日期（yyyy-MM-dd） */
+  startDt?: string;
+  /** 查询结束日期 （yyyy-MM-dd） */
+  endDt?: string;
+  /** 教室编号全称（classroomNo和buildingId两个参数至少有一个） */
+  classroomNo?: string;
+  /** 楼宇ID（classroomNo和buildingId两个参数至少有一个） */
+  buildingId?: string;
+}
+
+export interface Course_listHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_classroom_by_towerQueryRequest {
+  /** 教学楼编号 */
+  towerCode: string;
+}
+
+export interface Get_classroom_by_towerHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Classroom_listQueryRequest {
+  /** 页码 */
+  current?: string;
+  /** 行数 */
+  size?: string;
+  /** 楼宇ID */
+  buildingId?: string;
+  /** 教室名称（模糊查询） */
+  name?: string;
+}
+
+export interface Classroom_listHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Student_evaluationQueryRequest {
+  /** 学年度 */
+  year: string;
+  /** 学期 */
+  term: string;
+  /** 页码，默认 1 */
+  pageNum?: string;
+  /** 每页大小，默认 20，最大 100 */
+  pageSize?: string;
+}
+
+export interface Student_evaluationHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Course_evaluationQueryRequest {
+  /** 学年度 */
+  year: string;
+  /** 学期 */
+  term: string;
+  /** 页码，默认 1 */
+  pageNum?: string;
+  /** 每页大小，默认 20，最大 100 */
+  pageSize?: string;
+}
+
+export interface Course_evaluationHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Scientific_paper_dataQueryRequest {
   /** 学工号 */
   userId?: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
+  sinceId?: string;
   /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
   sinceUpdateTime?: string;
 }
 
-export interface All_address_infoHeaderRequest {
+export interface Scientific_paper_dataHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Lend_info_allQueryRequest {
+export interface Longitudinal_project_for_PDQueryRequest {
   /** 学工号 */
-  userId: string;
+  userId?: string;
+  /** 项目分类代码，1-纵向项目，3-横向项目，5-专利转化，不传参默认获取全部，可以单独传入一个类别，也可以同时传入多个类别，用英文逗号分隔即可 */
+  projClassifyCode?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceId?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
 }
 
-export interface Lend_info_allHeaderRequest {
+export interface Longitudinal_project_for_PDHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Library_current_borrowQueryRequest {
+export interface RewardQueryRequest {
   /** 学工号 */
-  userId: string;
+  userId?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceId?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
 }
 
-export interface Library_current_borrowHeaderRequest {
+export interface RewardHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Lib_access_controlQueryRequest {
-  /** 学工号 */
-  userId: string;
-  /** 进出模式，1-进，2-出,不传值代表全部 */
-  direction?: string;
-  /** 开始时间 */
-  visitStartTime?: string;
-  /** 结束时间 */
-  visitEndTime?: string;
+export interface Room_idQueryRequest {
+  /** 房间 */
+  room: string;
+  /** 校区ID */
+  campusId: string;
+  /** 楼栋名称 */
+  buildingName: string;
 }
 
-export interface Lib_access_controlHeaderRequest {
+export interface Room_idHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface UserQueryRequest {
+  /** 学工号 */
+  userId?: string;
+}
+
+export interface UserHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
@@ -147,76 +348,16 @@ export interface Lib_accessHeaderRequest {
   Authorization: string;
 }
 
-export interface UserQueryRequest {
+export interface All_address_infoQueryRequest {
   /** 学工号 */
   userId?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
 }
 
-export interface UserHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Room_idQueryRequest {
-  /** 房间 */
-  room: string;
-  /** 校区ID */
-  campusId: string;
-  /** 楼栋名称 */
-  buildingName: string;
-}
-
-export interface Room_idHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface RecordQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 开始日期 */
-  startDate?: string;
-  /** 结束日期 */
-  endDate?: string;
-}
-
-export interface RecordHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Dept_cadre_infoQueryRequest {
-  /** 输出是否包含原始数据，不传则默认否，true-是 */
-  includeRaw?: string;
-  /** 输出格式是否平铺开，不传则默认否，true-是 */
-  expandDept?: string;
-}
-
-export interface Dept_cadre_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Card_current_actual_flowQueryRequest {
-  /** 结束时间 */
-  dataEndTime?: string;
-  /** 学工号 */
-  userId: string;
-  /** 开始时间 */
-  dataStartTime?: string;
-}
-
-export interface Card_current_actual_flowHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Card_balanceQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Card_balanceHeaderRequest {
+export interface All_address_infoHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
@@ -239,242 +380,54 @@ export interface Week_or_month_sumHeaderRequest {
   Authorization: string;
 }
 
-export interface RewardQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface RewardHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Longitudinal_project_for_PDQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 项目分类代码，1-纵向项目，3-横向项目，5-专利转化，不传参默认获取全部，可以单独传入一个类别，也可以同时传入多个类别，用英文逗号分隔即可 */
-  projClassifyCode?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Longitudinal_project_for_PDHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Scientific_paper_dataQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Scientific_paper_dataHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Course_evaluationQueryRequest {
-  /** 学年度 */
-  year: string;
-  /** 学期 */
-  term: string;
-  /** 页码，默认 1 */
-  pageNum?: string;
-  /** 每页大小，默认 20，最大 100 */
-  pageSize?: string;
-}
-
-export interface Course_evaluationHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_evaluationQueryRequest {
-  /** 学年度 */
-  year: string;
-  /** 学期 */
-  term: string;
-  /** 页码，默认 1 */
-  pageNum?: string;
-  /** 每页大小，默认 20，最大 100 */
-  pageSize?: string;
-}
-
-export interface Student_evaluationHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Classroom_listQueryRequest {
-  /** 页码 */
-  current?: string;
-  /** 行数 */
-  size?: string;
-  /** 楼宇ID */
-  buildingId?: string;
-  /** 教室名称（模糊查询） */
-  name?: string;
-}
-
-export interface Classroom_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_classroom_by_towerQueryRequest {
-  /** 教学楼编号 */
-  towerCode: string;
-}
-
-export interface Get_classroom_by_towerHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Course_listQueryRequest {
-  /** 查询开始日期（yyyy-MM-dd） */
-  startDt?: string;
-  /** 查询结束日期 （yyyy-MM-dd） */
-  endDt?: string;
-  /** 教室编号全称（classroomNo和buildingId两个参数至少有一个） */
-  classroomNo?: string;
-  /** 楼宇ID（classroomNo和buildingId两个参数至少有一个） */
-  buildingId?: string;
-}
-
-export interface Course_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface All_classroom_listQueryRequest {
-  /** 校区编号，1-四平，2-沪北，3-嘉定，4-沪西，5-其他，为空默认全部校区 解释说明 */
-  campus?: string;
-}
-
-export interface All_classroom_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface School_calendar_all_term_calendarHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface School_calendar_current_term_calendarHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Ugrd_majorQueryRequest {
-  /** 专业年份，与学生的当前年级currentGrade关联，不传则默认返回当年的数据 */
-  grade?: string;
-}
-
-export interface Ugrd_majorHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Grad_majorHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Msg_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Msg_detailHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface GetQueryRequest {
-  /** 学工号 */
-  userId?: string;
-}
-
-export interface GetHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface CountQueryRequest {
-  /** 学工号 */
-  userId?: string;
-}
-
-export interface CountHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Postgraduate_required_creditQueryRequest {
+export interface Card_balanceQueryRequest {
   /** 学工号 */
   userId: string;
 }
 
-export interface Postgraduate_required_creditHeaderRequest {
+export interface Card_balanceHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Postgraduate_completed_creditQueryRequest {
+export interface Card_current_actual_flowQueryRequest {
+  /** 结束时间 */
+  dataEndTime?: string;
   /** 学工号 */
   userId: string;
+  /** 开始时间 */
+  dataStartTime?: string;
 }
 
-export interface Postgraduate_completed_creditHeaderRequest {
+export interface Card_current_actual_flowHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Postgraduate_degree_course_msQueryRequest {
-  /** 学工号 */
-  userId: string;
+export interface Dept_cadre_infoQueryRequest {
+  /** 输出是否包含原始数据，不传则默认否，true-是 */
+  includeRaw?: string;
+  /** 输出格式是否平铺开，不传则默认否，true-是 */
+  expandDept?: string;
 }
 
-export interface Postgraduate_degree_course_msHeaderRequest {
+export interface Dept_cadre_infoHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Postgraduate_degree_course_creditQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_degree_course_creditHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Undergraduate_summarized_gradesQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Undergraduate_summarized_gradesHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Cet_scoreQueryRequest {
+export interface RecordQueryRequest {
   /** 学工号 */
   userId?: string;
+  /** 开始日期 */
+  startDate?: string;
+  /** 结束日期 */
+  endDate?: string;
+}
+
+export interface RecordHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
 }
 
 export interface Cet_scoreHeaderRequest {
@@ -482,86 +435,74 @@ export interface Cet_scoreHeaderRequest {
   Authorization: string;
 }
 
-export interface Postgraduate_gpa_and_msQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_gpa_and_msHeaderRequest {
+export interface Get_book_lend_infoHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Postgraduate_scoreQueryRequest {
+export interface Get_statistics_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Class_infoQueryRequest {
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceClassCode?: string;
+}
+
+export interface Class_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Student_headteacher_counselor_infoQueryRequest {
   /** 学工号 */
   userId?: string;
-  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
-  calendarId?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
 }
 
-export interface Postgraduate_scoreHeaderRequest {
+export interface Student_headteacher_counselor_infoHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Undergraduate_scoreQueryRequest {
+export interface Senior_talents_infoQueryRequest {
   /** 学工号 */
-  userId: string;
-  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
-  calendarId?: string;
-}
-
-export interface Undergraduate_scoreHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Undergraduate_top_scoreQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Undergraduate_top_scoreHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Manual_arrangeQueryRequest {
-  /** 课程编号，为空默认为所有 */
-  code?: string;
-  /** 学期编号；可通过学生学期日历编号calendarId 获取历史学期编号 */
-  calendarId: string;
-  /** 行数，建议不超过50，行数太长会响应慢造成调用超时 */
-  pageSize?: string;
-  /** 页码 */
-  pageNum?: string;
-}
-
-export interface Manual_arrangeHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Teacher_by_coursenoQueryRequest {
-  /** 课程编号 */
-  courseNo: string;
-}
-
-export interface Teacher_by_coursenoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Internship_course_schedulingQueryRequest {
+  userId?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
   /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
   sinceUpdateTime?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 输出是否包含原始数据，不传则默认否，true-是 */
-  includeRaw?: string;
 }
 
-export interface Internship_course_schedulingHeaderRequest {
+export interface Senior_talents_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Absent_examinfoQueryRequest {
+  /** 学工号 */
+  userId: string;
+  /** 考试学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
+  calendarId: string;
+  /** 是否缺考 1 是 0 否 默认否 */
+  defeat?: string;
+}
+
+export interface Absent_examinfoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_timetable_by_classroomQueryRequest {
+  /** 学期编号,为空默认为当前学期 */
+  calendarId?: string;
+  /** 教室编号列表，支持批量，用英文逗号分隔 */
+  classroomIds?: string;
+}
+
+export interface Get_timetable_by_classroomHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
@@ -584,173 +525,99 @@ export interface PageHeaderRequest {
   Authorization: string;
 }
 
-export interface Get_timetable_by_classroomQueryRequest {
-  /** 学期编号,为空默认为当前学期 */
-  calendarId?: string;
-  /** 教室编号列表，支持批量，用英文逗号分隔 */
-  classroomIds?: string;
+export interface Internship_course_schedulingQueryRequest {
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceId?: string;
+  /** 输出是否包含原始数据，不传则默认否，true-是 */
+  includeRaw?: string;
 }
 
-export interface Get_timetable_by_classroomHeaderRequest {
+export interface Internship_course_schedulingHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Student_timetableQueryRequest {
-  /** 学工号 */
-  userId: string;
-  /** 学期编号，为空默认为当前学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
-  calendarId?: string;
+export interface Teacher_by_coursenoQueryRequest {
+  /** 课程编号 */
+  courseNo: string;
 }
 
-export interface Student_timetableHeaderRequest {
+export interface Teacher_by_coursenoHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Absent_examinfoQueryRequest {
-  /** 学工号 */
-  userId: string;
-  /** 考试学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
+export interface Manual_arrangeQueryRequest {
+  /** 课程编号，为空默认为所有 */
+  code?: string;
+  /** 学期编号；可通过学生学期日历编号calendarId 获取历史学期编号 */
   calendarId: string;
-  /** 是否缺考 1 是 0 否 默认否 */
-  defeat?: string;
+  /** 行数，建议不超过50，行数太长会响应慢造成调用超时 */
+  pageSize?: string;
+  /** 页码 */
+  pageNum?: string;
 }
 
-export interface Absent_examinfoHeaderRequest {
+export interface Manual_arrangeHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Senior_talents_infoQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Senior_talents_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_headteacher_counselor_infoQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
-}
-
-export interface Student_headteacher_counselor_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Competition_winnersQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
-}
-
-export interface Competition_winnersHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface StipendQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface StipendHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Class_infoQueryRequest {
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceClassCode?: string;
-}
-
-export interface Class_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Work_studyQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Work_studyHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Honorary_titleQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Honorary_titleHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Hardship_allowanceQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Hardship_allowanceHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_graduationQueryRequest {
+export interface Undergraduate_top_scoreQueryRequest {
   /** 学工号 */
   userId: string;
 }
 
-export interface Student_graduationHeaderRequest {
+export interface Undergraduate_top_scoreHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface ScholarshipQueryRequest {
+export interface Cardno_validateQueryRequest {
   /** 学工号 */
   userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
+  /** 证件号码 */
+  cardNo?: string;
+  /** 姓名 */
+  name?: string;
+  /** 证件号码后六位 */
+  cardNoLastSix?: string;
 }
 
-export interface ScholarshipHeaderRequest {
+export interface Cardno_validateHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Student_loanQueryRequest {
+export interface Person_info_by_cardnoQueryRequest {
+  /** 证件号码 */
+  cardNo: string;
+}
+
+export interface Person_info_by_cardnoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface All_contact_infoQueryRequest {
+  /** 学工号 */
+  userId: string;
+  /** 手机号 */
+  phone: string;
+  /** 邮箱 */
+  email: string;
+  /** 系统编号，可传入多个(使用英文逗号分割)，传all：获取全部 */
+  systemCode?: string;
+}
+
+export interface All_contact_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Student_infoQueryRequest {
   /** 学工号 */
   userId?: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
@@ -759,7 +626,7 @@ export interface Student_loanQueryRequest {
   sinceUpdateTime?: string;
 }
 
-export interface Student_loanHeaderRequest {
+export interface Student_infoHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
@@ -798,37 +665,81 @@ export interface Student_infosHeaderRequest {
   Authorization: string;
 }
 
-export interface All_studentQueryRequest {
+export interface Student_loanQueryRequest {
+  /** 学工号 */
+  userId?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+}
+
+export interface Student_loanHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Student_graduationQueryRequest {
   /** 学工号 */
   userId: string;
 }
 
-export interface All_studentHeaderRequest {
+export interface Student_graduationHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Student_infoQueryRequest {
+export interface Hardship_allowanceQueryRequest {
   /** 学工号 */
   userId?: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
+  sinceWid?: string;
   /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
   sinceUpdateTime?: string;
 }
 
-export interface Student_infoHeaderRequest {
+export interface Hardship_allowanceHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Student_accommodation_infoQueryRequest {
+export interface Work_studyQueryRequest {
   /** 学工号 */
   userId?: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
+  sinceWid?: string;
   /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
   sinceUpdateTime?: string;
+}
+
+export interface Work_studyHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Undergraduate_scoreQueryRequest {
+  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
+  calendarId?: string;
+}
+
+export interface Undergraduate_scoreHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_all_term_calendarHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_current_term_calendarHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_stipendHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
 }
 
 export interface Student_accommodation_infoHeaderRequest {
@@ -836,56 +747,104 @@ export interface Student_accommodation_infoHeaderRequest {
   Authorization: string;
 }
 
-export interface All_contact_infoQueryRequest {
-  /** 学工号 */
-  userId: string;
-  /** 手机号 */
-  phone: string;
-  /** 邮箱 */
-  email: string;
-  /** 系统编号，可传入多个(使用英文逗号分割)，传all：获取全部 */
-  systemCode?: string;
-}
-
-export interface All_contact_infoHeaderRequest {
+export interface Student_honorary_titleHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Person_info_by_cardnoQueryRequest {
-  /** 证件号码 */
-  cardNo: string;
-}
-
-export interface Person_info_by_cardnoHeaderRequest {
+export interface Get_competition_prizesHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface Cardno_validateQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 证件号码 */
-  cardNo?: string;
-  /** 姓名 */
-  name?: string;
-  /** 证件号码后六位 */
-  cardNoLastSix?: string;
+export interface Get_library_accessQueryRequest {
+  /** 进出模式，1-进，2-出。不传值代表全部 */
+  direction?: string;
+  /** 开始时间，yyyy-MM-dd HH:mm:ss */
+  visitStartTime?: string;
+  /** 结束时间，yyyy-MM-dd HH:mm:ss */
+  visitEndTime?: string;
 }
 
-export interface Cardno_validateHeaderRequest {
+export interface Get_library_accessHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
 }
 
-export interface User_annual_billQueryRequest {
-  /** 学工号 */
-  userId: string;
+export interface Get_scholarship_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_school_accessQueryRequest {
+  /** 入校出校标识，值只有”入门”,“出门”两种，不传值代表全部 */
+  portNum?: string;
+  /** 开始时间，yyyy-MM-dd HH:mm:ss */
+  dataStartTime?: string;
+  /** 结束时间，yyyy-MM-dd HH:mm:ss */
+  dataEndTime?: string;
+}
+
+export interface Get_school_accessHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Student_timetableQueryRequest {
+  /** 学期编号，为空默认为当前学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
+  calendarId?: string;
+}
+
+export interface Student_timetableHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_statistics_info_by_yearQueryRequest {
   /** 年份 */
   year: string;
 }
 
-export interface User_annual_billHeaderRequest {
+export interface Get_statistics_info_by_yearHeaderRequest {
   /** Bearer <token> */
   Authorization: string;
+}
+
+export interface Get_user_basic_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_card_spending_flowQueryRequest {
+  /** 开始时间，yyyy-MM-dd HH:mm:ss */
+  tradeStartTime?: string;
+  /** 结束时间，yyyy-MM-dd HH:mm:ss */
+  tradeEndTime?: string;
+}
+
+export interface Get_card_spending_flowHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Postgraduate_scoreQueryRequest {
+  /** 学工号 */
+  userId?: string;
+  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
+  calendarId?: string;
+}
+
+export interface Postgraduate_scoreHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_student_detailed_infoHeaderRequest {
+  /** Bearer <token> */
+  Authorization: string;
+}
+
+export interface Get_student_detailed_infoBodyRequest {
+  /** 学工号 */
+  userId: string;
 }

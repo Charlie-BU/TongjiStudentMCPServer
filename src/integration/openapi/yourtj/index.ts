@@ -5,13 +5,16 @@
 
 import type {
   CoursesQueryRequest,
-  Course_idQueryRequest,
-  Course_idPathRequest,
-  Courseid_relatedQueryRequest,
-  Courseid_relatedPathRequest,
-  Calendars_id_coursesQueryRequest,
-  Calendars_id_coursesPathRequest,
+  Courses200Response,
   Calendars_detailsPathRequest,
+  GetAllCalendar200Response,
+  FindGradeByCalendarIdBodyRequest,
+  FindGradeByCalendarId200Response,
+  CourseDetailPathRequest,
+  CourseDetail200Response,
+  CourseidRelatedPathRequest,
+  FindMajorByGradeBodyRequest,
+  FindMajorByGrade200Response,
 } from './namespaces';
 
 export default class YourtjService<T> {
@@ -49,25 +52,57 @@ export default class YourtjService<T> {
   /* API Services */
 
   /** 获取课程列表 */
-  CoursesGET(req: CoursesQueryRequest, options?: T): Promise<any> {
+  CoursesGET(
+    req: CoursesQueryRequest,
+    options?: T,
+  ): Promise<Courses200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/api/courses');
     const method = 'GET';
     const data = undefined;
     const params = {
-      clientId: _req['clientId'],
       page: _req['page'],
       limit: _req['limit'],
+      q: _req['q'],
+      includeTotal: _req['includeTotal'],
     };
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 获取课程详情 */
-  Course_idGET(
-    req: Course_idQueryRequest & Course_idPathRequest,
+  /** 获取所有学期列表 */
+  GetAllCalendarGET(
+    req?: any,
     options?: T,
-  ): Promise<any> {
+  ): Promise<GetAllCalendar200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/api/getAllCalendar');
+    const method = 'GET';
+    const data = undefined;
+    const params = undefined;
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取当前学期所有年级 */
+  FindGradeByCalendarIdPOST(
+    req: FindGradeByCalendarIdBodyRequest,
+    options?: T,
+  ): Promise<FindGradeByCalendarId200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/api/findGradeByCalendarId');
+    const method = 'POST';
+    const data = { calendarId: _req['calendarId'] };
+    const params = undefined;
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取课程详情 */
+  CourseDetailGET(
+    req: CourseDetailPathRequest,
+    options?: T,
+  ): Promise<CourseDetail200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/api/course/{id}');
     if (_req['id'] !== undefined && _req['id'] !== null) {
@@ -75,14 +110,14 @@ export default class YourtjService<T> {
     }
     const method = 'GET';
     const data = undefined;
-    const params = { clientId: _req['clientId'] };
+    const params = undefined;
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
 
   /** 获取关联课程 */
-  Courseid_relatedGET(
-    req: Courseid_relatedQueryRequest & Courseid_relatedPathRequest,
+  CourseidRelatedGET(
+    req: CourseidRelatedPathRequest,
     options?: T,
   ): Promise<any> {
     const _req = req || {};
@@ -92,51 +127,20 @@ export default class YourtjService<T> {
     }
     const method = 'GET';
     const data = undefined;
-    const params = { clientId: _req['clientId'] };
-    const headers = undefined;
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取所有学期列表 */
-  CalendarsGET(req?: any, options?: T): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/api/calendars');
-    const method = 'GET';
-    const data = undefined;
     const params = undefined;
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 查询某学期的课程（按节次/年级专业/课程性质筛选） */
-  Calendars_id_coursesGET(
-    req: Calendars_id_coursesQueryRequest & Calendars_id_coursesPathRequest,
+  /** 根据学期和年级获取当年份全部专业 */
+  FindMajorByGradePOST(
+    req: FindMajorByGradeBodyRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<FindMajorByGrade200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/api/calendars/{id}/courses');
-    if (_req['id'] !== undefined && _req['id'] !== null) {
-      url = url.replace('{id}', String(_req['id']));
-    }
-    const method = 'GET';
-    const data = undefined;
-    const params = { grade: _req['grade'], major: _req['major'] };
-    const headers = undefined;
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据课程代码批量获取课程详情 */
-  Calendars_detailsPOST(
-    req: Calendars_detailsPathRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/api/calendars/{id}/courses/details');
-    if (_req['id'] !== undefined && _req['id'] !== null) {
-      url = url.replace('{id}', String(_req['id']));
-    }
+    let url = this.genBaseURL('/api/findMajorByGrade');
     const method = 'POST';
-    const data = undefined;
+    const data = { calendarId: _req['calendarId'], grade: _req['grade'] };
     const params = undefined;
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);

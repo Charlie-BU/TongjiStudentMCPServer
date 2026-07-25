@@ -4,15 +4,14 @@
 `TongjiStudentAgent` 提供受控的校园工具；它不保存对话历史、不调用模型、也不决定
 Agent 的工具选择或回答内容。
 
-当前仓库是**可启动的工程骨架**，还没有注册任何业务工具。进程入口不会调用同济开放平台；`src/integration/request-demo.ts` 是生成客户端的独立请求示例，未被运行入口导入，不能作为生产适配器使用。
-目录中的 `TODO` 注释标明了每一层将来应承担的职责。
+当前仓库是**可启动的工程骨架**，还没有注册任何业务工具。进程入口不会调用同济开放平台；CAM 自动生成的客户端位于 `src/integration/openapi/`，不能直接作为生产适配器使用。目录中的 `TODO` 注释标明了每一层将来应承担的职责。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
 ## 架构边界
 
 ```text
-济星云 / Gateway
+Gateway
   → TongjiStudentAgent（身份上下文、会话、编排、工具策略）
   → TongjiStudentMCPServer（认证、Schema、领域聚合、脱敏、审计）
   → 同济开放平台 / 济星云业务接口
@@ -32,7 +31,8 @@ src/
 ├── transport/                 # /mcp、认证边界与 HTTP 适配
 ├── tools/                     # Tool 注册与输入/输出 Schema
 ├── domain/                    # 后续确定性校园业务聚合
-├── integration/tongji-openapi/# 后续上游 API 适配
+├── integration/
+│   └── openapi/             # CAM 自动生成的上游 API 客户端
 ├── privacy/                   # 后续字段白名单与脱敏策略
 ├── observability/             # 后续日志、Trace、指标
 ├── server.ts                  # MCP Server 创建
@@ -79,6 +79,18 @@ pnpm typecheck
 pnpm build
 pnpm start
 ```
+
+## CAM 客户端生成
+
+CAM 配置位于仓库根目录的 `cam.config.json`，生成代码统一写入
+`src/integration/openapi/`。登录完成并需要同步已配置服务时，执行：
+
+```bash
+pnpm cam update
+```
+
+生成目录中的文件由 CAM 管理，不应手工编辑。业务层应在后续的
+`src/integration/tongji-openapi/` 适配器中封装、校验和脱敏这些客户端调用。
 
 ## 下一步
 

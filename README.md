@@ -54,7 +54,6 @@ pnpm dev
 | --- | --- | --- |
 | `HOST` | `127.0.0.1` | HTTP 监听地址。 |
 | `PORT` | `3000` | HTTP 监听端口，必须在 `1` 到 `65535` 之间。 |
-| `MCP_AUTH_REQUIRED` | `false` | 设为 `true` 时启用认证边界；当前尚未接入凭证校验器，因此 MCP 请求会被拒绝。 |
 
 例如，修改端口可直接在启动命令前设置：
 
@@ -65,12 +64,22 @@ PORT=3100 pnpm start
 服务启动后：
 
 ```bash
-curl http://127.0.0.1:3000/health/live
+curl http://127.0.0.1:3000/health
 ```
 
 MCP 客户端连接地址为 `http://127.0.0.1:3000/mcp`。当前 Tool Catalog 为空，这是预期行为。
 
-`/health/live` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
+`/health` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
+
+### Agent 调用上下文
+
+主仓在每次需要调用同济 OpenAPI 的 MCP Tool 时，必须在 MCP HTTP 请求中传入：
+
+```text
+X-Tongji-Access-Token: <access_token>
+```
+
+本服务将该值放入仅供服务端使用的 Tool 调用上下文，供后续 OpenAPI 适配层传递给上游接口。服务不对 token 进行独立鉴权或持久化，且 token 不得出现在 Tool Schema、Tool Result 或日志中。
 
 可用校验命令：
 
@@ -94,9 +103,8 @@ pnpm cam update
 
 ## 下一步
 
-首个业务闭环应实现 `campus.schedule.get_today`，并同时完成：可信身份传递、
-`schedule:read:self` scope 校验、Fake OpenAPI 契约测试、空数据/超时/未授权错误归一，
-以及结构化脱敏结果。通过该闭环前，不批量增加校园工具。
+首个业务闭环应实现 `campus.schedule.get_term`，并同时完成：调用上下文中的
+access token 注入、Fake OpenAPI 契约测试、空数据/超时/上游未授权错误归一，以及结构化脱敏结果。通过该闭环前，不批量增加校园工具。
 
 ## SDK 选择
 

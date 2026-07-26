@@ -67,9 +67,42 @@ PORT=3100 pnpm start
 curl http://127.0.0.1:3000/health
 ```
 
-MCP 客户端连接地址为 `http://127.0.0.1:3000/mcp`。当前 Tool Catalog 为空，这是预期行为。
+MCP 客户端连接地址为 `http://127.0.0.1:3000/mcp`。当前提供的工具为 `tongji.student.score`，用于查询本科生指定学期的成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
 
 `/health` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
+
+### 使用 MCP Inspector 调试工具调用
+
+保持 `pnpm dev` 运行，并在另一个终端启动 MCP Inspector：
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+在 Inspector 页面中选择 `Streamable HTTP` 传输方式，并填写 MCP 服务地址：
+
+```text
+http://127.0.0.1:3000/mcp
+```
+
+通过 Inspector 的 `Tools` 页面执行工具发现，确认可看到
+`tongji.student.score`。随后选择该工具进行调用：不传参数即可查询当前学期；也可传入
+指定学期，例如：
+
+```json
+{
+  "calendarId": "2025-2026-1"
+}
+```
+
+调用实际同济开放平台接口时，需要在 Inspector 的自定义请求头中增加：
+
+```text
+X-Tongji-Access-Token: <access_token>
+```
+
+未提供 token 时，工具会返回 `unauthorized`；授权失效或上游服务不可用时，也会在工具
+结果中返回对应的结构化错误。不要将有效 token 复制到截图、提交记录或日志中。
 
 ### Agent 调用上下文
 

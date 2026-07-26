@@ -64,6 +64,18 @@ const TongjiServiceDemo = async (token: string): Promise<void> => {
         }
     };
 
+    const testUndergraduateScore = async (
+        calendarId?: string,
+    ): Promise<unknown> => {
+        const request = {
+            Authorization: authorization,
+            calendarId: calendarId ?? "118",
+        };
+        return runTest("rt_onetongji_undergraduate_score", () =>
+            demoServiceForAxios.Undergraduate_scoreGET(request),
+        );
+    };
+
     const testCetScore = async (): Promise<unknown> => {
         const request = {
             Authorization: authorization,
@@ -107,18 +119,6 @@ const TongjiServiceDemo = async (token: string): Promise<void> => {
         return runTest(
             "rt_onetongji_school_calendar_current_term_calendar",
             () => demoServiceForAxios.Get_current_term_calendarGET(request),
-        );
-    };
-
-    const testUndergraduateScore = async (
-        calendarId?: string,
-    ): Promise<unknown> => {
-        const request = {
-            Authorization: authorization,
-            calendarId: calendarId ?? "118",
-        };
-        return runTest("rt_onetongji_undergraduate_score", () =>
-            demoServiceForAxios.Undergraduate_scoreGET(request),
         );
     };
 

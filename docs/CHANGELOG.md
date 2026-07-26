@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-26 21:29 - 接入本科成绩查询 MCP Tool 并收敛上游成绩数据
+
+### 撰写时间
+
+- 2026-07-26 21:29
+
+### Base Commit
+
+- fd55ba47862220e68c9952bae4134b24e798fff2
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 测试骨架已经固定了 MCP 的 HTTP、调用上下文和本地回归入口，但 Tool Catalog 仍为空，可信的 `X-Tongji-Access-Token` 还没有形成一条真正的校园业务调用链。
+- 这次先落地本科生成绩查询，而不是把 CAM 生成的 OpenAPI 方法直接暴露给 Agent。目标是把 token 注入、上游请求、错误归一和成绩字段裁剪收敛在手写边界内，并用 MCP Inspector 提供可操作的本地调试说明。
+
+### 改动概览
+
+- 新增 `tongji.student.score`。工具接受可选 `calendarId`，仅从 `ToolInvocationContext` 读取 token；未授权、上游 401/403、网络失败及业务格式异常都会返回稳定的工具错误。
+- 新增 `src/integration/tongji_openapi.ts`，把 CAM 的 `Undergraduate_scoreGET` 封装为带默认 base URL、10 秒超时和 Bearer Authorization 的手写适配器。同步预留 `tongji_poby.ts` 与 `yourtj.ts` 的客户端适配边界，生成目录继续只承担协议代码。
+- 工具对上游成绩响应实施 allowlist：只输出学分、绩点、课程与学期等批准字段，丢弃学号、姓名、内部 ID 和未知字段；同时声明 MCP `outputSchema`，让发现与消费端看到稳定契约。
+- 更新 `registerTools`、README 和人工请求示例。README 现在说明 `tongji.student.score`、可选 `calendarId` 以及 Inspector 使用的 `X-Tongji-Access-Token` 请求头。
+- 扩展离线测试：覆盖工具发现、token 注入、字段裁剪、空成绩、业务错误、401/403 与上游失败；新增 OpenAPI 适配器测试，校验地址、查询参数、认证头和超时。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/transport/http.ts` 为每次 `/mcp` 请求构造 `ToolInvocationContext`；`registerTools` 接收该上下文。`TongjiStudentAgent` 仍是短期校园 token 的签发与注入方，CAM 生成的 `TongjiOpenapiService` 仍只负责生成请求路径和参数。
+- 当前改动：`registerUndergraduateScoreTool` 从调用上下文获取 token，再通过 `getUndergraduateScores` 构造上游请求。响应先校验有效的 `data.term` 结构，再进入 `normalizeScoreData`；未通过结构校验的 200 响应不会再被误判为“空成绩”。
+- 下游影响：MCP 客户端可发现并调用 `tongji.student.score`，仅获得声明的成绩字段与结构化状态。未来其他校园工具可以复用适配器边界和错误归一模式，但不能绕过调用上下文或直接返回 CAM 原始响应。
+
+### 改动结果与业务影响
+
+- 首个校园业务 Tool 已形成 `Agent -> MCP invocation -> 手写 adapter -> Tongji OpenAPI -> 字段白名单 Tool Result` 的闭环；工具参数不包含 token，也不允许调用方指定他人身份字段。
+- 开发过程中发现“HTTP 200 但业务响应缺少成绩结构”会被旧的空值逻辑误报为空数据，因此新增显式结构校验并返回 `upstream_unavailable`。这避免 Agent 基于错误的“暂无成绩”继续推理。
+- 已执行 `pnpm test`（19/19）、`pnpm test:typecheck`、`pnpm typecheck`、`pnpm build` 与 `git diff --check HEAD`，均通过；测试仅使用 Fake Axios adapter 和虚构 token，不访问真实校园平台。
+
+### 风险与待办
+
+- 当前适配器依赖同济开放平台的既有响应结构；真实联调仍需在受控环境确认字段类型、业务错误码和 token scope。若上游结构演进，应同步更新 allowlist、`outputSchema` 与 Fake 响应。
+- `tongji_poby.ts`、`yourtj.ts` 目前只是适配边界，尚未被正式 Tool 消费；它们接入业务前仍需按相同规则补充请求构造、错误归一与脱敏测试。
+- Inspector 的 token 传递仅适用于可信本地调试或受控部署。不得将有效 token 写入截图、日志、提交记录或 Tool 输入。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(score): add undergraduate score MCP tool`
+
 ## CHANGELOG - 2026-07-26 15:55 - 建立 MCP Server 本地单测闭环并补齐骨架边界验证
 
 ### 撰写时间

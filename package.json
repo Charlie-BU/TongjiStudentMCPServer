@@ -13,6 +13,10 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test test/*.test.ts test/**/*.test.ts",
+    "test:watch": "node --import tsx --test --watch test/*.test.ts test/**/*.test.ts",
+    "test:typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "check": "pnpm test && pnpm test:typecheck && pnpm typecheck && pnpm build",
     "cam": "cam"
   },
   "dependencies": {

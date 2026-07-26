@@ -84,8 +84,12 @@ X-Tongji-Access-Token: <access_token>
 可用校验命令：
 
 ```bash
+pnpm test
+pnpm test:typecheck
 pnpm typecheck
 pnpm build
+# 依次执行以上四项检查
+pnpm check
 pnpm start
 ```
 

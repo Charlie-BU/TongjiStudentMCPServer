@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-26 15:55 - 建立 MCP Server 本地单测闭环并补齐骨架边界验证
+
+### 撰写时间
+
+- 2026-07-26 15:55
+
+### Base Commit
+
+- 54c878b366510d64da521bc995dd00a125179723
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 这个 MCP Server 已有 Streamable HTTP 骨架和 token 调用上下文，但此前没有 TypeScript 测试入口。配置解析、请求体上限和 header 处理一旦回归，只能依赖人工启动后再发现问题；提交前也缺少统一的本地验证闭环。
+- 这次不引入 CI，也不提前实现校园业务 Tool。目标是先把当前手写骨架的可观察行为固定下来，并让后续接入领域服务、OpenAPI adapter 和隐私策略时有一套可复用的测试约束。
+
+### 改动概览
+
+- 在 `package.json` 增加 `pnpm test`、`pnpm test:watch`、`pnpm test:typecheck` 和 `pnpm check`。测试使用 Node 原生 `node:test`，通过 `node --import tsx --test` 加载 TypeScript，避免额外引入 Jest/Vitest 转译链路。
+- 新增 `tsconfig.test.json` 与 `test/` 目录，覆盖 `loadServerConfig`、`readToolInvocationContext`、`createHttpServer` 和 `createMcpServer`。当前共 12 个离线用例，包含配置边界、重复/空白 token、HTTP 路由、非法 JSON、请求体上限，以及 MCP 服务身份和空 Tool 状态。
+- 新增 `docs/UTSpec.md` 与 `.codex/rules/unit-testing.md`，明确测试目录、Fake 边界、脱敏数据要求和提交前命令；README 同步公开本地校验入口。
+- 将 `.codex/skills/commit-quality-reviewer` 的测试步骤从 Go 模板改为本仓 TypeScript 流程，审查报告必须记录 `pnpm test`、测试类型检查、生产类型检查和构建结果。
+- `loadServerConfig` 改用 `Number` 校验端口，`PORT=3000.5` 不再被 `parseInt` 截断为合法端口；HTTP 入口会依据 `Content-Length` 提前以 413 拒绝超大请求，并修复非法 JSON 路径的 Promise 未结算问题。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/index.ts` 继续通过 `loadServerConfig` 读取 `HOST` 与 `PORT`；Agent 仍通过 `X-Tongji-Access-Token` 将短期凭据传给 `/mcp`。本次没有改变入口参数、token 传递方式或 CAM 生成客户端。
+- 当前改动：`test/config/server.test.ts` 在每个场景后恢复 `process.env`；`test/transport/http.test.ts` 在 loopback 临时端口验证 HTTP 边界并在 `finally` 关闭 server；`test/server.test.ts` 通过 SDK 的 `InMemoryTransport` 验证 MCP 身份与当前不声明 `tools` capability 的骨架行为。
+- 下游影响：后续 Tool、领域聚合和手写 OpenAPI adapter 只需遵循 `docs/UTSpec.md` 在 `test/` 增加对应场景。提交前可用 `pnpm check` 一次跑完单测、测试类型检查、生产类型检查和 CommonJS 构建；当前没有 CI 门禁。
+
+### 改动结果与业务影响
+
+- 当前骨架的关键安全与协议边界已经有可重复的离线回归保护，测试不使用真实 token、学生数据、校园平台或外网。
+- 开发过程中先使用 `tsx --test`，但它在受限环境会创建额外 IPC 管道；最终固定为 Node 原生测试运行器加载 `tsx`，本地反馈链路更直接。测试 glob 同时覆盖 `test/*.test.ts` 与嵌套目录，避免遗漏根目录的 MCP Server 契约用例。
+- 已执行 `pnpm check`：12/12 单测通过，`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build` 均通过；`git diff --check` 通过。
+
+### 风险与待办
+
+- 当前仍没有领域 Tool、隐私策略或手写 OpenAPI adapter，因此不存在这些层的业务回归用例。首个 `campus.schedule.get_term` 落地时，应按 UTSpec 补 token 注入、空数据、超时、未授权、错误归一和字段白名单测试。
+- 请求体上限已覆盖带 `Content-Length` 的 413 拒绝路径；后续若需要支持流式/分块上传，应补充无 `Content-Length` 的超限场景并统一错误状态码。
+- HTTP 测试会监听 loopback 临时端口。普通本地开发可直接执行；受限沙箱需要允许本地端口绑定，不能把该环境限制误判为产品测试失败。
+
+### 建议 Commit Message（git-cz）
+
+- `test(mcp): establish local regression suite`
+
 ## CHANGELOG - 2026-07-26 12:55 - 将校园 access token 收敛为单次 MCP 工具调用上下文
 
 ### 撰写时间

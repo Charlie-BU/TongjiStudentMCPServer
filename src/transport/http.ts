@@ -23,6 +23,11 @@ export const createHttpServer = () => {
             sendJSON(response, 404, { error: "not found" });
             return;
         }
+        if (isRequestBodyTooLarge(request)) {
+            request.resume();
+            sendJSON(response, 413, { error: "request body is too large" });
+            return;
+        }
 
         try {
             const invocation = readToolInvocationContext(request.headers);
@@ -43,30 +48,54 @@ export const createHttpServer = () => {
     });
 };
 
+// isRequestBodyTooLarge 根据 Content-Length 提前拒绝超大请求体。
+const isRequestBodyTooLarge = (request: IncomingMessage): boolean => {
+    const contentLength = request.headers["content-length"];
+    if (Array.isArray(contentLength) || contentLength === undefined) {
+        return false;
+    }
+
+    const size = Number(contentLength);
+    return Number.isFinite(size) && size > MAX_REQUEST_BYTES;
+};
+
 // readJSONBody 读取并解析 HTTP 请求体。
 const readJSONBody = (request: IncomingMessage): Promise<unknown> => {
     return new Promise((resolve, reject) => {
         const chunks: Buffer[] = [];
         let size = 0;
+        let settled = false;
+        const rejectOnce = (error: Error): void => {
+            if (!settled) {
+                settled = true;
+                reject(error);
+            }
+        };
         request.on("data", (chunk: Buffer) => {
+            if (settled) {
+                return;
+            }
             size += chunk.length;
             if (size > MAX_REQUEST_BYTES) {
-                reject(new Error("request body is too large"));
-                request.destroy();
+                rejectOnce(new Error("request body is too large"));
                 return;
             }
             chunks.push(chunk);
         });
-        request.on("error", reject);
+        request.on("error", rejectOnce);
         request.on("end", () => {
+            if (settled) {
+                return;
+            }
             try {
-                resolve(
+                const body =
                     chunks.length === 0
                         ? undefined
-                        : JSON.parse(Buffer.concat(chunks).toString("utf8")),
-                );
+                        : JSON.parse(Buffer.concat(chunks).toString("utf8"));
+                settled = true;
+                resolve(body);
             } catch {
-                reject(new Error("request body must be valid JSON"));
+                rejectOnce(new Error("request body must be valid JSON"));
             }
         });
     });

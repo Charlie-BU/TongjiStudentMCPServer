@@ -1,3 +1,53 @@
+## CHANGELOG - 2026-07-27 20:00 - 接入学期日历查询 MCP Tool 并补齐测试覆盖
+
+### 撰写时间
+
+- 2026-07-27 20:00
+
+### Base Commit
+
+- 1c82e15b8762a10d2371abda49d2138188f4412c
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `tongji.student.score` 落地后，适配器→Tool→注册三层模式已经过验证，但上游 OpenAPI 中 `Get_all_term_calendarGET` 仍没有被封装。Agent 在查询课表或成绩前需要学期编号（`calendarId`），而编号来源就是学期日历列表。
+- 这次不引入新的架构概念，而是严格复用成绩查询的实现链路：手写适配器封装 CAM 生成方法、Tool 层做字段白名单裁剪和错误归一、输出 schema 用中文 `.describe()` 让 Agent 感知字段含义。同时补齐上一轮审查指出的测试缺口。
+
+### 改动概览
+
+- 新增 `src/tools/term-calendar.ts`，注册 `tongji.student.term-calendar` 工具。工具无输入参数，仅从 `ToolInvocationContext` 读取 token；未授权、上游 401/403、网络失败及业务格式异常均返回稳定的工具错误。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getAllTermCalendars` 适配器，把 CAM 的 `Get_all_term_calendarGET` 封装为带 Bearer Authorization 的手写函数，与 `getUndergraduateScores` 共用同一套 `createTongjiOpenapiAdapter`。
+- 工具对上游客器响应实施 allowlist：只输出 `year`、`term`、`weekNum` 和 `fullName` 四个字段，丢弃 `id`、`beginDay`、`endDay`、`deleteFlag`、`ids`、`gradePartOne`、`gradePartTwo`、`currentTermFlag`、`nextTermFlag`、`perTerm`、`perYear` 以及创建/更新时间等内部字段。`outputSchema` 中每条字段均有中文描述。
+- `src/tools/registry.ts` 中注册新工具，与已有 `registerUndergraduateScoreTool` 并列。
+- `.gitignore` 增加 `.claude` 目录忽略规则，避免 IDE 配置文件进入仓库。
+- 补齐单元测试：适配器测试（`test/integration/tongji-openapi.test.ts`）新增 `getAllTermCalendars` 的请求构造断言；MCP Server 测试（`test/server.test.ts`）新增 7 个学期日历工具用例，覆盖工具发现、token 注入与字段裁剪、空数据标记、上游业务错误、401/403 未授权和网络不可用六条路径。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/transport/http.ts` 为每次 `/mcp` 请求构造 `ToolInvocationContext`；`registerTools` 将该上下文分发给 `registerAllTermCalendarTool`。CAM 生成的 `Get_all_term_calendarGET` 仅接收 `Authorization` header，无查询参数。
+- 当前改动：`registerAllTermCalendarTool` 从调用上下文获取 token，通过 `getAllTermCalendars` 构造上游请求。响应先 `unwrapResponseData` 提取 `data` 数组，再经 `normalizeTermCalendarData` 逐条裁剪字段；非数组响应会触发 `upstream_unavailable` 错误。`isEmptyData` 在空数组时标记 `empty` 状态，让 Agent 区分"暂无数据"和"服务异常"。
+- 下游影响：Agent 可通过 `tongji.student.term-calendar` 获取全部学期编号列表，用于后续传入 `tongji.student.score` 的 `calendarId` 参数。两个工具共享相同的 token 注入、错误归一和 `Tongji Open Platform` 数据来源标记，调用方无需区分底层适配器差异。
+
+### 改动结果与业务影响
+
+- 第二个校园业务 Tool 已形成与成绩查询一致的闭环，适配器层和 Tool 层的重复逻辑（`readString`、`readNumber`、`isRecord`、`toErrorResult`、`createErrorResult`）当前各自内联。考虑到两个工具的上游字段结构差异较大，暂未抽取公共模块；当第三个工具落地时再评估提取的收益与接口设计。
+- 已执行 `pnpm check`：26/26 单测通过（新增 7 个学期日历用例 + 1 个适配器用例），`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build` 均通过。测试仅使用 Fake Axios adapter、`InMemoryTransport` 和虚构 token，不访问真实校园平台。
+- `outputSchema` 中 `status` 枚举仅包含 `ok` 和 `empty`，错误状态通过 `isError: true` 返回，与成绩查询工具保持一致的 MCP 错误契约。
+
+### 风险与待办
+
+- `readString`、`readNumber`、`isRecord`、`unwrapResponseData` 和错误归一函数在两个工具文件中各自重复。当前边界下不影响正确性，但后续新增工具时重复代码会继续膨胀。第三个校园 Tool 落地时应评估是否将公共裁剪/归一函数提取到 `src/tools/helpers/` 或 `src/domain/` 层。
+- 学期日历数据在上游可能新增学期状态字段。当前 allowlist 显式排除未批准字段，上游新增字段不会泄漏到 Tool Result，但也不会被 Agent 感知。若后续需要新字段，应同步更新 `TermCalendar` 接口、`normalizeTermCalendar` 和 `TERM_CALENDAR_SCHEMA`。
+- `src/integration/bkzs/` 是另一个 CAM 生成的招生服务客户端，与本次改动无关，建议在独立 commit 中处理。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(term-calendar): add term calendar query MCP tool`
+
 ## CHANGELOG - 2026-07-26 21:29 - 接入本科成绩查询 MCP Tool 并收敛上游成绩数据
 
 ### 撰写时间

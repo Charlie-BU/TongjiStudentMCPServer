@@ -55,3 +55,13 @@ export const getUndergraduateScores = async (
     adapter.withAuthorization({ calendarId }),
   );
 };
+
+// getAllTermCalendars 查询所有学期日历。
+export const getAllTermCalendars = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_all_term_calendarGET(
+    adapter.withAuthorization({}),
+  );
+};

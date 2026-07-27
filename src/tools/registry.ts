@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ToolInvocationContext } from '../transport/invocation-context';
 import { registerUndergraduateScoreTool } from './undergraduate-score';
+import { registerAllTermCalendarTool } from './term-calendar';
 
 // ToolRegistrationContext 表示注册工具所需的可信调用方上下文。
 export interface ToolRegistrationContext {
@@ -13,4 +14,5 @@ export const registerTools = (
   context: ToolRegistrationContext,
 ): void => {
   registerUndergraduateScoreTool(server, context);
+  registerAllTermCalendarTool(server, context);
 };

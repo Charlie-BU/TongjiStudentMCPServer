@@ -4,7 +4,8 @@
 `TongjiStudentAgent` 提供受控的校园工具；它不保存对话历史、不调用模型、也不决定
 Agent 的工具选择或回答内容。
 
-当前仓库是**可启动的工程骨架**，还没有注册任何业务工具。进程入口不会调用同济开放平台；CAM 自动生成的客户端位于 `src/integration/openapi/`，不能直接作为生产适配器使用。目录中的 `TODO` 注释标明了每一层将来应承担的职责。
+当前仓库是**可启动且已接入首个业务工具的 MCP 服务**。当前已注册
+`tongji.student.score`，用于查询本科生指定学期的成绩。进程入口不会直接调用同济开放平台；手写适配器位于 `src/integration/*.ts`，CAM 自动生成的客户端位于 `src/integration/openapi/`，不能直接作为生产适配器使用。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
@@ -30,9 +31,15 @@ src/
 ├── config/                    # 监听与开关配置
 ├── transport/                 # /mcp、认证边界与 HTTP 适配
 ├── tools/                     # Tool 注册与输入/输出 Schema
+│   ├── registry.ts            # Tool Catalog 注册入口
+│   └── undergraduate-score.ts # 本科生成绩查询工具
 ├── domain/                    # 后续确定性校园业务聚合
 ├── integration/
-│   └── openapi/             # CAM 自动生成的上游 API 客户端
+│   ├── openapi/               # CAM 自动生成的上游 API 客户端
+│   ├── tongji_openapi.ts      # 同济开放平台手写适配器
+│   ├── tongji_poby.ts         # 济星云手写适配器边界
+│   ├── yourtj.ts              # YourTJ 手写适配器边界
+│   └── test.ts                # 受控人工验证示例
 ├── privacy/                   # 后续字段白名单与脱敏策略
 ├── observability/             # 后续日志、Trace、指标
 ├── server.ts                  # MCP Server 创建
@@ -135,13 +142,15 @@ CAM 配置位于仓库根目录的 `cam.config.json`，生成代码统一写入
 pnpm cam update
 ```
 
-生成目录中的文件由 CAM 管理，不应手工编辑。业务层应在后续的
-`src/integration/tongji-openapi/` 适配器中封装、校验和脱敏这些客户端调用。
+生成目录中的文件由 CAM 管理，不应手工编辑。业务层应在手写的
+`src/integration/*.ts` 适配器中封装、校验和脱敏这些客户端调用。
 
 ## 下一步
 
-首个业务闭环应实现 `campus.schedule.get_term`，并同时完成：调用上下文中的
-access token 注入、Fake OpenAPI 契约测试、空数据/超时/上游未授权错误归一，以及结构化脱敏结果。通过该闭环前，不批量增加校园工具。
+当前已完成 `tongji.student.score` 业务闭环，并覆盖：调用上下文中的
+access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上游不可用错误归一，以及结构化脱敏结果。
+
+后续新增校园工具时，应复用相同模式：先在手写适配层封装上游调用，再补齐错误归一、字段白名单与离线测试。`campus.schedule.get_term` 可以作为下一个优先接入的闭环，但不应绕过现有的上下文传递、适配器封装与脱敏约束。
 
 ## SDK 选择
 

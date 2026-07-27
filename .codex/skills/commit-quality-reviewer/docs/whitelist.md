@@ -47,6 +47,18 @@
   owner: "TongjiStudentMCPServer"
   created_at: "2026-07-25"
   expires_at: "2026-08-25"
+
+- id: WL-20260726-001
+  enabled: true
+  severity: HIGH
+  type: trusted_agent_token_passthrough
+  match:
+    file: src/transport/invocation-context.ts
+    contains: "accessToken: readSingleHeader(headers['x-tongji-access-token'])"
+  reason: "架构明确由 TongjiStudentAgent 在可信部署边界内传递短期校园 bearer token；MCP 服务仅将其保存在单次 Tool 调用上下文，不独立鉴权、不持久化且不写入 Tool Schema、Tool Result 或日志。"
+  owner: "TongjiStudentMCPServer"
+  created_at: "2026-07-26"
+  expires_at: "eternal"
 ```
 
 ## 条目模板

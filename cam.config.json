@@ -4,6 +4,6 @@
     "tongji_poby": "agent/tongjistudent/poby@latest",
     "yourtj": "agent/tongjistudent/yourtj@latest"
   },
-  "outDir": "src/integration",
+  "outDir": "src/integration/openapi",
   "generateConfig": {}
 }

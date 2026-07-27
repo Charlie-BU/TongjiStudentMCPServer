@@ -15,8 +15,8 @@ importers:
         specifier: ^1.18.1
         version: 1.18.1
       cam-fe-code-generator:
-        specifier: ^1.8.0
-        version: 1.8.0(@types/node@22.15.2)
+        specifier: ^1.9.0
+        version: 1.9.0(@types/node@22.15.2)
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -276,8 +276,8 @@ packages:
     resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
     engines: {node: '>= 0.4'}
 
-  cam-fe-code-generator@1.8.0:
-    resolution: {integrity: sha512-ZJd8kxT5YUn05j0H1W3wg9T4x0R5mXOFFOz42xXl5+pBaKQec3wlilazVrb9hmS1GI9b2Wy2/mUYDVbUMapJBw==}
+  cam-fe-code-generator@1.9.0:
+    resolution: {integrity: sha512-Bk8U4YRDyZjMxePr0KaohRDWo2gkzZVMby63TJ4f5OK9kByyst/2LbWSOrLGtCCT50VANRebLU3mHmg2pfkirg==}
     hasBin: true
 
   chalk@4.1.2:
@@ -1016,7 +1016,7 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
 
-  cam-fe-code-generator@1.8.0(@types/node@22.15.2):
+  cam-fe-code-generator@1.9.0(@types/node@22.15.2):
     dependencies:
       axios: 1.18.1
       cli-table3: 0.6.5

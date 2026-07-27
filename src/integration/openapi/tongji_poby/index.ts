@@ -8,10 +8,10 @@ import type {
   CampusLifeData_tradeHistoryQueryRequest,
   User_loginBodyRequest,
   User_loginHeaderRequest,
-  User_myInfoHeaderRequest,
-  User_logoutHeaderRequest,
+  User_myInfoCookieRequest,
+  User_logoutCookieRequest,
   User_userInfoQueryRequest,
-  User_userInfoHeaderRequest,
+  User_userInfoCookieRequest,
 } from './namespaces';
 
 export default class Tongji_pobyService<T> {
@@ -259,30 +259,30 @@ export default class Tongji_pobyService<T> {
   }
 
   /** 获取当前用户信息 */
-  User_myInfoGET(req: User_myInfoHeaderRequest, options?: T): Promise<any> {
+  User_myInfoGET(req: User_myInfoCookieRequest, options?: T): Promise<any> {
     const _req = req || {};
     let url = this.genBaseURL('/user/myInfo');
     const method = 'GET';
     const data = undefined;
     const params = undefined;
-    const headers = { Cookie: _req['Cookie'] };
+    const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
 
   /** 退出登录 */
-  User_logoutGET(req: User_logoutHeaderRequest, options?: T): Promise<any> {
+  User_logoutGET(req: User_logoutCookieRequest, options?: T): Promise<any> {
     const _req = req || {};
     let url = this.genBaseURL('/user/logout');
     const method = 'GET';
     const data = undefined;
     const params = undefined;
-    const headers = { Cookie: _req['Cookie'] };
+    const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
 
   /** 按 ID 查用户信息 */
   User_userInfoGET(
-    req: User_userInfoQueryRequest & User_userInfoHeaderRequest,
+    req: User_userInfoQueryRequest & User_userInfoCookieRequest,
     options?: T,
   ): Promise<any> {
     const _req = req || {};
@@ -290,7 +290,7 @@ export default class Tongji_pobyService<T> {
     const method = 'GET';
     const data = undefined;
     const params = { userId: _req['userId'] };
-    const headers = { Cookie: _req['Cookie'] };
+    const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
 

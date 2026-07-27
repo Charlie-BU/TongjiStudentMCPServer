@@ -23,14 +23,14 @@ export interface User_loginBodyRequest {
   user: any;
 }
 
-export interface User_myInfoHeaderRequest {
-  /** 登录返回的 Session Cookie */
-  Cookie: string;
+export interface User_myInfoCookieRequest {
+  /** 登录返回的 Session Cook */
+  JSESSIONID: string;
 }
 
-export interface User_logoutHeaderRequest {
+export interface User_logoutCookieRequest {
   /** 当前 Session Cookie */
-  Cookie: string;
+  JSESSIONID: string;
 }
 
 export interface User_userInfoQueryRequest {
@@ -38,7 +38,7 @@ export interface User_userInfoQueryRequest {
   userId: number;
 }
 
-export interface User_userInfoHeaderRequest {
+export interface User_userInfoCookieRequest {
   /** 当前 Session Cookie */
-  Cookie: string;
+  JSESSIONID: string;
 }

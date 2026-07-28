@@ -85,3 +85,13 @@ export const getCetScores = async (
     adapter.withAuthorization({}),
   );
 };
+
+// getBookLendInfo 查询图书借阅信息。
+export const getBookLendInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_book_lend_infoGET(
+    adapter.withAuthorization({}),
+  );
+};

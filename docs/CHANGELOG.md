@@ -1,3 +1,54 @@
+## CHANGELOG - 2026-07-29 14:00 - 接入图书借阅信息查询 MCP Tool 并通过 MCP Inspector 联调修正
+
+### 撰写时间
+
+- 2026-07-29 14:00
+
+### Base Commit
+
+- 4b22fb6f83f3f1bf2d4cbaa23af5f8c39aa9ab6a
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 学生的图书借阅记录是校园数据中信息密度最高的领域之一——每条记录包含书名、作者、ISBN、馆藏地、借出/续借/还书日期和读者信息等 28 个字段。`Get_book_lend_infoGET` 属于 `/v2/dc/` 子服务，不同于之前五个工具的 `/v1/rt/onetongji/`。
+- 封装目标与前五个工具一致。但这次经历了一个重要的教训：spec 示例中的响应结构与真实 API 不一致，导致第一版实现上线即报 `upstream_unavailable`。通过 MCP Inspector 联调定位并修正了两个关键偏差。
+
+### 改动概览
+
+- 新增 `src/tools/book-lend-info.ts`，注册 `tongji.student.book-lend-info` 工具。工具无输入参数，从 `ToolInvocationContext` 读取 token；输出 28 个字段，是目前字段最多的 Tool 记录类型。剔除了 `isJournal`、`voltFlag` 等无 spec 注释的内部字段。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getBookLendInfo` 适配器，封装 CAM 的 `Get_book_lend_infoGET`（URL: `/v2/dc/lib/lend_info_all`）。
+- **MCP Inspector 联调修正** —— 第一版有两个基于 spec 示例的错误假设，联调时被真实响应对齐：
+  1. **`data` 结构**：spec 示例为 `{ count: 2, userInfos: [...] }`，真实 API 直接返回数组 `[...]`。`normalizeBookLendInfoData` 从 `isRecord(data) && Array.isArray(data.userInfos)` 改为 `Array.isArray(data)`，与 `term-calendar.ts` 同构。
+  2. **`userId` 脱敏状态**：spec 示例为掩码值 `"20**4"`，真实 API 返回完整学工号 `"2350939"`——与 `name` 字段一样未做脱敏。两个字段的 `.describe()` 统一标注为 `"注意该字段未做脱敏处理，不可在公开输出中直接引用。"`。
+- `src/tools/registry.ts` 注册新工具。
+- 补齐单元测试：适配器测试验证 `/v2/dc/lib/lend_info_all` 路径；MCP Server 测试新增 7 个用例，fixture 已与真实 API 响应对齐（数组结构、字符串型数值字段）。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`ToolInvocationContext`→`registerBookLendInfoTool`。CAM 的 `Get_book_lend_infoGET` 使用 `/v2/dc/` 路径前缀，说明图书馆是独立部署子服务。
+- 当前改动：`registerBookLendInfoTool` 通过 `getBookLendInfo` 请求上游，`unwrapResponseData` 提取 `data` 数组后直接 `map` 裁剪。`isEmptyData` 在空数组时标记 `empty`。
+- MCP Inspector 联调：初始实现直接返回 `upstream_unavailable`，通过临时 `console.error` 打印原始响应发现 `data` 是数组而非对象。修正后 Inspector 正常返回 28 个裁剪字段。调试日志已移除。
+
+### 改动结果与业务影响
+
+- 第五个校园业务 Tool 落地并经过真实 API 联调验证。这次联调验证了"spec 不可盲信"的原则——离线单测只能验证代码逻辑，无法发现 spec 与真实 API 的结构偏差。
+- 已执行 `pnpm check`：48/48 单测通过，类型检查和构建均通过。
+- 审查过程中还发现 `renewDate` 和 `asbackDate` 在真实响应中为空字符串 `""` 而非 spec 示例的特定日期值——`readString` 直接透传空串，下游消费端需自行处理。
+
+### 风险与待办
+
+- `name` 和 `userId` 均返回完整未脱敏值。当前仅靠 schema 的 `.describe()` 标注约束 Agent 行为，没有服务端阻断。如果隐私策略收紧，需要在 `normalizeBookLendRecord` 中做字段级掩码。
+- 五个 Tool 文件的公共函数重复已到 450 行，在连续五轮 changelog 中标记为技术债。计划在第六个 Tool 前完成提取。
+- `Get_book_lend_infoGET` 是第一个使用 `/v2/dc/` 前缀的接口。后续若出现更多 v2 子服务，需注意它们可能有不同的超时和错误码约定。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(book-lend-info): add book lending info query MCP tool`
+
 ## CHANGELOG - 2026-07-28 13:00 - 接入四六级成绩查询 MCP Tool 并标注脱敏字段
 
 ### 撰写时间

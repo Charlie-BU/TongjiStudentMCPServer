@@ -1,3 +1,55 @@
+## CHANGELOG - 2026-07-28 11:00 - 接入当前学期日历查询 MCP Tool 并增强数据校验
+
+### 撰写时间
+
+- 2026-07-28 11:00
+
+### Base Commit
+
+- 7226f9a977e51004920c23ecd19c268cc86dcc77
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `tongji.student.term-calendar` 返回全部学期的日历列表，但 Agent 通常只需要知道"现在是第几学期、第几周"。`Get_current_term_calendarGET` 就是提供这个信息的入口——它返回当前学期的 `schoolCalendar` 基础信息（年/学期/周数）、当前所在周序号，以及人类可读的学期描述。
+- 这次的目标和上一轮一致：严格复用已验证的适配器→Tool→注册三层模式，不引入新架构概念。但当前学期日历的 API 返回结构与列表型接口有本质差异——它是一个单对象，其中 `year`/`term`/`weekNum` 嵌套在 `schoolCalendar` 子对象里，而 `week`/`simpleName`/`now`/`name` 在顶层。因此在裁剪逻辑和空值判断上需要独立实现。
+- 上一轮审查还指出了两个具体问题：当上游返回 `data: null` 时不应误判为"服务异常"，以及缺少结构校验会让错误响应（如 `{code:500}`）被静默转为空数据。这次一并修正。
+
+### 改动概览
+
+- 新增 `src/tools/current-term-calendar.ts`，注册 `tongji.student.current-term-calendar` 工具。工具无输入参数，从 `ToolInvocationContext` 读取 token；输出 `year`、`term`、`weekNum`、`week`、`simpleName`、`now`、`name` 七个字段，丢弃 `id`、`beginDay`、`endDay`、`createdAt`、`updatedAt` 等内部字段和 `schoolCalendar` 中的冗余属性。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getCurrentTermCalendar` 适配器，封装 CAM 的 `Get_current_term_calendarGET`（URL: `/v1/rt/onetongji/school_calendar_current_term_calendar`）。
+- `normalizeCurrentTermCalendarData` 做了两处与列表型工具不同的安全处理：
+  - `data === null` 直接返回全字段为 `null` 的 `EMPTY_CURRENT_TERM_CALENDAR` 常量，下游 `isEmptyData` 判定后设置 `status: "empty"`，Agent 收到的 `data` 字段为 `null`。
+  - 结构校验要求 `data.schoolCalendar` 必须为 `Record`，否则返回 `undefined` → 触发 `upstream_unavailable`。这防止了上游返回业务错误体（如 `{code:500, message:...}` 中的 `data` 子对象）被误读为"全 null 的空数据"。
+- `src/tools/registry.ts` 注册新工具，与已有三个工具并列。
+- 补齐单元测试：适配器测试新增 `getCurrentTermCalendar` 的请求构造断言；MCP Server 测试新增 8 个当前学期日历用例，覆盖工具发现、token 注入与 `schoolCalendar` 嵌套裁剪、空对象标记为空、`data:null` 视为空数据、上游业务错误被结构校验拒绝、401/403 未授权和网络不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：与 `term-calendar` 一致，`ToolInvocationContext` 由 `src/transport/http.ts` 构造并经 `registerTools` 分发。CAM 生成的 `Get_current_term_calendarGET` 仅接收 `Authorization` header，无查询参数。
+- 当前改动：`registerCurrentTermCalendarTool` 通过 `getCurrentTermCalendar` 请求上游，`unwrapResponseData` 提取 `data` 后进入 `normalizeCurrentTermCalendarData`。该函数先判 `null`（→空结果），再判 `isRecord` 和 `schoolCalendar` 结构存在性（→错误），最后分别从 `schoolCalendar` 和顶层读取对应字段。`isEmptyData` 检查全部七个字段是否均为 `null`，是则标记 `empty` 并返回 `data: null`。
+- 下游影响：Agent 可通过 `tongji.student.current-term-calendar` 直接获取当前学期状态，无需遍历全部学期列表再定位 `currentTermFlag: true` 的记录。工具之间的数据来源都标记为 `Tongji Open Platform`，契约格式一致。
+
+### 改动结果与业务影响
+
+- 第三个校园业务 Tool 落地。当前 `src/tools/` 下共有三个工具文件，均使用相同模式的 `readString`/`readNumber`/`isRecord`/`unwrapResponseData`/`toErrorResult`/`createErrorResult` 内联实现。重复代码约 270 行，已在连续两轮 changelog 中记录为待清理的技术债。
+- 已执行 `pnpm check`：34/34 单测通过（新增 8 个当前学期日历用例 + 1 个适配器用例），`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build` 均通过。
+- 这次在测试阶段发现了两个问题：第一版用 `assert.equal` 对比对象引用导致测试失败（应使用 `assert.deepEqual`）；第一版缺少 `schoolCalendar` 结构校验导致业务错误响应被误判为空数据。两者已在提交前修正。
+
+### 风险与待办
+
+- 三个 Tool 文件（`undergraduate-score.ts`、`term-calendar.ts`、`current-term-calendar.ts`）中的公共函数重复量已经值得一次专门的抽取。建议在第四个 Tool 落地前完成提取，否则后续每个新工具都会继续增加约 90 行重复代码。抽取时可以先把 `readString`、`readNumber`、`isRecord` 放入 `src/tools/helpers/`，再将 `createErrorResult` 和 `toErrorResult` 改为接受 Tool 名称作为错误消息参数的工厂函数。
+- 当前学期日历的 `empty` 判断使用"全部七个字段为 null"的规则。若上游某一天只返回部分字段（例如只有 `year` 和 `term` 而无 `week`），会被视为"有数据"。这在当前边界下是合理的——部分数据好于无数据——但如果此类上游响应实际上意味着"服务降级"，则应考虑引入更精确的语义判断。
+- `src/integration/bkzs/` 仍为未跟踪的无关 CAM 生成目录，需单独处理。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(current-term-calendar): add current term calendar MCP tool`
+
 ## CHANGELOG - 2026-07-27 20:00 - 接入学期日历查询 MCP Tool 并补齐测试覆盖
 
 ### 撰写时间

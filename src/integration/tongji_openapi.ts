@@ -65,3 +65,13 @@ export const getAllTermCalendars = async (
     adapter.withAuthorization({}),
   );
 };
+
+// getCurrentTermCalendar 查询当前学期日历。
+export const getCurrentTermCalendar = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_current_term_calendarGET(
+    adapter.withAuthorization({}),
+  );
+};

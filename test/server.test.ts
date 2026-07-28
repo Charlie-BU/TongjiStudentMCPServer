@@ -10,6 +10,7 @@ import {
 } from '../src/server';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
 import { TERM_CALENDAR_TOOL_NAME } from '../src/tools/term-calendar';
+import { CURRENT_TERM_CALENDAR_TOOL_NAME } from '../src/tools/current-term-calendar';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -25,8 +26,15 @@ interface TermCalendarToolCallResult {
   content: Array<{ type: string; text?: string }>;
 }
 
+// CurrentTermCalendarToolCallResult 表示当前学期日历查询工具的测试结果。
+interface CurrentTermCalendarToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
 describe('createMcpServer', () => {
-  it('应公布服务身份并声明成绩查询与学期日历工具', async () => {
+  it('应公布服务身份并声明成绩查询与两个学期日历工具', async () => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const server = createMcpServer({ invocation: { accessToken: 'test-access-token' } });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
@@ -64,6 +72,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(calendarTool.outputSchema),
         /全部学期日历列表/,
+      );
+      const currentTermTool = toolList.tools.find(
+        (tool) => tool.name === CURRENT_TERM_CALENDAR_TOOL_NAME,
+      );
+      assert.ok(currentTermTool);
+      assert.match(
+        JSON.stringify(currentTermTool.outputSchema),
+        /当前所处的教学周序号/,
+      );
+      assert.match(
+        JSON.stringify(currentTermTool.outputSchema),
+        /当前学期日历数据/,
       );
     } finally {
       await server.close();
@@ -399,6 +419,172 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  // --- 当前学期日历工具测试 ---
+
+  it('应拒绝缺失 access token 的当前学期日历查询', async () => {
+    const result = await callCurrentTermCalendarTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回当前学期日历数据', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          data: {
+            schoolCalendar: {
+              id: 113,
+              year: 2021,
+              term: 2,
+              weekNum: 27,
+              beginDay: 1645372800000,
+              endDay: 1661702399000,
+            },
+            week: 5,
+            simpleName: '2021-2022学年度第2学期',
+            now: '2022年5月',
+            name: '现在是2021-2022学年第2学期第5周，当前学期从2022-02-21到2022-08-28，共27周',
+            hiddenField: 'ignored',
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callCurrentTermCalendarTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          year: 2021,
+          term: 2,
+          weekNum: 27,
+          week: 5,
+          simpleName: '2021-2022学年度第2学期',
+          now: '2022年5月',
+          name: '现在是2021-2022学年第2学期第5周，当前学期从2022-02-21到2022-08-28，共27周',
+        },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空的当前学期日历对象标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { schoolCalendar: {} } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCurrentTermCalendarTool({ accessToken: 'access-token-for-test' });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: null,
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游 data:null 响应视为空数据', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: null },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCurrentTermCalendarTool({ accessToken: 'access-token-for-test' });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: null,
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游业务错误响应归一为当前学期日历工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCurrentTermCalendarTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济当前学期日历服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游未授权错误归一为当前学期日历工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callCurrentTermCalendarTool({ accessToken: 'expired-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游不可用错误归一为当前学期日历工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callCurrentTermCalendarTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /当前学期日历服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 
 // callScoreTool 通过内存传输调用成绩查询工具。
@@ -423,7 +609,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -444,6 +630,27 @@ const callTermCalendarTool = async (
       name: TERM_CALENDAR_TOOL_NAME,
       arguments: args,
     })) as TermCalendarToolCallResult;
+  } finally {
+    await server.close();
+  }
+};
+
+// callCurrentTermCalendarTool 通过内存传输调用当前学期日历查询工具。
+const callCurrentTermCalendarTool = async (
+  invocation: { accessToken?: string },
+  args: Record<string, unknown> = {},
+) => {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+  try {
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    return (await client.callTool({
+      name: CURRENT_TERM_CALENDAR_TOOL_NAME,
+      arguments: args,
+    })) as CurrentTermCalendarToolCallResult;
   } finally {
     await server.close();
   }

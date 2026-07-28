@@ -75,3 +75,13 @@ export const getCurrentTermCalendar = async (
     adapter.withAuthorization({}),
   );
 };
+
+// getCetScores 查询四六级成绩。
+export const getCetScores = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Cet_scoreGET(
+    adapter.withAuthorization({}),
+  );
+};

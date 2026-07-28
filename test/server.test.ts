@@ -11,6 +11,7 @@ import {
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
 import { TERM_CALENDAR_TOOL_NAME } from '../src/tools/term-calendar';
 import { CURRENT_TERM_CALENDAR_TOOL_NAME } from '../src/tools/current-term-calendar';
+import { CET_SCORE_TOOL_NAME } from '../src/tools/cet-score';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -33,8 +34,15 @@ interface CurrentTermCalendarToolCallResult {
   content: Array<{ type: string; text?: string }>;
 }
 
+// CetScoreToolCallResult 表示四六级成绩查询工具的测试结果。
+interface CetScoreToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
 describe('createMcpServer', () => {
-  it('应公布服务身份并声明成绩查询与两个学期日历工具', async () => {
+  it('应公布服务身份并声明成绩查询、学期日历与四六级成绩工具', async () => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const server = createMcpServer({ invocation: { accessToken: 'test-access-token' } });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
@@ -84,6 +92,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(currentTermTool.outputSchema),
         /当前学期日历数据/,
+      );
+      const cetScoreTool = toolList.tools.find(
+        (tool) => tool.name === CET_SCORE_TOOL_NAME,
+      );
+      assert.ok(cetScoreTool);
+      assert.match(
+        JSON.stringify(cetScoreTool.outputSchema),
+        /考试科目名称/,
+      );
+      assert.match(
+        JSON.stringify(cetScoreTool.outputSchema),
+        /四六级考试成绩记录列表/,
       );
     } finally {
       await server.close();
@@ -585,9 +605,207 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
-});
 
-// callScoreTool 通过内存传输调用成绩查询工具。
+  // --- 四六级成绩工具测试 ---
+
+  it('应拒绝缺失 access token 的四六级成绩查询', async () => {
+    const result = await callCetScoreTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回四六级成绩数据', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          data: {
+            pageNum_: 1,
+            pageSize_: 20,
+            total_: 2,
+            list: [
+              {
+                calendarId: 112,
+                calendarYear: null,
+                calendarTerm: null,
+                calendarYearTerm: null,
+                calendarYearTermCn: '2021-2022学年第1学期',
+                studentId: '205****',
+                studentName: '欧****',
+                title: null,
+                subjectCode: null,
+                competitionType: null,
+                writtenSubjectName: '（2）英语六级笔试',
+                cardNo: '31003121*******',
+                score: '603.00',
+                scoreRank: null,
+                oralScore: null,
+                examTime: null,
+                cetType: 2,
+                competitionId: null,
+                scoreExamCategory: null,
+                competitionExamCategory: null,
+                signUpStudentId: null,
+              },
+              {
+                calendarId: 111,
+                calendarYear: null,
+                calendarTerm: null,
+                calendarYearTerm: null,
+                calendarYearTermCn: '2020-2021学年第2学期',
+                studentId: '205****',
+                studentName: '欧****',
+                title: null,
+                subjectCode: null,
+                competitionType: null,
+                writtenSubjectName: '（1）英语四级笔试',
+                cardNo: '31003121*******',
+                score: '599.00',
+                scoreRank: null,
+                oralScore: null,
+                examTime: null,
+                cetType: 1,
+                competitionId: null,
+                scoreExamCategory: null,
+                competitionExamCategory: null,
+                signUpStudentId: null,
+              },
+            ],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callCetScoreTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          records: [
+            {
+              studentId: '205****',
+              studentName: '欧****',
+              competitionType: null,
+              writtenSubjectName: '（2）英语六级笔试',
+              cardNo: '31003121*******',
+              score: '603.00',
+              scoreRank: null,
+              oralScore: null,
+              examTime: null,
+              cetType: 2,
+            },
+            {
+              studentId: '205****',
+              studentName: '欧****',
+              competitionType: null,
+              writtenSubjectName: '（1）英语四级笔试',
+              cardNo: '31003121*******',
+              score: '599.00',
+              scoreRank: null,
+              oralScore: null,
+              examTime: null,
+              cetType: 1,
+            },
+          ],
+        },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空的四六级成绩数据标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { list: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCetScoreTool({ accessToken: 'access-token-for-test' });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { records: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游业务错误响应归一为四六级成绩工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCetScoreTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /四六级成绩服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游未授权错误归一为四六级成绩工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callCetScoreTool({ accessToken: 'expired-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游不可用错误归一为四六级成绩工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callCetScoreTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /四六级成绩服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
 const callScoreTool = async (
   invocation: { accessToken?: string },
   args: { calendarId?: string } = {},
@@ -609,7 +827,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -651,6 +869,27 @@ const callCurrentTermCalendarTool = async (
       name: CURRENT_TERM_CALENDAR_TOOL_NAME,
       arguments: args,
     })) as CurrentTermCalendarToolCallResult;
+  } finally {
+    await server.close();
+  }
+};
+
+// callCetScoreTool 通过内存传输调用四六级成绩查询工具。
+const callCetScoreTool = async (
+  invocation: { accessToken?: string },
+  args: Record<string, unknown> = {},
+) => {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+  try {
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    return (await client.callTool({
+      name: CET_SCORE_TOOL_NAME,
+      arguments: args,
+    })) as CetScoreToolCallResult;
   } finally {
     await server.close();
   }

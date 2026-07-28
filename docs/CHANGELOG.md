@@ -1,3 +1,54 @@
+## CHANGELOG - 2026-07-28 13:00 - 接入四六级成绩查询 MCP Tool 并标注脱敏字段
+
+### 撰写时间
+
+- 2026-07-28 13:00
+
+### Base Commit
+
+- 346f7c9bf603a0ae047ed2ba370275cfb0485ce2
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- Agent 查询学生 CET-4/CET-6 成绩的能力此前是空白的。`Cet_scoreGET` 返回当前已授权学生的全部四六级成绩记录，每条包含考试科目、准考证号、笔试成绩、口语成绩和考试时间。和前三个工具一样，目标是把 CAM 生成的 API 封装为手写边界，做字段裁剪和错误归一，而不是直接暴露上游原始响应。
+- 与全部学期日历（列表型）和当前学期日历（单对象嵌套型）不同，四六级成绩的 API 使用分页结构——`data` 是 `{ pageNum_, pageSize_, total_, list: [...] }`。因此结构校验点落在 `data.list` 是否为数组，这与本科成绩的 `data.term` 校验模式一致。
+- 审查中额外关注了一个隐私问题：`studentId`、`studentName`、`cardNo` 虽然上游已做掩码处理（如 `205****`），但 `outputSchema` 的 `.describe()` 没有提示 Agent 这些字段不可用于身份验证。这次在三处描述中补充了脱敏标注。
+
+### 改动概览
+
+- 新增 `src/tools/cet-score.ts`，注册 `tongji.student.cet-score` 工具。工具无输入参数，从 `ToolInvocationContext` 读取 token；输出 `studentId`、`studentName`、`competitionType`、`writtenSubjectName`、`cardNo`、`score`、`scoreRank`、`oralScore`、`examTime`、`cetType` 十个字段，丢弃 `calendarId`、`calendarYear`、`title`、`subjectCode`、`competitionId` 等内部字段和分页元数据（`pageNum_`/`pageSize_`/`total_`）。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getCetScores` 适配器，封装 CAM 的 `Cet_scoreGET`（URL: `/v1/rt/onetongji/cet_score`）。与其他三个适配器共用同一套 `createTongjiOpenapiAdapter`。
+- `normalizeCetScoreData` 的结构校验为 `isRecord(data) && Array.isArray(data.list)`——与 `undergraduate-score.ts` 的 `data.term` 校验保持一致。缺少 `list` 或 `data` 非对象时返回 `undefined` → `upstream_unavailable`；空列表 → `status: "empty"`。
+- `studentId`、`studentName`、`cardNo` 三个字段的 `outputSchema` 描述中补充了"已由上游做脱敏处理，不可用于身份验证"的标注，提醒 Agent 不得将这些字段作为认证或鉴权依据。
+- `src/tools/registry.ts` 注册新工具，与已有四个工具并列。
+- 补齐单元测试：适配器测试新增 `getCetScores` 的请求构造断言；MCP Server 测试新增 7 个四六级成绩用例，覆盖工具发现、token 注入与字段裁剪、空列表标记为空、上游业务错误被结构校验拒绝、401/403 未授权和网络不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`ToolInvocationContext` 由 `src/transport/http.ts` 构造并经 `registerTools` 分发。CAM 的 `Cet_scoreGET` 仅接收 `Cet_scoreHeaderRequest`（`Authorization` header），无查询参数——这与全部学期日历、当前学期日历一致。
+- 当前改动：`registerCetScoreTool` 通过 `getCetScores` 请求上游，`unwrapResponseData` 提取 `data` 后进入 `normalizeCetScoreData`。该校验函数先确认 `data` 是 Record 且 `data.list` 是数组（不满足 → `upstream_unavailable`），再逐条 `map` 通过 `normalizeCetScoreRecord` 裁剪字段。输出按 `CetScoreData` 包裹为 `{ records: [...] }`，与 `term-calendar.ts` 的 `{ terms: [...] }` 模式同构。
+- 下游影响：Agent 可通过 `tongji.student.cet-score` 直接获取四六级成绩列表，同样使用 `Tongji Open Platform` 来源标记和 `ok/empty` 状态语义。
+
+### 改动结果与业务影响
+
+- 第四个校园业务 Tool 落地。当前 `src/tools/` 下共有四个工具文件，公共函数（`readString`/`readNumber`/`isRecord`/`unwrapResponseData`/`toErrorResult`/`createErrorResult`）重复量约 360 行，已在连续四轮 changelog 中记录为待清理的技术债。
+- 已执行 `pnpm check`：41/41 单测通过（新增 8 个 cet-score 用例），`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build` 均通过。测试仅使用 Fake Axios adapter 和虚构脱敏数据，不访问真实校园平台。
+- 审查过程中未发现新的功能性或安全性缺陷。本次改动在结构校验、空数据处理和错误归一三个维度都直接复用了已验证的模式，是四个工具中实现最规范的一个。
+
+### 风险与待办
+
+- 四个 Tool 文件的公共函数重复已到临界点。我计划在下一个 Tool 落地前完成抽取：先把 `readString`/`readNumber`/`isRecord` 移入 `src/tools/helpers/`，再把 `createErrorResult` 和 `toErrorResult` 改为接受 Tool 名称参数的工厂函数——或者更彻底地把错误归一逻辑收敛到 `src/domain/` 公共层，让每个 Tool 只定义自己的字段接口和输出 Schema。
+- 当前 `Cet_scoreGET` 返回所有已授权学生的 CET 记录，不做分页过滤。如果学生在大学期间参加了多次四六级考试（例如刷分），列表可能较长。Agent 端可以通过 `cetType`（1=四级/2=六级）和 `examTime` 做筛选，但 MCP 工具本身不提供分页或筛选参数。
+- `studentId`/`studentName`/`cardNo` 的脱敏依赖上游掩码规则。若上游掩码格式变化（例如不再掩码而暴露完整值），Tool Result 中的 PII 暴露风险会显著上升。当前 schema 的 `.describe()` 标注只能作为 Agent 端的消费提示，不能替代服务端的字段级阻断。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(cet-score): add CET score query MCP tool`
+
 ## CHANGELOG - 2026-07-28 11:00 - 接入当前学期日历查询 MCP Tool 并增强数据校验
 
 ### 撰写时间

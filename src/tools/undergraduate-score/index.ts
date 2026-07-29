@@ -1,56 +1,26 @@
-import axios from "axios";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getUndergraduateScores } from "../integration/tongji_openapi";
-import type { ToolRegistrationContext } from "./registry";
+import { getUndergraduateScores } from "../../integration/tongji_openapi";
+import type { ToolRegistrationContext } from "../registry";
+import type {
+    CourseScore,
+    ScoreToolResult,
+    TermScore,
+    UndergraduateScoreData,
+} from "./types";
+import {
+    createErrorResult,
+    isRecord,
+    isUnauthorizedUpstreamError,
+    readArray,
+    readNumber,
+    readString,
+    toErrorResult,
+    unwrapResponseData,
+} from "../utils";
 
 // UNDERGRADUATE_SCORE_TOOL_NAME 表示本科生成绩查询工具名称。
 export const UNDERGRADUATE_SCORE_TOOL_NAME = "tongji.student.score";
-
-// ScoreToolStatus 表示本科生成绩查询的结果状态。
-type ScoreToolStatus = "ok" | "empty" | "unauthorized" | "upstream_unavailable";
-
-// CourseScore 表示单门课程的成绩信息。
-interface CourseScore {
-    courseCode: string | null;
-    courseName: string | null;
-    credit: number | null;
-    gradePoint: number | null;
-    isPass: number | null;
-    isPassName: string | null;
-    publicCoursesName: string | null;
-    score: string | null;
-    scoreName: string | null;
-    updateTime: string | null;
-    year: string | null;
-}
-
-// TermScore 表示单个学期的成绩汇总。
-interface TermScore {
-    averagePoint: string | null;
-    calName: string | null;
-    creditInfo: CourseScore[];
-    termName: string | null;
-    termcode: string | null;
-}
-
-// UndergraduateScoreData 表示本科成绩的脱敏业务数据。
-interface UndergraduateScoreData {
-    actualCredit: string | null;
-    failingCourseCount: string | null;
-    failingCredits: string | null;
-    totalGradePoint: string | null;
-    term: TermScore[];
-}
-
-// ScoreToolResult 表示本科生成绩查询的结构化结果。
-interface ScoreToolResult {
-    [key: string]: unknown;
-    status: ScoreToolStatus;
-    data: UndergraduateScoreData;
-    source: "Tongji Open Platform";
-    calendarId?: string;
-}
 
 // COURSE_SCORE_SCHEMA 表示单门课程成绩的 MCP 输出结构。
 const COURSE_SCORE_SCHEMA = z.object({
@@ -73,16 +43,27 @@ const TERM_SCORE_SCHEMA = z.object({
     calName: z.string().nullable().describe("学期名称或编号。"),
     creditInfo: z.array(COURSE_SCORE_SCHEMA).describe("本学期课程成绩列表。"),
     termName: z.string().nullable().describe("学期完整名称。"),
-    termcode: z.string().nullable().describe("学期代码，可作为 calendarId 使用。"),
+    termcode: z
+        .string()
+        .nullable()
+        .describe("学期代码，可作为 calendarId 使用。"),
 });
 
 // SCORE_TOOL_OUTPUT_SCHEMA 表示本科生成绩查询的 MCP 输出结构。
 const SCORE_TOOL_OUTPUT_SCHEMA = z.object({
-    status: z.enum(["ok", "empty"]).describe("查询状态，empty 表示没有可返回的学期成绩。"),
+    status: z
+        .enum(["ok", "empty"])
+        .describe("查询状态，empty 表示没有可返回的学期成绩。"),
     data: z.object({
         actualCredit: z.string().nullable().describe("全部学期已修总学分。"),
-        failingCourseCount: z.string().nullable().describe("全部学期不及格课程总数量。"),
-        failingCredits: z.string().nullable().describe("全部学期不及格课程总学分。"),
+        failingCourseCount: z
+            .string()
+            .nullable()
+            .describe("全部学期不及格课程总数量。"),
+        failingCredits: z
+            .string()
+            .nullable()
+            .describe("全部学期不及格课程总学分。"),
         totalGradePoint: z.string().nullable().describe("全部学期平均绩点。"),
         term: z.array(TERM_SCORE_SCHEMA).describe("按学期分组的成绩数据。"),
     }),
@@ -135,7 +116,7 @@ export const registerUndergraduateScoreTool = (
                     );
                 }
                 const result: ScoreToolResult = {
-                    status: isEmptyData(data) ? "empty" : "ok",
+                    status: isTermDataEmpty(data) ? "empty" : "ok",
                     data,
                     source: "Tongji Open Platform",
                     ...(calendarId ? { calendarId } : {}),
@@ -151,16 +132,10 @@ export const registerUndergraduateScoreTool = (
     );
 };
 
-// unwrapResponseData 提取上游响应中的业务数据。
-const unwrapResponseData = (response: unknown): unknown => {
-    if (isRecord(response) && "data" in response) {
-        return response.data;
-    }
-    return response;
-};
-
 // normalizeScoreData 裁剪并规范化本科成绩业务数据。
-const normalizeScoreData = (data: unknown): UndergraduateScoreData | undefined => {
+const normalizeScoreData = (
+    data: unknown,
+): UndergraduateScoreData | undefined => {
     if (!isRecord(data) || !Array.isArray(data.term)) {
         return undefined;
     }
@@ -204,65 +179,6 @@ const normalizeCourseScore = (course: unknown): CourseScore => {
     };
 };
 
-// isEmptyData 判断业务数据是否为空。
-const isEmptyData = (data: UndergraduateScoreData): boolean =>
+// isTermDataEmpty 判断业务数据是否为空。
+const isTermDataEmpty = (data: UndergraduateScoreData): boolean =>
     data.term.length === 0;
-
-// readArray 读取数组字段。
-const readArray = (value: unknown): unknown[] =>
-    Array.isArray(value) ? value : [];
-
-// readString 读取字符串字段。
-const readString = (value: unknown): string | null => {
-    if (typeof value === "string") {
-        return value;
-    }
-    if (typeof value === "number") {
-        return String(value);
-    }
-    return null;
-};
-
-// readNumber 读取数值字段。
-const readNumber = (value: unknown): number | null => {
-    if (typeof value === "number" && Number.isFinite(value)) {
-        return value;
-    }
-    if (typeof value === "string" && value.trim() !== "") {
-        const numberValue = Number(value);
-        return Number.isFinite(numberValue) ? numberValue : null;
-    }
-    return null;
-};
-
-// toErrorResult 将上游错误转换为 MCP 工具错误结果。
-const toErrorResult = (error: unknown) => {
-    if (
-        axios.isAxiosError(error) &&
-        (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-        return createErrorResult(
-            "unauthorized",
-            "同济账号授权无效或已过期，请重新完成授权后再试。",
-        );
-    }
-    return createErrorResult(
-        "upstream_unavailable",
-        "同济成绩服务暂时不可用，请稍后重试。",
-    );
-};
-
-// createErrorResult 创建 MCP 工具错误结果。
-const createErrorResult = (
-    status: Exclude<ScoreToolStatus, "ok" | "empty">,
-    message: string,
-) => ({
-    isError: true,
-    content: [
-        { type: "text" as const, text: JSON.stringify({ status, message }) },
-    ],
-});
-
-// isRecord 判断值是否为对象记录。
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === "object" && value !== null;

@@ -1,3 +1,4 @@
+// 包含有权限的 API demo
 import axios, { type AxiosRequestConfig } from "axios";
 import YourtjService from "./openapi/yourtj";
 import TongjiService from "./openapi/tongji_openapi";

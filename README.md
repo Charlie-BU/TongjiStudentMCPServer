@@ -32,7 +32,7 @@ src/
 ├── transport/                 # /mcp、认证边界与 HTTP 适配
 ├── tools/                     # Tool 注册与输入/输出 Schema
 │   ├── registry.ts            # Tool Catalog 注册入口
-│   └── undergraduate-score.ts # 本科生成绩查询工具
+│   └── undergraduate-score/   # 本科生成绩查询工具
 ├── domain/                    # 后续确定性校园业务聚合
 ├── integration/
 │   ├── openapi/               # CAM 自动生成的上游 API 客户端

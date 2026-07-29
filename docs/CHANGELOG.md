@@ -1,3 +1,51 @@
+## CHANGELOG - 2026-07-29 19:38 - 拆分本科成绩 Tool 的类型与通用响应处理
+
+### 撰写时间
+
+- 2026-07-29 19:38
+
+### Base Commit
+
+- 1c82e15b8762a10d2371abda49d2138188f4412c
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `tongji.student.score` 已经形成稳定的 MCP 契约，但最初把输出类型、上游响应解包、字段读取、错误归一与 Tool 注册都放在一个文件中。后续校园 Tool 需要复用这些受控边界时，继续复制会让错误状态和字段转换逐渐漂移。
+- 这次不改变成绩查询协议、token 传递方式或上游适配器，而是先把可复用的类型和纯转换函数抽到 `src/tools/` 下，并保持 Tool 注册入口与 MCP 对外名称不变。
+
+### 改动概览
+
+- 将原 `src/tools/undergraduate-score.ts` 迁移为 `src/tools/undergraduate-score/index.ts` 与 `types.ts`。成绩 Tool 的输入 Schema、输出 Schema、token 读取、成绩字段 allowlist 和 `calendarId` 语义保持原有行为。
+- 新增 `src/tools/types.ts` 统一 Tool 状态类型；新增 `src/tools/utils.ts` 承载响应解包、记录/数组/字符串/数值读取、Axios 未授权识别以及稳定错误结果构造。成绩 Tool 只保留领域归一与 MCP 注册逻辑。
+- `registerTools` 继续从 `./undergraduate-score` 导入注册函数，Node 的目录 `index.ts` 解析保持既有调用链；README 目录树同步为 `undergraduate-score/`，避免继续指向已删除的单文件路径。
+- `src/integration/test.ts` 增加受控人工验证示例的注释，不改变该文件不进入自动化单测的约束。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：HTTP 传输层仍在每次 MCP 请求中创建 `ToolInvocationContext`，其中的短期 token 由可信主 Agent 注入；`getUndergraduateScores` 仍是唯一调用 CAM OpenAPI 客户端的手写适配器。
+- 当前改动：`registerUndergraduateScoreTool` 继续只从调用上下文取得 token。上游响应经 `unwrapResponseData` 后校验 `term` 结构，再由本科成绩领域代码裁剪为批准字段；401/403 与其他异常分别经 `toErrorResult` 转为稳定工具错误。
+- 下游影响：MCP 客户端仍发现同名 `tongji.student.score`，输入、`structuredContent`、错误消息与字段白名单均不变。后续 Tool 可以复用 `utils.ts`，但仍需自行定义领域数据结构和输出 allowlist，不能直接透传上游响应。
+
+### 改动结果与业务影响
+
+- 成绩 Tool 的注册链路仍是 `createMcpServer -> registerTools -> registerUndergraduateScoreTool`；模块拆分没有把 token 放入 Tool 参数，也没有扩大 Tool Result 的字段范围。
+- 既有 `test/server.test.ts` 通过新的目录导入路径覆盖 Tool 发现、缺 token、上游 token 注入、字段裁剪、空数据、上游未授权和不可用结果，验证重构后对外 MCP 契约保持一致。
+- 已执行 `pnpm check`（19/19 单测通过）、`pnpm test:typecheck`、`pnpm typecheck`、`pnpm build` 与 `git diff --check`。测试使用内存 MCP transport、Fake Axios adapter 和虚构 token，不访问真实校园平台。
+
+### 风险与待办
+
+- `utils.ts` 当前只被成绩 Tool 使用。后续新 Tool 复用时，应确认其错误状态集合和字段转换规则是否适用，避免为了共享而让不同领域共用不准确的语义。
+- `src/integration/test.ts` 仍是人工验证示例，不能被生产入口或自动化测试导入；正式新增上游调用时，应继续通过 Fake adapter 覆盖请求构造、错误归一与脱敏结果。
+- 真实开放平台的字段类型和业务错误码仍需在受控联调环境确认。若上游响应演进，应同步调整领域类型、输出 Schema、允许字段与测试 fixture。
+
+### 建议 Commit Message（git-cz）
+
+- `refactor(score): split tool types and response utilities`
+
 ## CHANGELOG - 2026-07-26 21:29 - 接入本科成绩查询 MCP Tool 并收敛上游成绩数据
 
 ### 撰写时间

@@ -13,6 +13,7 @@ import { TERM_CALENDAR_TOOL_NAME } from '../src/tools/term-calendar';
 import { CURRENT_TERM_CALENDAR_TOOL_NAME } from '../src/tools/current-term-calendar';
 import { CET_SCORE_TOOL_NAME } from '../src/tools/cet-score';
 import { BOOK_LEND_INFO_TOOL_NAME } from '../src/tools/book-lend-info';
+import { STATISTICS_INFO_TOOL_NAME } from '../src/tools/statistics-info';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -49,8 +50,15 @@ interface BookLendInfoToolCallResult {
   content: Array<{ type: string; text?: string }>;
 }
 
+// StatisticsInfoToolCallResult 表示个人统计数据查询工具的测试结果。
+interface StatisticsInfoToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
 describe('createMcpServer', () => {
-  it('应公布服务身份并声明成绩查询、学期日历、四六级成绩与图书借阅工具', async () => {
+  it('应公布服务身份并声明成绩查询、学期日历、四六级成绩、图书借阅与个人统计工具', async () => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const server = createMcpServer({ invocation: { accessToken: 'test-access-token' } });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
@@ -124,6 +132,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(bookLendTool.outputSchema),
         /图书借阅记录列表/,
+      );
+      const statsTool = toolList.tools.find(
+        (tool) => tool.name === STATISTICS_INFO_TOOL_NAME,
+      );
+      assert.ok(statsTool);
+      assert.match(
+        JSON.stringify(statsTool.outputSchema),
+        /食堂累计消费总金额/,
+      );
+      assert.match(
+        JSON.stringify(statsTool.outputSchema),
+        /个人统计数据记录列表/,
       );
     } finally {
       await server.close();
@@ -1012,6 +1032,196 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  // --- 个人统计数据工具测试 ---
+
+  it('应拒绝缺失 access token 的个人统计查询', async () => {
+    const result = await callStatisticsInfoTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回个人统计数据', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          data: [{
+            bookCategory: '中文图书',
+            bookCoun: 11,
+            bookFirst: '大乔小乔',
+            canteenAmount: 1565.64,
+            canteenAmtPercentileRank: 0.2902,
+            canteenCoun: 225,
+            canteenOften: '四平校区学苑饮食广场中点部',
+            canteenOftenPercentileRank: 0.6089,
+            cardPelaceCoun: 3,
+            college: '环*******院',
+            consumMostAmount: 68,
+            consumMostTime: '2019-11-29 19:35:52',
+            consumePlaceOften: '四平校区学苑饮食广场中点部',
+            consumeTotal: 1618.34,
+            consumeTotalPercentileRank: 0.2608,
+            earlistTime: '2021-10-31 07:54:24',
+            entYear: 2018,
+            entranceCoun: 34,
+            firstCardPlaceTime: '2018-11-22 20:06:55',
+            gender: '0',
+            latestTime: '2021-10-31 19:59:04',
+            major: '环**程',
+            marketAmount: 17.7,
+            rechargeTimeSlot: '18:00-20:00',
+            rideCoun: 0,
+            scholarshipCoun: 0,
+            sname: '**轻',
+            stayTime: 173.53,
+            stayTimePercentileRank: 0.4121,
+            stayYear: 4,
+            stuLevel: '1',
+            userId: '1****9',
+            hiddenField: 'ignored',
+          }],
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callStatisticsInfoTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          records: [{
+            bookCategory: '中文图书',
+            bookCoun: 11,
+            bookFirst: '大乔小乔',
+            canteenAmount: 1565.64,
+            canteenAmtPercentileRank: 0.2902,
+            canteenCoun: 225,
+            canteenOften: '四平校区学苑饮食广场中点部',
+            canteenOftenPercentileRank: 0.6089,
+            cardPelaceCoun: 3,
+            college: '环*******院',
+            consumMostAmount: 68,
+            consumMostTime: '2019-11-29 19:35:52',
+            consumePlaceOften: '四平校区学苑饮食广场中点部',
+            consumeTotal: 1618.34,
+            consumeTotalPercentileRank: 0.2608,
+            earlistTime: '2021-10-31 07:54:24',
+            entYear: 2018,
+            entranceCoun: 34,
+            firstCardPlaceTime: '2018-11-22 20:06:55',
+            gender: '0',
+            latestTime: '2021-10-31 19:59:04',
+            major: '环**程',
+            marketAmount: 17.7,
+            rechargeTimeSlot: '18:00-20:00',
+            rideCoun: 0,
+            scholarshipCoun: 0,
+            sname: '**轻',
+            stayTime: 173.53,
+            stayTimePercentileRank: 0.4121,
+            stayYear: 4,
+            stuLevel: '1',
+            userId: '1****9',
+          }],
+        },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空的个人统计数据标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: [] },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callStatisticsInfoTool({ accessToken: 'access-token-for-test' });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { records: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游业务错误响应归一为个人统计工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callStatisticsInfoTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /个人统计服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游未授权错误归一为个人统计工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callStatisticsInfoTool({ accessToken: 'expired-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将上游不可用错误归一为个人统计工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callStatisticsInfoTool({ accessToken: 'access-token-for-test' });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /个人统计服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 const callScoreTool = async (
   invocation: { accessToken?: string },
@@ -1034,7 +1244,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -1118,6 +1328,27 @@ const callBookLendInfoTool = async (
       name: BOOK_LEND_INFO_TOOL_NAME,
       arguments: args,
     })) as BookLendInfoToolCallResult;
+  } finally {
+    await server.close();
+  }
+};
+
+// callStatisticsInfoTool 通过内存传输调用个人统计数据查询工具。
+const callStatisticsInfoTool = async (
+  invocation: { accessToken?: string },
+  args: Record<string, unknown> = {},
+) => {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+  try {
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    return (await client.callTool({
+      name: STATISTICS_INFO_TOOL_NAME,
+      arguments: args,
+    })) as StatisticsInfoToolCallResult;
   } finally {
     await server.close();
   }

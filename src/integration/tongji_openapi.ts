@@ -95,3 +95,13 @@ export const getBookLendInfo = async (
     adapter.withAuthorization({}),
   );
 };
+
+// getStatisticsInfo 查询个人统计数据。
+export const getStatisticsInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_statistics_infoGET(
+    adapter.withAuthorization({}),
+  );
+};

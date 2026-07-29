@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-29 16:00 - 接入个人校园统计 MCP Tool
+
+### 撰写时间
+
+- 2026-07-29 16:00
+
+### Base Commit
+
+- c6f1987c27af2d7ffec5c1dbf6e44c3ac9972d96
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `Get_statistics_infoGET` 是目前信息密度最高的校园数据接口——单条记录覆盖图书馆（借阅主题/数量/在馆时长）、食堂（总消费/最常去/排名百分比）、校车（往返次数）、超市（消费金额）、奖学金（获奖次数）和校园卡（补卡/充值时段/消费场所）等六个维度共 29 个字段。
+- 这也是第二个 `/v2/dc/` 子服务接口（与图书借阅同属 `dc` 数据中台）。封装目标与前五个工具一致，但 `normalizeStatisticsInfoData` 直接使用了 `Array.isArray(data)` 而非嵌套对象查找——这是 book-lend-info 联调教训的直接应用。
+
+### 改动概览
+
+- 新增 `src/tools/statistics-info.ts`，注册 `tongji.student.statistics-info` 工具。工具无输入参数，从 `ToolInvocationContext` 读取 token；输出 29 个字段，覆盖图书馆（`bookCategory`/`bookCoun`/`bookFirst`/`entranceCoun`/`stayTime`/`stayTimePercentileRank`/`earlistTime`/`latestTime`）、餐饮消费（`canteenAmount`/`canteenCoun`/`canteenOften`/`canteenAmtPercentileRank`/`canteenOftenPercentileRank`/`consumeTotal`/`consumeTotalPercentileRank`/`consumMostAmount`/`consumMostTime`/`consumePlaceOften`）、生活服务（`rideCoun`/`marketAmount`/`cardPelaceCoun`/`firstCardPlaceTime`/`rechargeTimeSlot`）、学业荣誉（`scholarshipCoun`/`entYear`/`stayYear`/`stuLevel`）、身份信息（`userId`/`sname`/`gender`/`college`/`major`）。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getStatisticsInfo` 适配器，封装 CAM 的 `Get_statistics_infoGET`（URL: `/v2/dc/user/user_data_statistics`）。
+- `normalizeStatisticsInfoData` 使用 `Array.isArray(data)` 解析——没有重蹈 book-lend-info 初版 `data.userInfos` 嵌套假设的覆辙。这是本项目中第一次在未联调的情况下就使用了正确的数组模式。
+- `college`/`major`/`sname`/`userId` 四个字段的 schema 标注为"已由上游做脱敏处理"。审查建议在 MCP Inspector 联调前不做最终确认——book-lend-info 的教训是 spec 示例的掩码状态可能与真实返回值不同。建议联调后根据实际数据修正 `.describe()`。
+- `src/tools/registry.ts` 注册新工具。
+- 补齐单元测试：适配器测试验证 `/v2/dc/user/user_data_statistics` 路径；MCP Server 测试新增 7 个用例。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`ToolInvocationContext`→`registerStatisticsInfoTool`。`Get_statistics_infoGET` 与图书借阅同属 `/v2/dc/` 子服务，使用同一套 base URL 和请求构造方式。
+- 当前改动：`registerStatisticsInfoTool` 通过 `getStatisticsInfo` 请求上游，`unwrapResponseData` 提取 `data` 数组后直接 `map` 裁剪 29 个字段。字段类型以 `number` 为主（19 个数值字段，10 个字符串字段），数值覆盖金额、次数、排名百分比、年份和时长等多种语义。
+- 下游影响：Agent 可获得全校维度的个人行为画像，用于"我的大学数据"类问答。六个消费/时长维度的排名百分比（`PercentileRank`）字段是离散值（例如"超过 73% 的同济人"），Agent 可直接用于生成相对排名类回答。
+
+### 改动结果与业务影响
+
+- 第六个校园业务 Tool 落地，29 个字段又一次刷新区块记录长度上限。已执行 `pnpm check`：55/55 单测通过，类型检查和构建均通过。
+- 经过六个 Tool 的迭代，接入一个新 OpenAPI 的路径已经高度标准化：读 spec → 写 adapter → 写 normalize → 写 outputSchema → 注册 → 写 8 个测试 → `pnpm check`。从书面的 spec 字段列表到可工作的 Tool 代码，转换过程纯粹是机械的模式匹配。这为后续自动化提供了可能性。
+
+### 风险与待办
+
+- `college`/`major`/`sname`/`userId` 的脱敏状态未经验证。其中 `college`（学院名如"土木工程学院"）和 `major`（专业名）本身不是敏感个人信息，标注"已脱敏"可能不准确。建议在 MCP Inspector 中联调一次后修正。
+- 六个 Tool 文件的公共函数重复已达 540 行。连续六轮标记未清理。下一个 Tool 如果落地前不解决，将面临七处同步修改的成本。
+- `/v2/dc/` 子服务已有两个接口。后续若出现第三个，可能需要评估是否为 dc 子服务创建独立的适配器配置（如独立的 base URL 或超时策略）。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(statistics-info): add personal campus statistics MCP tool`
+
 ## CHANGELOG - 2026-07-29 14:00 - 接入图书借阅信息查询 MCP Tool 并通过 MCP Inspector 联调修正
 
 ### 撰写时间

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import axios, { type AxiosRequestConfig } from 'axios';
-import { getAllTermCalendars, getBookLendInfo, getCetScores, getCurrentTermCalendar, getUndergraduateScores } from '../../src/integration/tongji_openapi';
+import { getAllTermCalendars, getBookLendInfo, getCetScores, getCurrentTermCalendar, getStatisticsInfo, getUndergraduateScores } from '../../src/integration/tongji_openapi';
 
 describe('getUndergraduateScores', () => {
   it('应构造成绩查询的地址、参数、认证头与超时', async () => {
@@ -176,6 +176,41 @@ describe('getBookLendInfo', () => {
       assert.equal(capturedConfig?.method, 'get');
       assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
       assert.equal(capturedConfig?.timeout, 6_666);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getStatisticsInfo', () => {
+  it('应构造个人统计查询的地址、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: [] },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getStatisticsInfo({
+        accessToken: 'test-access-token',
+        baseUrl: 'https://api.example.test/',
+        timeoutMs: 7_777,
+      });
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v2/dc/user/user_data_statistics',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 7_777);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }

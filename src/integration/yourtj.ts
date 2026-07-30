@@ -47,3 +47,13 @@ export const getCourseRelated = async (
   const adapter = createYourtjAdapter(config);
   return adapter.CourseidRelatedGET({ id });
 };
+
+// getMajorsByGrade 按学期和年级查询专业列表。
+export const getMajorsByGrade = async (
+  calendarId: number,
+  grade: number,
+  config?: YourtjAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createYourtjAdapter(config);
+  return adapter.FindMajorByGradePOST({ calendarId, grade });
+};

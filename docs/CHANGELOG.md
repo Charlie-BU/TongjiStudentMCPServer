@@ -1,3 +1,48 @@
+## CHANGELOG - 2026-07-30 18:00 - 接入按学期年级查询专业 MCP Tool
+
+### 撰写时间
+
+- 2026-07-30 18:00
+
+### Base Commit
+
+- 0f2537c0b0a2eec02f5b32a65bb82a42c2a3008c
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `FindMajorByGradePOST` 是 YourTJ 的第三个接口。给定学期编号和年级，返回该学期/年级下的全部专业列表（专业编码 + 名称）。与前两个 YourTJ 工具不同，这是 POST 方法（body 传参）且有两个必填输入参数。
+
+### 改动概览
+
+- 新增 `src/tools/find-major-by-grade.ts`，注册 `tongji.student.find-major-by-grade` 工具。输入 `calendarId` 和 `grade` 两个必填参数的 YourTJ 公开接口；输出 `code` 和 `name` 两个字段的专业列表。
+- 在 `src/integration/yourtj.ts` 新增 `getMajorsByGrade` 适配器，封装 CAM 的 `FindMajorByGradePOST`（URL: `/api/findMajorByGrade`，POST body `{ calendarId, grade }`）。
+- 这是目前最精简的工具实现：仅 2 个字段、无 `readNumber`（两个字段均为 string）、无 404 特殊处理（集合端点不适用）、无隐私字段。
+- 测试新增 5 个用例（适配器验证 POST body 序列化 + 4 个 Tool 路径），总计 82/82 通过。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：YourTJ API `/api/findMajorByGrade`，POST 方法，body 传 `{ calendarId, grade }`。
+- 当前改动：`registerFindMajorByGradeTool` → `getMajorsByGrade(calendarId, grade)` → `normalizeFindMajorByGradeData`（`Array.isArray` 直接数组模式）。
+- 下游影响：Agent 可按学期+年级筛选专业列表，配合 `term-calendar` 获取学年信息后可做完整的"某年级有哪些专业"查询。
+
+### 改动结果与业务影响
+
+- 第十一个校园 Tool，第三个 YourTJ 服务落地。与前两个 YourTJ 工具形成互补：course-detail（课程详情+评价）、course-related（关联课程/教师）、find-major-by-grade（专业列表）。
+- 已执行 `pnpm check`：82/82 单测通过。审查零新发现，一次通过。
+
+### 风险与待办
+
+- 该工具接收的 `calendarId` 来自其他工具（如 `term-calendar`），Agent 需要正确传递。`calendarId` 的格式和有效范围由 YourTJ 决定，当前没有参数校验——传递非法值会得到正常业务响应而非错误提示。
+- 公共函数在十一份文件中持续重复。`readString`/`isRecord` 是最常被重复的两个函数。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(find-major-by-grade): add major list query MCP tool via YourTJ`
+
 ## CHANGELOG - 2026-07-30 17:00 - 接入课程关联查询 MCP Tool
 
 ### 撰写时间

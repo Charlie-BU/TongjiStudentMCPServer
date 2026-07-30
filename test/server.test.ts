@@ -18,6 +18,7 @@ import { STIPEND_INFO_TOOL_NAME } from '../src/tools/stipend-info';
 import { ACCOMMODATION_INFO_TOOL_NAME } from '../src/tools/accommodation-info';
 import { COURSE_DETAIL_TOOL_NAME } from '../src/tools/course-detail';
 import { COURSE_RELATED_TOOL_NAME } from '../src/tools/course-related';
+import { FIND_MAJOR_BY_GRADE_TOOL_NAME } from '../src/tools/find-major-by-grade';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -56,6 +57,13 @@ interface BookLendInfoToolCallResult {
 
 // CourseRelatedToolCallResult 表示课程关联查询工具的测试结果。
 interface CourseRelatedToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
+// FindMajorByGradeToolCallResult 表示按学期年级查询专业工具的测试结果。
+interface FindMajorByGradeToolCallResult {
   isError?: boolean;
   structuredContent?: unknown;
   content: Array<{ type: string; text?: string }>;
@@ -1428,6 +1436,35 @@ describe('createMcpServer', () => {
     const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
     try { const r = await callCourseRelatedTool({}, { id:12005 }); assert.equal(r.isError, true); assert.match(readToolText(r), /课程关联服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
   });
+
+  // --- 按学期年级查询专业工具测试 ---
+
+  it('应注入参数并返回专业列表', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { data: [{ code:'00304', name:'2024(00304 基础学科拔尖基地(数学))' }] }, status:200, statusText:'OK', headers:{}, config:c });
+    try {
+      const r = await callFindMajorByGradeTool({}, { calendarId:118, grade:2024 });
+      assert.equal(r.isError, undefined);
+      assert.deepEqual(r.structuredContent, { status:'ok', data:{ records:[{ code:'00304', name:'2024(00304 基础学科拔尖基地(数学))' }] }, source:'YourTJ' });
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将空专业列表标记为空结果', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { data:[] }, status:200, statusText:'OK', headers:{}, config:c });
+    try { const r = await callFindMajorByGradeTool({}, { calendarId:118, grade:2024 }); assert.deepEqual(r.structuredContent, { status:'empty', data:{ records:[] }, source:'YourTJ' }); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游业务错误响应归一为专业查询工具错误', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: 'not json', status:200, statusText:'OK', headers:{}, config:c });
+    try { const r = await callFindMajorByGradeTool({}, { calendarId:118, grade:2024 }); assert.equal(r.isError, true); assert.match(readToolText(r), /专业查询服务返回异常/); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游不可用错误归一为专业查询工具错误', async () => {
+    const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
+    try { const r = await callFindMajorByGradeTool({}, { calendarId:118, grade:2024 }); assert.equal(r.isError, true); assert.match(readToolText(r), /专业查询服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
+  });
 });
 const callScoreTool = async (
   invocation: { accessToken?: string },
@@ -1450,7 +1487,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult | CourseDetailToolCallResult | CourseRelatedToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult | CourseDetailToolCallResult | CourseRelatedToolCallResult | FindMajorByGradeToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -1597,4 +1634,12 @@ const callCourseRelatedTool = async (invocation: { accessToken?: string }, args:
   const server = createMcpServer({ invocation });
   const client = new Client({ name: 't', version: '1' });
   try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: COURSE_RELATED_TOOL_NAME, arguments: args })) as CourseRelatedToolCallResult; } finally { await server.close(); }
+};
+
+// callFindMajorByGradeTool 通过内存传输调用按学期年级查询专业工具。
+const callFindMajorByGradeTool = async (invocation: { accessToken?: string }, args: { calendarId: number; grade: number }) => {
+  const [ct, st] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 't', version: '1' });
+  try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: FIND_MAJOR_BY_GRADE_TOOL_NAME, arguments: args })) as FindMajorByGradeToolCallResult; } finally { await server.close(); }
 };

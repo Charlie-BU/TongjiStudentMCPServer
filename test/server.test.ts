@@ -14,6 +14,7 @@ import { CURRENT_TERM_CALENDAR_TOOL_NAME } from '../src/tools/current-term-calen
 import { CET_SCORE_TOOL_NAME } from '../src/tools/cet-score';
 import { BOOK_LEND_INFO_TOOL_NAME } from '../src/tools/book-lend-info';
 import { STATISTICS_INFO_TOOL_NAME } from '../src/tools/statistics-info';
+import { STIPEND_INFO_TOOL_NAME } from '../src/tools/stipend-info';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -45,6 +46,13 @@ interface CetScoreToolCallResult {
 
 // BookLendInfoToolCallResult 表示图书借阅信息查询工具的测试结果。
 interface BookLendInfoToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
+// StipendInfoToolCallResult 表示助学金信息查询工具的测试结果。
+interface StipendInfoToolCallResult {
   isError?: boolean;
   structuredContent?: unknown;
   content: Array<{ type: string; text?: string }>;
@@ -144,6 +152,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(statsTool.outputSchema),
         /个人统计数据记录列表/,
+      );
+      const stipendTool = toolList.tools.find(
+        (tool) => tool.name === STIPEND_INFO_TOOL_NAME,
+      );
+      assert.ok(stipendTool);
+      assert.match(
+        JSON.stringify(stipendTool.outputSchema),
+        /助学金名称/,
+      );
+      assert.match(
+        JSON.stringify(stipendTool.outputSchema),
+        /助学金记录列表/,
       );
     } finally {
       await server.close();
@@ -1222,6 +1242,68 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  // --- 助学金信息工具测试 ---
+
+  it('应拒绝缺失 access token 的助学金查询', async () => {
+    const result = await callStipendInfoTool({});
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回助学金数据', async () => {
+    const prev = axios.defaults.adapter;
+    let auth: string | undefined;
+    axios.defaults.adapter = async (c) => {
+      auth = c.headers?.Authorization as string | undefined;
+      return { data: { data: { count: 1, list: [{ amount: 1000, deptCode: '000215', deptName: '材料科学与工程学院', name: '柳**', rankName: '不分等级', ratingTerm: '不分学期', ratingYear: '2020', stipendName: '研究生**使用项', unitAbbreviation: '材料科学与工程学院', updateTime: '2025-09-29T00:00:00', userId: '1*****2', wid: 'B8101D5249AB62CDE053647CA8C08EFD', sinceWid: 'ignored' }] } }, status: 200, statusText: 'OK', headers: {}, config: c };
+    };
+    try {
+      const r = await callStipendInfoTool({ accessToken: 't' });
+      assert.equal(auth, 'Bearer t');
+      assert.equal(r.isError, undefined);
+      assert.deepEqual(r.structuredContent, { status: 'ok', data: { records: [{ amount: 1000, deptCode: '000215', deptName: '材料科学与工程学院', name: '柳**', rankName: '不分等级', ratingTerm: '不分学期', ratingYear: '2020', stipendName: '研究生**使用项', unitAbbreviation: '材料科学与工程学院', updateTime: '2025-09-29T00:00:00', userId: '1*****2', wid: 'B8101D5249AB62CDE053647CA8C08EFD' }] }, source: 'Tongji Open Platform' });
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将空的助学金数据标记为空结果', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { data: { list: [] } }, status: 200, statusText: 'OK', headers: {}, config: c });
+    try {
+      const r = await callStipendInfoTool({ accessToken: 't' });
+      assert.deepEqual(r.structuredContent, { status: 'empty', data: { records: [] }, source: 'Tongji Open Platform' });
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游业务错误响应归一为助学金工具错误', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { code: 500 }, status: 200, statusText: 'OK', headers: {}, config: c });
+    try {
+      const r = await callStipendInfoTool({ accessToken: 't' });
+      assert.equal(r.isError, true);
+      assert.match(readToolText(r), /助学金服务返回异常/);
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游未授权错误归一为助学金工具错误', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => { throw new AxiosError('Unauthorized', undefined, c, undefined, { data: {}, status: 401, statusText: 'Unauthorized', headers: {}, config: c }); };
+    try {
+      const r = await callStipendInfoTool({ accessToken: 'expired' });
+      assert.equal(r.isError, true);
+      assert.match(readToolText(r), /授权无效或已过期/);
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游不可用错误归一为助学金工具错误', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async () => { throw new Error('upstream unavailable'); };
+    try {
+      const r = await callStipendInfoTool({ accessToken: 't' });
+      assert.equal(r.isError, true);
+      assert.match(readToolText(r), /助学金服务暂时不可用/);
+    } finally { axios.defaults.adapter = prev; }
+  });
 });
 const callScoreTool = async (
   invocation: { accessToken?: string },
@@ -1244,7 +1326,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -1349,6 +1431,23 @@ const callStatisticsInfoTool = async (
       name: STATISTICS_INFO_TOOL_NAME,
       arguments: args,
     })) as StatisticsInfoToolCallResult;
+  } finally {
+    await server.close();
+  }
+};
+
+// callStipendInfoTool 通过内存传输调用助学金信息查询工具。
+const callStipendInfoTool = async (
+  invocation: { accessToken?: string },
+  args: Record<string, unknown> = {},
+) => {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 'test-client', version: '1.0.0' });
+  try {
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    return (await client.callTool({ name: STIPEND_INFO_TOOL_NAME, arguments: args })) as StipendInfoToolCallResult;
   } finally {
     await server.close();
   }

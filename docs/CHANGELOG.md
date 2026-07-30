@@ -1,3 +1,56 @@
+## CHANGELOG - 2026-07-30 10:00 - 接入助学金信息查询 MCP Tool 并通过 MCP Inspector 联调修正
+
+### 撰写时间
+
+- 2026-07-30 10:00
+
+### Base Commit
+
+- bd33410e45c4b7e52df1f8e7a5552027b9cf89b8
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `Get_stipendGET` 返回学生获得的助学金记录，包括金额、名称、等级、评定学年/学期和所属学院等 12 个字段。它是第三个 `/v2/dc/` 子服务接口（`student_work_info/stipend`），与图书借阅、个人统计同属数据中台。
+- 这次改动在开发和审查流程上重复了 book-lend-info 的教训：第一版基于 spec 假设了 `data.list` 嵌套结构，审查建议改为直接数组（`Array.isArray(data)`），但 MCP Inspector 联调发现两个方向都不完全正确——真实 API 使用 `{ count, list }` 对象结构，且无记录时 `list` 为 `null` 而非空数组。
+
+### 改动概览
+
+- 新增 `src/tools/stipend-info.ts`，注册 `tongji.student.stipend-info` 工具。工具无输入参数，从 `ToolInvocationContext` 读取 token；输出 12 个字段：`amount`（金额）、`stipendName`（助学金名称）、`rankName`（等级）、`ratingYear`/`ratingTerm`（评定学年/学期）、`deptCode`/`deptName`/`unitAbbreviation`（所属单位信息）、`name`/`userId`（获奖学生信息）、`wid`（唯一标识）、`updateTime`（更新时间）。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getStipendInfo` 适配器，封装 CAM 的 `Get_stipendGET`（URL: `/v2/dc/student_work_info/stipend`）。
+- **MCP Inspector 联调修正** —— 经历了两次方向调整：
+  1. 初版使用 `isRecord(data) && Array.isArray(data.list)`（假设 `{ list: [...] }` 嵌套）。
+  2. 审查后改为 `Array.isArray(data)`（借鉴 book-lend-info 教训，假设直接数组）。
+  3. Inspector 调试显示真实 API 返回 `{ count: 0, list: null }`——既不是直接数组，`list` 在无记录时也不是 `[]`。
+  4. 最终方案：`isRecord(data)` + `data.list === null` → 空数据 + `Array.isArray(data.list)` → 正常解析。同时覆盖了三种情况：对象包含 `list` 数组、`list` 为 `null`、结构格式异常。
+- `name` 和 `userId` 的 schema 描述统一为 `"已由上游做脱敏处理，不可用于身份验证。"`，与 `statistics-info.ts` 保持一致。
+- `src/tools/registry.ts` 注册新工具。
+- 补齐单元测试：适配器测试验证 `/v2/dc/student_work_info/stipend` 路径；MCP Server 测试新增 7 个用例，fixture 与真实 API 响应对齐（`{ count, list }` 嵌套结构）。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`ToolInvocationContext`→`registerStipendInfoTool`。`Get_stipendGET` 是 `/v2/dc/student_work_info/` 路径下的接口，与图书借阅（`lib/`）和用户统计（`user/`）同属 dc 中台但分属不同服务模块。
+- 当前改动：`normalizeStipendInfoData` 先判 `data` 是否为 Record（否则 → `upstream_unavailable`），再判 `data.list` 是否为 `null`（是 → 空 `{ records: [] }`），最后判是否为数组（是 → 逐条 `map`；否 → `upstream_unavailable`）。三重判断覆盖了真实 API 的所有已知响应路径。
+- 下游影响：Agent 可获取学生获得的助学金历史。字段中包含 `name` 和 `userId`，schema 明确标注了脱敏和使用限制。
+
+### 改动结果与业务影响
+
+- 第七个校园业务 Tool 落地并经过真实 API 联调验证。这次联调再次确认了"spec + 审查判断都无法替代真实 API 响应"的原则——`list: null` 这种边界情况只能在 Inspector 中暴露。
+- 已执行 `pnpm check`：62/62 单测通过，测试 fixture 已与真实 API 响应对齐。
+- 本次联调还暴露了一个模式：`/v2/dc/` 接口在无记录时可能返回 `null` 而非空数组。cet-score 的 `data.list` 尚未报告此问题（可能是该 API 始终返回 `[]`），但后续新工具应在 `normalize` 函数中统一处理 `null` 分支，避免逐个联调才发现。
+
+### 风险与待办
+
+- `list: null` 的空数据处理目前仅在 stipend 工具中实现。cet-score 和后续可能出现的其他 `data.list` 型接口应该也加入同样的处理——否则一旦对应 API 返回 `null` 而非 `[]`，会触发 `upstream_unavailable` 误报。
+- 七个 Tool 文件的公共函数重复已达 ~630 行。连续七轮标记未清理。这个技术债已经积累了足够长的时间，不能再靠"下一轮再说"推迟。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(stipend-info): add stipend info query MCP tool`
+
 ## CHANGELOG - 2026-07-29 16:00 - 接入个人校园统计 MCP Tool
 
 ### 撰写时间

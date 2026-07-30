@@ -96,6 +96,16 @@ export const getBookLendInfo = async (
   );
 };
 
+// getStipendInfo 查询助学金信息。
+export const getStipendInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_stipendGET(
+    adapter.withAuthorization({}),
+  );
+};
+
 // getStatisticsInfo 查询个人统计数据。
 export const getStatisticsInfo = async (
   config: TongjiOpenapiAdapterConfig,

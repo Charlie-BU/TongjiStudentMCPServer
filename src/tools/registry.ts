@@ -6,6 +6,7 @@ import { registerCurrentTermCalendarTool } from './current-term-calendar';
 import { registerCetScoreTool } from './cet-score';
 import { registerBookLendInfoTool } from './book-lend-info';
 import { registerStatisticsInfoTool } from './statistics-info';
+import { registerStipendInfoTool } from './stipend-info';
 
 // ToolRegistrationContext 表示注册工具所需的可信调用方上下文。
 export interface ToolRegistrationContext {
@@ -23,4 +24,5 @@ export const registerTools = (
   registerCetScoreTool(server, context);
   registerBookLendInfoTool(server, context);
   registerStatisticsInfoTool(server, context);
+  registerStipendInfoTool(server, context);
 };

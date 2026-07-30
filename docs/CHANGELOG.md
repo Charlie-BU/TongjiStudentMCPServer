@@ -1,3 +1,54 @@
+## CHANGELOG - 2026-07-30 16:00 - 接入课程详情查询 MCP Tool（首个 YourTJ 服务）
+
+### 撰写时间
+
+- 2026-07-30 16:00
+
+### Base Commit
+
+- 1096b5eb7238b4a1504e3834484d6f74f59fcc81
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 此前八个工具全部基于同济开放平台的 `/v1/rt/onetongji/` 和 `/v2/dc/` 接口，均需要 `X-Tongji-Access-Token` 认证。`CourseDetailGET` 是第一个接入 YourTJ（`jcourse.yourtj.de`）服务的工具——这是一个公开的课程评价平台，无需校园 token，按课程 ID 返回课程基本信息、开设学期列表和学生评价。
+- 这次改动的核心不是重复已有的三层模式，而是验证"不同上游服务可以用同一套 MCP Tool 架构承载"的假设。结果证明：只要 adapter 接口对 Tool 层屏蔽了认证和请求细节，Tongji OpenAPI 和 YourTJ 可以无缝共存于同一个 `registerTools` 目录。
+
+### 改动概览
+
+- 新增 `src/tools/course-detail.ts`，注册 `tongji.student.course-detail` 工具。这是首个有输入参数的工具——必填 `id: number`（课程 ID）；输出课程基本信息（`name`/`code`/`credit`/`department`/`teacher_name`）、统计信息（`review_count`/`review_avg`）和嵌套的 `reviews` 数组（含评分、评价正文、成绩、点赞/反对数、评价人姓名）。
+- 新增 `src/integration/yourtj.ts`，使用 CAM 生成的 `YourtjService` 构建适配器。与 Tongji 适配器不同：无 `accessToken` 配置、无 `withAuthorization` 方法——YourTJ 是公开 API，base URL 为 `https://jcourse.yourtj.de`。
+- 关键设计决策点：
+  - **无 `unauthorized` 状态**：YourTJ 为公开服务，状态枚举只有 `ok`/`empty`/`upstream_unavailable`。Tool 仍接收 `ToolInvocationContext`（由 `registerTools` 传入）但直接忽略，与有认证工具共存于同一注册入口。
+  - **404 → `{ status: "empty" }`**：课程不存在时返回 empty 而非 upstream_unavailable，语义更准确——"查无此课"是用户输入错误而非服务故障。
+  - **`data` 为单对象且 nullable**：与列表型工具不同，课程详情是唯一实体。`isEmptyData` 仅检查 `id` 和 `name` 是否为 null，不做全字段判断。
+- 测试新增 4 个用例（适配器 + Tool），覆盖正常数据、404→empty、上游不可用、工具身份声明。总计 73/73 通过。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：YourTJ API（`/api/course/{id}`），公开服务，无认证依赖。CAM 生成的 `CourseDetailGET` 仅需 `id` 参数。
+- 当前改动：`registerCourseDetailTool` → `getCourseDetail(id)` → `normalizeCourseDetailData`（单对象裁剪）。404 被 `toErrorResult` 转换为 `{ status: "empty" }`，不同于其他工具的 `isError: true` 错误返回。
+- 下游影响：Agent 可通过 `tongji.student.course-detail` 查询任意课程的评价信息。这是首个使用 `"YourTJ"` 数据来源标记的工具，Agent 可据此区分数据出处。
+
+### 改动结果与业务影响
+
+- 第九个校园 Tool 落地，首个 YourTJ 服务接入。验证了多上游服务可以共存于同一 MCP 架构，adapter 层有效隔离了认证和请求差异。
+- 已执行 `pnpm check`：73/73 单测通过。
+- 审查中修正了两个 LOW 项：`reviewer_name` 补充了隐私使用限制标注；`createErrorResult` 的 `status` 参数类型从 `string` 收紧为 `Exclude<CourseDetailToolStatus, "ok" | "empty">`。
+
+### 风险与待办
+
+- YourTJ 是外部公开服务，其 API 稳定性和响应格式不受同济控制。如果上游变更课程详情字段或评价结构，`normalizeCourseDetailData` 中的字段映射需要同步更新。建议关注 YourTJ 的 API 变更通知或定期做 Inspector 回归。
+- `reviewer_name` 字段的脱敏状态取决于 YourTJ 的实际返回格式（可能是昵称、匿名标识或真实姓名）。当前标注为通用使用限制，但在 Inspector 验证前无法确认标注措辞是否准确。
+- 公共函数重复在九份文件中继续存在。`readStringArray` 是 course-detail 独有的新函数（未被其他工具复用），如果后续新增字符串数组字段，应优先从本文件提取。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(course-detail): add course detail query MCP tool via YourTJ`
+
 ## CHANGELOG - 2026-07-30 14:00 - 接入住宿信息查询 MCP Tool
 
 ### 撰写时间

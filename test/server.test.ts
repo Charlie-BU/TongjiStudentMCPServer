@@ -16,6 +16,7 @@ import { BOOK_LEND_INFO_TOOL_NAME } from '../src/tools/book-lend-info';
 import { STATISTICS_INFO_TOOL_NAME } from '../src/tools/statistics-info';
 import { STIPEND_INFO_TOOL_NAME } from '../src/tools/stipend-info';
 import { ACCOMMODATION_INFO_TOOL_NAME } from '../src/tools/accommodation-info';
+import { COURSE_DETAIL_TOOL_NAME } from '../src/tools/course-detail';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -47,6 +48,13 @@ interface CetScoreToolCallResult {
 
 // BookLendInfoToolCallResult 表示图书借阅信息查询工具的测试结果。
 interface BookLendInfoToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
+// CourseDetailToolCallResult 表示课程详情查询工具的测试结果。
+interface CourseDetailToolCallResult {
   isError?: boolean;
   structuredContent?: unknown;
   content: Array<{ type: string; text?: string }>;
@@ -179,6 +187,10 @@ describe('createMcpServer', () => {
       assert.ok(accTool);
       assert.match(JSON.stringify(accTool.outputSchema), /宿舍楼名称/);
       assert.match(JSON.stringify(accTool.outputSchema), /住宿记录列表/);
+      const courseTool = toolList.tools.find(t => t.name === COURSE_DETAIL_TOOL_NAME);
+      assert.ok(courseTool);
+      assert.match(JSON.stringify(courseTool.inputSchema), /课程ID/);
+      assert.match(JSON.stringify(courseTool.outputSchema), /授课教师姓名/);
     } finally {
       await server.close();
     }
@@ -1359,6 +1371,29 @@ describe('createMcpServer', () => {
     const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
     try { const r = await callAccommodationInfoTool({ accessToken:'t' }); assert.equal(r.isError,true); assert.match(readToolText(r),/住宿信息服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
   });
+
+  // --- 课程详情工具测试 ---
+
+  it('应注入课程ID并返回课程详情与裁剪后的评价', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { id:12005, code:'36002907', name:'军事理论', credit:2, department:'武装部', teacher_id:2808, review_count:58, review_avg:5, search_keywords:'36002907 军事理论', is_legacy:0, is_icu:1, teacher_name:'郑义炜', semesters:['2025-2026学年第2学期'], reviews:[{ sqid:'ckJ9', id:18232, course_id:12005, semester:'2025-2026学年第1学期', rating:5, comment:'## 考核方式：\n期末开卷考', score:null, created_at:1784192109, approve_count:0, disapprove_count:0, is_hidden:0, is_legacy:0, is_icu:0, reviewer_name:'', reviewer_avatar:'', like_count:0, liked:false, can_edit:false }] }, status:200, statusText:'OK', headers:{}, config:c });
+    try {
+      const r = await callCourseDetailTool({}, { id:12005 });
+      assert.equal(r.isError, undefined);
+      assert.deepEqual(r.structuredContent, { status:'ok', data:{ id:12005, code:'36002907', name:'军事理论', credit:2, department:'武装部', teacher_id:2808, review_count:58, review_avg:5, search_keywords:'36002907 军事理论', teacher_name:'郑义炜', semesters:['2025-2026学年第2学期'], reviews:[{ id:18232, course_id:12005, semester:'2025-2026学年第1学期', rating:5, comment:'## 考核方式：\n期末开卷考', score:null, created_at:1784192109, approve_count:0, disapprove_count:0, is_hidden:0, reviewer_name:'', like_count:0 }] }, source:'YourTJ' });
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将无课程数据的响应标记为空结果', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => { throw new axios.AxiosError('Not Found', undefined, c, undefined, { data:{}, status:404, statusText:'Not Found', headers:{}, config:c }); };
+    try { const r = await callCourseDetailTool({}, { id:99999 }); assert.equal(r.isError, true); assert.match(readToolText(r), /未找到指定课程/); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游不可用错误归一为课程详情工具错误', async () => {
+    const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
+    try { const r = await callCourseDetailTool({}, { id:12005 }); assert.equal(r.isError, true); assert.match(readToolText(r), /课程详情服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
+  });
 });
 const callScoreTool = async (
   invocation: { accessToken?: string },
@@ -1381,7 +1416,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult | CourseDetailToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -1512,4 +1547,12 @@ const callAccommodationInfoTool = async (invocation: { accessToken?: string }, a
   const server = createMcpServer({ invocation });
   const client = new Client({ name: 't', version: '1' });
   try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: ACCOMMODATION_INFO_TOOL_NAME, arguments: args })) as AccommodationInfoToolCallResult; } finally { await server.close(); }
+};
+
+// callCourseDetailTool 通过内存传输调用课程详情查询工具。
+const callCourseDetailTool = async (invocation: { accessToken?: string }, args: { id: number }) => {
+  const [ct, st] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 't', version: '1' });
+  try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: COURSE_DETAIL_TOOL_NAME, arguments: args })) as CourseDetailToolCallResult; } finally { await server.close(); }
 };

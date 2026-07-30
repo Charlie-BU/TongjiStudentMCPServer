@@ -29,3 +29,12 @@ export const createYourtjAdapter = (
         .then((response) => response.data),
   });
 };
+
+// getCourseDetail 查询课程详情。
+export const getCourseDetail = async (
+  id: number,
+  config?: YourtjAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createYourtjAdapter(config);
+  return adapter.CourseDetailGET({ id });
+};

@@ -9,6 +9,7 @@ import { registerStatisticsInfoTool } from './statistics-info';
 import { registerStipendInfoTool } from './stipend-info';
 import { registerAccommodationInfoTool } from './accommodation-info';
 import { registerCourseDetailTool } from './course-detail';
+import { registerCourseRelatedTool } from './course-related';
 
 // ToolRegistrationContext 表示注册工具所需的可信调用方上下文。
 export interface ToolRegistrationContext {
@@ -29,4 +30,5 @@ export const registerTools = (
   registerStipendInfoTool(server, context);
   registerAccommodationInfoTool(server, context);
   registerCourseDetailTool(server, context);
+  registerCourseRelatedTool(server, context);
 };

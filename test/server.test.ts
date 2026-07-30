@@ -17,6 +17,7 @@ import { STATISTICS_INFO_TOOL_NAME } from '../src/tools/statistics-info';
 import { STIPEND_INFO_TOOL_NAME } from '../src/tools/stipend-info';
 import { ACCOMMODATION_INFO_TOOL_NAME } from '../src/tools/accommodation-info';
 import { COURSE_DETAIL_TOOL_NAME } from '../src/tools/course-detail';
+import { COURSE_RELATED_TOOL_NAME } from '../src/tools/course-related';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -48,6 +49,13 @@ interface CetScoreToolCallResult {
 
 // BookLendInfoToolCallResult 表示图书借阅信息查询工具的测试结果。
 interface BookLendInfoToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
+// CourseRelatedToolCallResult 表示课程关联查询工具的测试结果。
+interface CourseRelatedToolCallResult {
   isError?: boolean;
   structuredContent?: unknown;
   content: Array<{ type: string; text?: string }>;
@@ -191,6 +199,9 @@ describe('createMcpServer', () => {
       assert.ok(courseTool);
       assert.match(JSON.stringify(courseTool.inputSchema), /课程ID/);
       assert.match(JSON.stringify(courseTool.outputSchema), /授课教师姓名/);
+      const relatedTool = toolList.tools.find(t => t.name === COURSE_RELATED_TOOL_NAME);
+      assert.ok(relatedTool);
+      assert.match(JSON.stringify(relatedTool.outputSchema), /该教师教授的其他课程列表/);
     } finally {
       await server.close();
     }
@@ -1394,6 +1405,29 @@ describe('createMcpServer', () => {
     const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
     try { const r = await callCourseDetailTool({}, { id:12005 }); assert.equal(r.isError, true); assert.match(readToolText(r), /课程详情服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
   });
+
+  // --- 课程关联工具测试 ---
+
+  it('应注入课程ID并返回关联课程数据', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { teacher_other_courses:[{ id:2846, code:'360007', name:'世界大战与局部战争', teacher_name:'郑义炜', review_avg:5, review_count:43 }], same_course_other_teachers:[{ id:9258, code:'36002907', name:'军事理论', teacher_name:'袁品仕', review_avg:0, review_count:0 }] }, status:200, statusText:'OK', headers:{}, config:c });
+    try {
+      const r = await callCourseRelatedTool({}, { id:12005 });
+      assert.equal(r.isError, undefined);
+      assert.deepEqual(r.structuredContent, { status:'ok', data:{ teacherOtherCourses:[{ id:2846, code:'360007', name:'世界大战与局部战争', teacher_name:'郑义炜', review_avg:5, review_count:43 }], sameCourseOtherTeachers:[{ id:9258, code:'36002907', name:'军事理论', teacher_name:'袁品仕', review_avg:0, review_count:0 }] }, source:'YourTJ' });
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将无关联数据的响应标记为空结果', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { teacher_other_courses:[], same_course_other_teachers:[] }, status:200, statusText:'OK', headers:{}, config:c });
+    try { const r = await callCourseRelatedTool({}, { id:12005 }); assert.deepEqual(r.structuredContent, { status:'empty', data:null, source:'YourTJ' }); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游不可用错误归一为课程关联工具错误', async () => {
+    const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
+    try { const r = await callCourseRelatedTool({}, { id:12005 }); assert.equal(r.isError, true); assert.match(readToolText(r), /课程关联服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
+  });
 });
 const callScoreTool = async (
   invocation: { accessToken?: string },
@@ -1416,7 +1450,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult | CourseDetailToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult | CourseDetailToolCallResult | CourseRelatedToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -1555,4 +1589,12 @@ const callCourseDetailTool = async (invocation: { accessToken?: string }, args: 
   const server = createMcpServer({ invocation });
   const client = new Client({ name: 't', version: '1' });
   try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: COURSE_DETAIL_TOOL_NAME, arguments: args })) as CourseDetailToolCallResult; } finally { await server.close(); }
+};
+
+// callCourseRelatedTool 通过内存传输调用课程关联查询工具。
+const callCourseRelatedTool = async (invocation: { accessToken?: string }, args: { id: number }) => {
+  const [ct, st] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 't', version: '1' });
+  try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: COURSE_RELATED_TOOL_NAME, arguments: args })) as CourseRelatedToolCallResult; } finally { await server.close(); }
 };

@@ -1,3 +1,51 @@
+## CHANGELOG - 2026-07-30 17:00 - 接入课程关联查询 MCP Tool
+
+### 撰写时间
+
+- 2026-07-30 17:00
+
+### Base Commit
+
+- 8ecef607d736dafd28af942f6c5b464901edb898
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `CourseidRelatedGET` 与 `CourseDetailGET` 同属 YourTJ 公开服务。给定一个课程 ID，它返回两组关联数据：该教师还教了哪些课（`teacher_other_courses`），以及同一门课有哪些其他教师在教（`same_course_other_teachers`）。每条关联记录包含 6 个字段：课程 ID、编码、名称、教师姓名、综合评分和评价数。
+- 这是第二个 YourTJ 工具，和 course-detail 共享同一个适配器文件（`yourtj.ts`）和同一套公开 API 模式。
+
+### 改动概览
+
+- 新增 `src/tools/course-related.ts`，注册 `tongji.student.course-related` 工具。输入必填 `id: number`；输出两组并列数组 `teacherOtherCourses` 和 `sameCourseOtherTeachers`，均使用 `RelatedCourseSummary` 类型（6 个字段）。`data` 为单对象且 nullable，在两组数组均为空时标记 `empty`。
+- 在 `src/integration/yourtj.ts` 新增 `getCourseRelated` 适配器，封装 CAM 的 `CourseidRelatedGET`（URL: `/api/course/{id}/related`）。与 `getCourseDetail` 共用同一个 `createYourtjAdapter`。
+- `normalizeCourseRelatedData` 同时处理两个蛇形命名的上游字段（`teacher_other_courses` / `same_course_other_teachers`），通过 `readArray` 安全回退非数组值，再逐条裁剪 6 个字段映射到驼峰命名的 JS 接口。
+- `createErrorResult` 的 `status` 类型使用 `Exclude<CourseRelatedToolStatus, "ok" | "empty">`，与 course-detail 审查修正后保持一致。
+- 测试新增 4 个用例（适配器 + Tool），总计 77/77 通过。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：YourTJ API `/api/course/{id}/related`，公开服务无认证。与 course-detail 共用 `yourtj.ts` 适配器。
+- 当前改动：`registerCourseRelatedTool` → `getCourseRelated(id)` → `normalizeCourseRelatedData`（双数组裁剪）。
+- 下游影响：Agent 可通过课程关联数据回答"这个老师还有什么课"和"这门课还有谁在教"两类推荐型问题。
+
+### 改动结果与业务影响
+
+- 第十个校园 Tool，第二个 YourTJ 服务落地。YourTJ 的两个工具（course-detail + course-related）形成了互补：一个查课程详情和评价，一个查关联课程和教师。
+- 已执行 `pnpm check`：77/77 单测通过。
+- 审查仅发现一个 LOW 项（`createErrorResult` 类型），已在提交前修正。
+
+### 风险与待办
+
+- 与 course-detail 相同的风险：YourTJ 作为外部公开服务，API 稳定性不受同济控制。
+- 公共函数重复在十份文件中持续存在。`readArray` 函数在 `undergraduate-score.ts` 和 `course-detail.ts` 中已有相同实现，`course-related.ts` 再次内联了一份。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(course-related): add course related info query MCP tool`
+
 ## CHANGELOG - 2026-07-30 16:00 - 接入课程详情查询 MCP Tool（首个 YourTJ 服务）
 
 ### 撰写时间

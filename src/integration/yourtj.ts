@@ -38,3 +38,12 @@ export const getCourseDetail = async (
   const adapter = createYourtjAdapter(config);
   return adapter.CourseDetailGET({ id });
 };
+
+// getCourseRelated 查询课程关联信息。
+export const getCourseRelated = async (
+  id: number,
+  config?: YourtjAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createYourtjAdapter(config);
+  return adapter.CourseidRelatedGET({ id });
+};

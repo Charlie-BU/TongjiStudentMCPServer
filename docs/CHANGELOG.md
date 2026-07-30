@@ -1,3 +1,53 @@
+## CHANGELOG - 2026-07-30 14:00 - 接入住宿信息查询 MCP Tool
+
+### 撰写时间
+
+- 2026-07-30 14:00
+
+### Base Commit
+
+- 6a0c3ab0e4ea2679c7a1d4c4b42edf1de404fc5a
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- `Student_accommodation_infoGET` 返回学生的住宿信息，包括宿舍楼、宿舍区、楼层、房间号和所属学院等 12 个字段。它是第四个 `/v2/dc/` 子服务接口，但路径前缀为 `sep_auth/`，区别于之前的 `lib/`、`user/` 和 `student_work_info/`。
+- 这是第八个校园业务 Tool，也是目前实现最干净的一个——直接应用了 stipend 联调中验证过的 `data.list` 解析模式，未经历任何方向修正。
+
+### 改动概览
+
+- 新增 `src/tools/accommodation-info.ts`，注册 `tongji.student.accommodation-info` 工具。输出 12 个字段：`accomBuildingCode`/`accomBuildingName`（宿舍楼）、`accomRegionCode`/`accomRegionName`（宿舍区）、`roomNo`/`floor`（房间号/楼层）、`deptCode`/`deptName`（所属学院）、`usertypeCode`/`usertypeName`（人员类型）、`name`/`userId`（学生身份信息）。
+- 在 `src/integration/tongji_openapi.ts` 新增 `getAccommodationInfo` 适配器，封装 CAM 的 `Student_accommodation_infoGET`（URL: `/v2/dc/sep_auth/student_accommodation_info`）。
+- `normalizeAccommodationInfoData` 直接使用了 stipend 联调验证的三重判断模式：
+  1. `!isRecord(data)` → `upstream_unavailable`
+  2. `data.list === null` → 空 `{ records: [] }`
+  3. `Array.isArray(data.list)` → 逐条裁剪 12 个字段
+- `name` 和 `userId` 的 schema 描述统一为 `"已由上游做脱敏处理，不可用于身份验证。"`，与 `statistics-info.ts` 和 `stipend-info.ts` 保持一致。
+- `src/tools/registry.ts` 注册新工具。测试新增 7 个用例（69/69 通过）。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`Get_stipendGET` 的联调经验直接复用到本工具——`data.list` + `null` 处理，未走任何弯路。
+- 当前改动：`registerAccommodationInfoTool` → `getAccommodationInfo` → `normalizeAccommodationInfoData`（三重判断）→ `{ records }`。
+- 下游影响：Agent 可查询学生住宿信息。`usertypeName`（人员类型）字段可能包含"本科生""硕士研究生""博士研究生"等值，Agent 可用于身份上下文推断。
+
+### 改动结果与业务影响
+
+- 第八个校园业务 Tool 落地。审查零新发现，审查结论 PASS。这是第一个从初版实现到审查通过没有任何方向修正的工具——stipend 联调的教训（`data.list` 模式 + `null` 处理）在本轮被完整继承。
+- 已执行 `pnpm check`：69/69 单测通过。
+
+### 风险与待办
+
+- `sep_auth` 路径前缀暗示该接口可能涉及独立认证（"sep_auth" ≈ separate auth）。虽然当前与其他 dc 接口共用同一 Bearer token，但后续若该子服务升级认证策略，可能需要独立处理。
+- 八个 Tool 文件的公共函数重复已达 ~720 行。连续八轮未清理。这是当前项目最大的工程债务。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(accommodation-info): add accommodation info query MCP tool`
+
 ## CHANGELOG - 2026-07-30 10:00 - 接入助学金信息查询 MCP Tool 并通过 MCP Inspector 联调修正
 
 ### 撰写时间

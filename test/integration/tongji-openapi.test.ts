@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import axios, { type AxiosRequestConfig } from 'axios';
-import { getAllTermCalendars, getBookLendInfo, getCetScores, getCurrentTermCalendar, getStatisticsInfo, getStipendInfo, getUndergraduateScores } from '../../src/integration/tongji_openapi';
+import { getAccommodationInfo, getAllTermCalendars, getBookLendInfo, getCetScores, getCurrentTermCalendar, getStatisticsInfo, getStipendInfo, getUndergraduateScores } from '../../src/integration/tongji_openapi';
 
 describe('getUndergraduateScores', () => {
   it('应构造成绩查询的地址、参数、认证头与超时', async () => {
@@ -249,5 +249,20 @@ describe('getStipendInfo', () => {
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
+  });
+});
+
+describe('getAccommodationInfo', () => {
+  it('应构造住宿查询的地址、认证头与超时', async () => {
+    const prev = axios.defaults.adapter;
+    let c: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (v) => { c = v; return { data: { data: { list: [] } }, status: 200, statusText: 'OK', headers: {}, config: v }; };
+    try {
+      await getAccommodationInfo({ accessToken: 't', baseUrl: 'https://api.example.test/', timeoutMs: 4_444 });
+      assert.equal(c?.url, 'https://api.example.test/v2/dc/sep_auth/student_accommodation_info');
+      assert.equal(c?.method, 'get');
+      assert.equal(c?.headers?.Authorization, 'Bearer t');
+      assert.equal(c?.timeout, 4_444);
+    } finally { axios.defaults.adapter = prev; }
   });
 });

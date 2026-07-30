@@ -15,6 +15,7 @@ import { CET_SCORE_TOOL_NAME } from '../src/tools/cet-score';
 import { BOOK_LEND_INFO_TOOL_NAME } from '../src/tools/book-lend-info';
 import { STATISTICS_INFO_TOOL_NAME } from '../src/tools/statistics-info';
 import { STIPEND_INFO_TOOL_NAME } from '../src/tools/stipend-info';
+import { ACCOMMODATION_INFO_TOOL_NAME } from '../src/tools/accommodation-info';
 
 // ScoreToolCallResult 表示成绩查询工具的测试结果。
 interface ScoreToolCallResult {
@@ -46,6 +47,13 @@ interface CetScoreToolCallResult {
 
 // BookLendInfoToolCallResult 表示图书借阅信息查询工具的测试结果。
 interface BookLendInfoToolCallResult {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}
+
+// AccommodationInfoToolCallResult 表示住宿信息查询工具的测试结果。
+interface AccommodationInfoToolCallResult {
   isError?: boolean;
   structuredContent?: unknown;
   content: Array<{ type: string; text?: string }>;
@@ -165,6 +173,12 @@ describe('createMcpServer', () => {
         JSON.stringify(stipendTool.outputSchema),
         /助学金记录列表/,
       );
+      const accTool = toolList.tools.find(
+        (tool) => tool.name === ACCOMMODATION_INFO_TOOL_NAME,
+      );
+      assert.ok(accTool);
+      assert.match(JSON.stringify(accTool.outputSchema), /宿舍楼名称/);
+      assert.match(JSON.stringify(accTool.outputSchema), /住宿记录列表/);
     } finally {
       await server.close();
     }
@@ -1304,6 +1318,47 @@ describe('createMcpServer', () => {
       assert.match(readToolText(r), /助学金服务暂时不可用/);
     } finally { axios.defaults.adapter = prev; }
   });
+
+  // --- 住宿信息工具测试 ---
+
+  it('应拒绝缺失 access token 的住宿查询', async () => {
+    const r = await callAccommodationInfoTool({});
+    assert.equal(r.isError, true);
+    assert.match(readToolText(r), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回住宿数据', async () => {
+    const prev = axios.defaults.adapter; let auth: string | undefined;
+    axios.defaults.adapter = async (c) => { auth = c.headers?.Authorization as string|undefined; return { data: { data: { list: [{ accomBuildingCode:'2622',accomBuildingName:'彰武2号楼（女）',accomRegionCode:'8',accomRegionName:'彰武路校区',deptCode:'000624',deptName:'口腔医学院',floor:'19',name:'朱**',roomNo:'1909',schoolCode:null,schoolName:null,updateTime:'2026-01-04T00:00:00',userId:'21****4',usertypeCode:'3',usertypeName:'硕士研究生',internal:'ignored' }] } }, status:200, statusText:'OK', headers:{}, config:c }; };
+    try {
+      const r = await callAccommodationInfoTool({ accessToken: 't' });
+      assert.equal(auth, 'Bearer t'); assert.equal(r.isError, undefined);
+      assert.deepEqual(r.structuredContent, { status:'ok', data:{ records:[{ accomBuildingCode:'2622',accomBuildingName:'彰武2号楼（女）',accomRegionCode:'8',accomRegionName:'彰武路校区',deptCode:'000624',deptName:'口腔医学院',floor:'19',name:'朱**',roomNo:'1909',userId:'21****4',usertypeCode:'3',usertypeName:'硕士研究生' }] }, source:'Tongji Open Platform' });
+    } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将空的住宿数据标记为空结果', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data: { data: { list: [] } }, status:200, statusText:'OK', headers:{}, config:c });
+    try { const r = await callAccommodationInfoTool({ accessToken: 't' }); assert.deepEqual(r.structuredContent, { status:'empty', data:{ records:[] }, source:'Tongji Open Platform' }); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游业务错误响应归一为住宿工具错误', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => ({ data:{ code:500 }, status:200, statusText:'OK', headers:{}, config:c });
+    try { const r = await callAccommodationInfoTool({ accessToken: 't' }); assert.equal(r.isError, true); assert.match(readToolText(r), /住宿信息服务返回异常/); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游未授权错误归一为住宿工具错误', async () => {
+    const prev = axios.defaults.adapter;
+    axios.defaults.adapter = async (c) => { throw new AxiosError('Unauthorized',undefined,c,undefined,{ data:{},status:401,statusText:'Unauthorized',headers:{},config:c }); };
+    try { const r = await callAccommodationInfoTool({ accessToken:'expired' }); assert.equal(r.isError,true); assert.match(readToolText(r),/授权无效或已过期/); } finally { axios.defaults.adapter = prev; }
+  });
+
+  it('应将上游不可用错误归一为住宿工具错误', async () => {
+    const prev = axios.defaults.adapter; axios.defaults.adapter = async () => { throw new Error('unavailable'); };
+    try { const r = await callAccommodationInfoTool({ accessToken:'t' }); assert.equal(r.isError,true); assert.match(readToolText(r),/住宿信息服务暂时不可用/); } finally { axios.defaults.adapter = prev; }
+  });
 });
 const callScoreTool = async (
   invocation: { accessToken?: string },
@@ -1326,7 +1381,7 @@ const callScoreTool = async (
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult): string => {
+const readToolText = (result: ScoreToolCallResult | TermCalendarToolCallResult | CurrentTermCalendarToolCallResult | CetScoreToolCallResult | BookLendInfoToolCallResult | StatisticsInfoToolCallResult | StipendInfoToolCallResult | AccommodationInfoToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };
@@ -1448,7 +1503,13 @@ const callStipendInfoTool = async (
     await server.connect(serverTransport);
     await client.connect(clientTransport);
     return (await client.callTool({ name: STIPEND_INFO_TOOL_NAME, arguments: args })) as StipendInfoToolCallResult;
-  } finally {
-    await server.close();
-  }
+  } finally { await server.close(); }
+};
+
+// callAccommodationInfoTool 通过内存传输调用住宿信息查询工具。
+const callAccommodationInfoTool = async (invocation: { accessToken?: string }, args: Record<string, unknown> = {}) => {
+  const [ct, st] = InMemoryTransport.createLinkedPair();
+  const server = createMcpServer({ invocation });
+  const client = new Client({ name: 't', version: '1' });
+  try { await server.connect(st); await client.connect(ct); return (await client.callTool({ name: ACCOMMODATION_INFO_TOOL_NAME, arguments: args })) as AccommodationInfoToolCallResult; } finally { await server.close(); }
 };

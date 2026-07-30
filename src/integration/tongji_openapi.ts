@@ -106,6 +106,16 @@ export const getStipendInfo = async (
   );
 };
 
+// getAccommodationInfo 查询住宿信息。
+export const getAccommodationInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Student_accommodation_infoGET(
+    adapter.withAuthorization({}),
+  );
+};
+
 // getStatisticsInfo 查询个人统计数据。
 export const getStatisticsInfo = async (
   config: TongjiOpenapiAdapterConfig,

@@ -1,3 +1,62 @@
+## CHANGELOG - 2026-08-01 15:00 - 工具目录重构与公共模块提取
+
+### 撰写时间
+
+- 2026-08-01 15:00
+
+### Base Commit
+
+- ba12a7398a0a46eb8c3b3e0f512cc907b8ca5560
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 经过 11 个 Tool 的迭代，每个工具文件中 `readString`/`readNumber`/`isRecord`/`unwrapResponseData`/`createErrorResult`/`toErrorResult` 六个函数各自重复了约 90 行，合计 ~800 行冗余代码。同时所有工具散布在扁平的 `src/tools/` 目录下，没有统一的目录结构。
+- 这次重构的目标是把"连续 11 轮审查标记但反复推迟"的技术债一次性解决：提取公共模块、统一目录结构、拆分类型定义。同时在 migration 过程中把 `term-calendar` 从 4 字段扩展到 14 字段以对齐更新后的 spec。
+
+### 改动概览
+
+**公共模块提取：**
+- 新增 `src/tools/utils.ts`（87 行），集中了所有工具共用的函数：`unwrapResponseData`、`isRecord`、`readArray`、`readStringArray`、`readString`、`readNumber`、`readBoolean`、`isUnauthorizedUpstreamError`、`createErrorResult`、`toErrorResult`、`ErrorMessageConfig`。
+- 新增 `src/tools/types.ts`，定义 `ToolStatus`（`"ok" | "empty" | "unauthorized" | "upstream_unavailable"`）和 `ToolErrorStatus`（`Exclude<ToolStatus, "ok" | "empty">`），供 `utils.ts` 的 `createErrorResult` 做编译期类型保护。
+
+**目录结构统一：**
+- 11 个工具全部从扁平 `.ts` 文件迁移为 `{tool-name}/index.ts` + `{tool-name}/types.ts` 子目录结构，与 `undergraduate-score/` 的先行范例一致。
+- `index.ts`：保留 schema 定义、register 函数、normalize 逻辑、isEmptyData。
+- `types.ts`：抽离 Status 类型、数据接口、Result 接口。
+- `registry.ts` 的 import 路径无需改动——TypeScript 自动解析 `'./term-calendar'` → `'./term-calendar/index.ts'`。
+
+**Tool 实现适配：**
+- 11 个 `index.ts` 的 import 路径全部修正为 `"../utils"`、`"../registry"`、`"../../integration/..."`。
+- 8 个 Tongji OpenAPI 工具的 `toErrorResult` 调用统一为 `toErrorResult(error, { unauthorized, upstreamUnavailable })`，错误消息由各工具自行提供。
+- `course-detail` 和 `course-related` 保留了本地的 `toErrorResultLocal`（含 404→empty 处理），但内部调用共享的 `createErrorResult`；`axios` 保留在这两个文件中仅供 404 状态判断。
+- `find-major-by-grade` 等无认证工具直接使用共享函数，仅传 `upstreamUnavailable` 配置。
+
+**term-calendar 字段扩展：**
+- `TermCalendar` 从 4 字段（`year`/`term`/`weekNum`/`fullName`）扩展到 14 字段：新增 `id`、`beginDay`、`endDay`、`weekBenginDay`、`gradePartOne`、`gradePartTwo`、`currentTermFlag`、`nextTermFlag`、`perTerm`、`perYear`。
+- 新增 `readBoolean` 函数（已提取到 `utils.ts`）处理 `currentTermFlag`/`nextTermFlag` 的布尔字段。
+
+**审查修正：**
+- `createErrorResult` 的 `status` 参数从 `string` 收紧为 `ToolErrorStatus`（`"unauthorized" | "upstream_unavailable"`），在保持跨工具共享的同时提供编译期保护。
+- `readBoolean` 加入 `utils.ts` 而非留在 `term-calendar` 本地。
+
+### 改动结果与业务影响
+
+- 净减少 ~650 行代码（374 行新增，1030 行删除）。11 个工具不再有任何重复的公共函数。
+- 已执行 `pnpm check`：82/82 单测通过，类型检查和构建均通过。
+- 后续新工具只需创建子目录、写 `index.ts`（仅业务逻辑）和 `types.ts`（仅类型），`import { ... } from "../utils"` 即可复用全部公共函数。
+
+### 风险与待办
+
+- `readStringArray` 目前仅 `course-detail` 使用，`readBoolean` 仅 `term-calendar` 使用，两个函数虽在 `utils.ts` 中但使用频率较低。后续如有类似边缘类型需求，保持"先放在 `utils.ts`"的原则即可。
+
+### 建议 Commit Message（git-cz）
+
+- `refactor(tools): extract shared utils and reorganize tool directories`
+
 ## CHANGELOG - 2026-07-30 18:00 - 接入按学期年级查询专业 MCP Tool
 
 ### 撰写时间

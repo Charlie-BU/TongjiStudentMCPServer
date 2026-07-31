@@ -1,34 +1,26 @@
-import axios from "axios";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getMajorsByGrade } from "../integration/yourtj";
-import type { ToolRegistrationContext } from "./registry";
+import { getMajorsByGrade } from "../../integration/yourtj";
+import type { ToolRegistrationContext } from "../registry";
+import {
+    createErrorResult,
+    isRecord,
+    readString,
+    toErrorResult,
+    unwrapResponseData,
+} from "../utils";
+import type {
+    MajorEntry,
+    FindMajorByGradeData,
+    FindMajorByGradeToolResult,
+} from "./types";
 
 // FIND_MAJOR_BY_GRADE_TOOL_NAME 表示按学期年级查询专业工具名称。
 export const FIND_MAJOR_BY_GRADE_TOOL_NAME = "tongji.student.find-major-by-grade";
 
 // FindMajorByGradeToolStatus 表示按学期年级查询专业的结果状态。
-type FindMajorByGradeToolStatus = "ok" | "empty" | "upstream_unavailable";
-
-// MajorEntry 表示单条专业信息。
-interface MajorEntry {
-    code: string | null;
-    name: string | null;
-}
-
 // FindMajorByGradeData 表示专业列表的脱敏业务数据。
-interface FindMajorByGradeData {
-    records: MajorEntry[];
-}
-
 // FindMajorByGradeToolResult 表示按学期年级查询专业的结构化结果。
-interface FindMajorByGradeToolResult {
-    [key: string]: unknown;
-    status: FindMajorByGradeToolStatus;
-    data: FindMajorByGradeData;
-    source: "YourTJ";
-}
-
 // MAJOR_ENTRY_SCHEMA 表示单条专业信息的 MCP 输出结构。
 const MAJOR_ENTRY_SCHEMA = z.object({
     code: z.string().nullable().describe("专业编码。"),
@@ -81,22 +73,18 @@ export const registerFindMajorByGradeTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(error);
+                return toErrorResult(error, {
+                    upstreamUnavailable: "YourTJ 专业查询服务暂时不可用，请稍后重试。",
+                });
             }
         },
     );
 };
-
-// unwrapResponseData 提取上游响应中的业务数据。
-const unwrapResponseData = (response: unknown): unknown => {
-    if (isRecord(response) && "data" in response) {
-        return response.data;
-    }
-    return response;
-};
-
 // normalizeFindMajorByGradeData 裁剪并规范化专业列表业务数据。
 const normalizeFindMajorByGradeData = (data: unknown): FindMajorByGradeData | undefined => {
+    if (data === null) {
+        return { records: [] };
+    }
     if (!Array.isArray(data)) {
         return undefined;
     }
@@ -116,46 +104,3 @@ const normalizeMajorEntry = (item: unknown): MajorEntry => {
 // isEmptyData 判断专业数据是否为空。
 const isEmptyData = (data: FindMajorByGradeData): boolean =>
     data.records.length === 0;
-
-// readString 读取字符串字段。
-const readString = (value: unknown): string | null => {
-    if (typeof value === "string") {
-        return value;
-    }
-    if (typeof value === "number") {
-        return String(value);
-    }
-    return null;
-};
-
-// toErrorResult 将上游错误转换为 MCP 工具错误结果。
-const toErrorResult = (error: unknown) => {
-    if (
-        axios.isAxiosError(error) &&
-        (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-        return createErrorResult(
-            "upstream_unavailable",
-            "YourTJ 专业查询服务拒绝访问，请稍后重试。",
-        );
-    }
-    return createErrorResult(
-        "upstream_unavailable",
-        "YourTJ 专业查询服务暂时不可用，请稍后重试。",
-    );
-};
-
-// createErrorResult 创建 MCP 工具错误结果，仅接受与 "ok"/"empty" 互斥的错误状态。
-const createErrorResult = (
-    status: Exclude<FindMajorByGradeToolStatus, "ok" | "empty">,
-    message: string,
-) => ({
-    isError: true,
-    content: [
-        { type: "text" as const, text: JSON.stringify({ status, message }) },
-    ],
-});
-
-// isRecord 判断值是否为对象记录。
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === "object" && value !== null;

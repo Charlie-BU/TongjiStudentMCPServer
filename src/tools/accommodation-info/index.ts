@@ -1,44 +1,28 @@
-import axios from "axios";
+
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getAccommodationInfo } from "../integration/tongji_openapi";
-import type { ToolRegistrationContext } from "./registry";
+import { getAccommodationInfo } from "../../integration/tongji_openapi";
+import type { ToolRegistrationContext } from "../registry";
+import {
+    createErrorResult,
+    isRecord,
+    readNumber,
+    readString,
+    toErrorResult,
+    unwrapResponseData,
+} from "../utils";
+import type {
+    AccommodationRecord,
+    AccommodationInfoData,
+    AccommodationInfoToolResult,
+} from "./types";
 
 // ACCOMMODATION_INFO_TOOL_NAME 表示住宿信息查询工具名称。
 export const ACCOMMODATION_INFO_TOOL_NAME = "tongji.student.accommodation-info";
 
 // AccommodationInfoToolStatus 表示住宿信息查询的结果状态。
-type AccommodationInfoToolStatus = "ok" | "empty" | "unauthorized" | "upstream_unavailable";
-
-// AccommodationRecord 表示单条住宿记录。
-interface AccommodationRecord {
-    accomBuildingCode: string | null;
-    accomBuildingName: string | null;
-    accomRegionCode: string | null;
-    accomRegionName: string | null;
-    deptCode: string | null;
-    deptName: string | null;
-    floor: string | null;
-    name: string | null;
-    roomNo: string | null;
-    userId: string | null;
-    usertypeCode: string | null;
-    usertypeName: string | null;
-}
-
 // AccommodationInfoData 表示住宿的脱敏业务数据。
-interface AccommodationInfoData {
-    records: AccommodationRecord[];
-}
-
 // AccommodationInfoToolResult 表示住宿信息查询的结构化结果。
-interface AccommodationInfoToolResult {
-    [key: string]: unknown;
-    status: AccommodationInfoToolStatus;
-    data: AccommodationInfoData;
-    source: "Tongji Open Platform";
-}
-
 // ACCOMMODATION_RECORD_SCHEMA 表示单条住宿记录的 MCP 输出结构。
 const ACCOMMODATION_RECORD_SCHEMA = z.object({
     accomBuildingCode: z.string().nullable().describe("宿舍楼代码。"),
@@ -108,18 +92,10 @@ export const registerAccommodationInfoTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(error);
+                return toErrorResult(error, { unauthorized: "同济账号授权无效或已过期，请重新完成授权后再试。", upstreamUnavailable: "同济住宿信息服务暂时不可用，请稍后重试。" });
             }
         },
     );
-};
-
-// unwrapResponseData 提取上游响应中的业务数据。
-const unwrapResponseData = (response: unknown): unknown => {
-    if (isRecord(response) && "data" in response) {
-        return response.data;
-    }
-    return response;
 };
 
 // normalizeAccommodationInfoData 裁剪并规范化住宿业务数据。
@@ -160,57 +136,3 @@ const normalizeAccommodationRecord = (item: unknown): AccommodationRecord => {
 const isEmptyData = (data: AccommodationInfoData): boolean =>
     data.records.length === 0;
 
-// readString 读取字符串字段。
-const readString = (value: unknown): string | null => {
-    if (typeof value === "string") {
-        return value;
-    }
-    if (typeof value === "number") {
-        return String(value);
-    }
-    return null;
-};
-
-// readNumber 读取数值字段。
-const readNumber = (value: unknown): number | null => {
-    if (typeof value === "number" && Number.isFinite(value)) {
-        return value;
-    }
-    if (typeof value === "string" && value.trim() !== "") {
-        const numberValue = Number(value);
-        return Number.isFinite(numberValue) ? numberValue : null;
-    }
-    return null;
-};
-
-// toErrorResult 将上游错误转换为 MCP 工具错误结果。
-const toErrorResult = (error: unknown) => {
-    if (
-        axios.isAxiosError(error) &&
-        (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-        return createErrorResult(
-            "unauthorized",
-            "同济账号授权无效或已过期，请重新完成授权后再试。",
-        );
-    }
-    return createErrorResult(
-        "upstream_unavailable",
-        "同济住宿信息服务暂时不可用，请稍后重试。",
-    );
-};
-
-// createErrorResult 创建 MCP 工具错误结果。
-const createErrorResult = (
-    status: Exclude<AccommodationInfoToolStatus, "ok" | "empty">,
-    message: string,
-) => ({
-    isError: true,
-    content: [
-        { type: "text" as const, text: JSON.stringify({ status, message }) },
-    ],
-});
-
-// isRecord 判断值是否为对象记录。
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === "object" && value !== null;

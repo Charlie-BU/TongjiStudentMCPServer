@@ -1,64 +1,28 @@
-import axios from "axios";
+
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getStatisticsInfo } from "../integration/tongji_openapi";
-import type { ToolRegistrationContext } from "./registry";
+import { getStatisticsInfo } from "../../integration/tongji_openapi";
+import type { ToolRegistrationContext } from "../registry";
+import {
+    createErrorResult,
+    isRecord,
+    readNumber,
+    readString,
+    toErrorResult,
+    unwrapResponseData,
+} from "../utils";
+import type {
+    StatisticsRecord,
+    StatisticsInfoData,
+    StatisticsInfoToolResult,
+} from "./types";
 
 // STATISTICS_INFO_TOOL_NAME 表示个人统计数据查询工具名称。
 export const STATISTICS_INFO_TOOL_NAME = "tongji.student.statistics-info";
 
 // StatisticsInfoToolStatus 表示个人统计数据查询的结果状态。
-type StatisticsInfoToolStatus = "ok" | "empty" | "unauthorized" | "upstream_unavailable";
-
-// StatisticsRecord 表示单条个人统计记录。
-interface StatisticsRecord {
-    bookCategory: string | null;
-    bookCoun: number | null;
-    bookFirst: string | null;
-    canteenAmount: number | null;
-    canteenAmtPercentileRank: number | null;
-    canteenCoun: number | null;
-    canteenOften: string | null;
-    canteenOftenPercentileRank: number | null;
-    cardPelaceCoun: number | null;
-    college: string | null;
-    consumMostAmount: number | null;
-    consumMostTime: string | null;
-    consumePlaceOften: string | null;
-    consumeTotal: number | null;
-    consumeTotalPercentileRank: number | null;
-    earlistTime: string | null;
-    entYear: number | null;
-    entranceCoun: number | null;
-    firstCardPlaceTime: string | null;
-    gender: string | null;
-    latestTime: string | null;
-    major: string | null;
-    marketAmount: number | null;
-    rechargeTimeSlot: string | null;
-    rideCoun: number | null;
-    scholarshipCoun: number | null;
-    sname: string | null;
-    stayTime: number | null;
-    stayTimePercentileRank: number | null;
-    stayYear: number | null;
-    stuLevel: string | null;
-    userId: string | null;
-}
-
 // StatisticsInfoData 表示个人统计的脱敏业务数据。
-interface StatisticsInfoData {
-    records: StatisticsRecord[];
-}
-
 // StatisticsInfoToolResult 表示个人统计数据查询的结构化结果。
-interface StatisticsInfoToolResult {
-    [key: string]: unknown;
-    status: StatisticsInfoToolStatus;
-    data: StatisticsInfoData;
-    source: "Tongji Open Platform";
-}
-
 // STATISTICS_RECORD_SCHEMA 表示单条个人统计记录的 MCP 输出结构。
 const STATISTICS_RECORD_SCHEMA = z.object({
     bookCategory: z.string().nullable().describe("借阅最多的图书主题类别。"),
@@ -148,22 +112,17 @@ export const registerStatisticsInfoTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(error);
+                return toErrorResult(error, { unauthorized: "同济账号授权无效或已过期，请重新完成授权后再试。", upstreamUnavailable: "同济个人统计服务暂时不可用，请稍后重试。" });
             }
         },
     );
 };
 
-// unwrapResponseData 提取上游响应中的业务数据。
-const unwrapResponseData = (response: unknown): unknown => {
-    if (isRecord(response) && "data" in response) {
-        return response.data;
-    }
-    return response;
-};
-
 // normalizeStatisticsInfoData 裁剪并规范化个人统计业务数据。
 const normalizeStatisticsInfoData = (data: unknown): StatisticsInfoData | undefined => {
+    if (data === null) {
+        return { records: [] };
+    }
     if (!Array.isArray(data)) {
         return undefined;
     }
@@ -214,57 +173,3 @@ const normalizeStatisticsRecord = (item: unknown): StatisticsRecord => {
 const isEmptyData = (data: StatisticsInfoData): boolean =>
     data.records.length === 0;
 
-// readString 读取字符串字段。
-const readString = (value: unknown): string | null => {
-    if (typeof value === "string") {
-        return value;
-    }
-    if (typeof value === "number") {
-        return String(value);
-    }
-    return null;
-};
-
-// readNumber 读取数值字段。
-const readNumber = (value: unknown): number | null => {
-    if (typeof value === "number" && Number.isFinite(value)) {
-        return value;
-    }
-    if (typeof value === "string" && value.trim() !== "") {
-        const numberValue = Number(value);
-        return Number.isFinite(numberValue) ? numberValue : null;
-    }
-    return null;
-};
-
-// toErrorResult 将上游错误转换为 MCP 工具错误结果。
-const toErrorResult = (error: unknown) => {
-    if (
-        axios.isAxiosError(error) &&
-        (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-        return createErrorResult(
-            "unauthorized",
-            "同济账号授权无效或已过期，请重新完成授权后再试。",
-        );
-    }
-    return createErrorResult(
-        "upstream_unavailable",
-        "同济个人统计服务暂时不可用，请稍后重试。",
-    );
-};
-
-// createErrorResult 创建 MCP 工具错误结果。
-const createErrorResult = (
-    status: Exclude<StatisticsInfoToolStatus, "ok" | "empty">,
-    message: string,
-) => ({
-    isError: true,
-    content: [
-        { type: "text" as const, text: JSON.stringify({ status, message }) },
-    ],
-});
-
-// isRecord 判断值是否为对象记录。
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === "object" && value !== null;

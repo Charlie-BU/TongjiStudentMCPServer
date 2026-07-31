@@ -9,6 +9,7 @@ import {
   SERVER_VERSION,
 } from '../src/server';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
+import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
 import { SCHOLARSHIP_INFO_TOOL_NAME } from '../src/tools/scholarship-info';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
 
@@ -70,6 +71,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(scholarshipInfoTool.outputSchema),
         /奖学金奖项名称/,
+      );
+      const schoolAccessTool = toolList.tools.find(
+        (tool) => tool.name === SCHOOL_ACCESS_TOOL_NAME,
+      );
+      assert.ok(schoolAccessTool);
+      assert.match(
+        JSON.stringify(schoolAccessTool.outputSchema),
+        /校门通行记录次数/,
+      );
+      assert.match(
+        JSON.stringify(schoolAccessTool.outputSchema),
+        /校门通行点或设备名称/,
       );
     } finally {
       await server.close();
@@ -575,6 +588,183 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  it('应拒绝缺失 access token 的校门通行查询', async () => {
+    const result = await callSchoolAccessTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token、传递查询参数并返回裁剪后的校门通行记录', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    let params: unknown;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      params = config.params;
+      return {
+        data: {
+          data: {
+            count: 2,
+            userInfos: [{
+              cardData: '2******6',
+              codeIndex: '0',
+              dataTime: '20**-**-12 18:42:43',
+              deptName: '测试学院',
+              equptId: '2**7',
+              equptName: '测试门西侧道闸-人通道出',
+              job: '01',
+              lctnName: '测试路50号',
+              multiEvent: '0',
+              name: '测**',
+              personnelId: '2****2',
+              portNum: '出门',
+              sex: '男',
+              userId: '1*****1',
+            }],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callSchoolAccessTool(
+        { accessToken: 'access-token-for-test' },
+        {
+          portNum: '出门',
+          dataStartTime: '2026-07-01 00:00:00',
+          dataEndTime: '2026-07-31 23:59:59',
+        },
+      );
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.deepEqual(params, {
+        portNum: '出门',
+        dataStartTime: '2026-07-01 00:00:00',
+        dataEndTime: '2026-07-31 23:59:59',
+      });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          count: 2,
+          userInfos: [{
+            dataTime: '20**-**-12 18:42:43',
+            deptName: '测试学院',
+            equptName: '测试门西侧道闸-人通道出',
+            lctnName: '测试路50号',
+            name: '测**',
+            portNum: '出门',
+            sex: '男',
+          }],
+        },
+        source: 'Tongji Open Platform',
+        portNum: '出门',
+        dataStartTime: '2026-07-01 00:00:00',
+        dataEndTime: '2026-07-31 23:59:59',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /cardData|codeIndex|equptId|job|multiEvent|personnelId|userId|2\*\*\*\*\*\*6|1\*\*\*\*\*1/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空校门通行记录标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, userInfos: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callSchoolAccessTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { count: 0, userInfos: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将校门通行业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callSchoolAccessTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济校门通行服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将校门通行上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callSchoolAccessTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将校门通行上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callSchoolAccessTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /校门通行服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 
 // callScoreTool 通过内存传输调用成绩查询工具。
@@ -597,6 +787,18 @@ const callScholarshipInfoTool = async (
   invocation: { accessToken?: string },
 ) => {
   return callTool(SCHOLARSHIP_INFO_TOOL_NAME, invocation);
+};
+
+// callSchoolAccessTool 通过内存传输调用校门通行查询工具。
+const callSchoolAccessTool = async (
+  invocation: { accessToken?: string },
+  args: {
+    portNum?: "入门" | "出门";
+    dataStartTime?: string;
+    dataEndTime?: string;
+  } = {},
+) => {
+  return callTool(SCHOOL_ACCESS_TOOL_NAME, invocation, args);
 };
 
 // callTool 通过内存传输调用指定工具。

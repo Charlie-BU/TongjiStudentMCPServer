@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerCompetitionPrizeTool } from "./competition-prize";
+import { registerSchoolAccessTool } from "./school-access";
 import { registerScholarshipInfoTool } from "./scholarship-info";
 import { registerUndergraduateScoreTool } from "./undergraduate-score";
 
@@ -20,4 +21,6 @@ export const registerTools = (
     registerCompetitionPrizeTool(server, context);
     // 注册学生奖学金查询工具。
     registerScholarshipInfoTool(server, context);
+    // 注册校门通行记录查询工具。
+    registerSchoolAccessTool(server, context);
 };

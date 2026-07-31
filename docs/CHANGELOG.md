@@ -1,3 +1,51 @@
+## CHANGELOG - 2026-07-31 16:41 - 接入校门通行记录查询 Tool 并收敛进出校门数据边界
+
+### 撰写时间
+
+- 2026-07-31 16:41
+
+### Base Commit
+
+- d5adcaddb2ffec1838fd956f2f8c56893ab602a8
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 现有校园 Tool 已经形成了一条相对稳定的边界：`createMcpServer` 创建无状态 MCP 服务，`registerTools` 暴露领域能力，具体 Tool 只从 `ToolInvocationContext` 读取短期 token，再经 `src/integration/tongji_openapi.ts` 的手写 adapter 调用 Tongji OpenAPI，最后用字段 allowlist 返回 `structuredContent`。校门进出记录属于同一类授权学生个人数据，因此这次改动继续沿用这条链路，而不是把 CAM 生成客户端或上游原始字段直接暴露给 MCP 客户端。
+- 这次目标是新增 `tongji.student.school_access`，让 Agent 可以查询当前授权学生在指定时间范围内的校门通行记录。输入只允许查询方向和时间范围，不接收学号、用户 ID 或其他身份字段；输出只保留通行时间、学院、通行点、位置、姓名、进出状态和性别等经过明确选择的字段。
+
+### 改动概览
+
+- 新增 `src/tools/school-access/`，拆分为 `index.ts` 和 `types.ts`。`registerSchoolAccessTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerSchoolAccessTool`。下游 `createMcpServer -> registerTools` 的入口没有改变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.school_access`。
+- `src/integration/tongji_openapi.ts` 已提供 `getSchoolAccess`，它复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Get_school_accessGET`。本次测试补齐了该 adapter 对 `/v1/dc/door/school_access_control`、GET method、`portNum/dataStartTime/dataEndTime` 参数、Bearer Authorization 和 timeout 的契约验证。
+- `test/server.test.ts` 补充校门通行 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、查询参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：校门通行数据来自 Tongji OpenAPI 的 `Get_school_accessGET`，生成客户端注释说明该接口对应 `/v1/dc/door/school_access_control`，查询参数为 `portNum`、`dataStartTime` 和 `dataEndTime`。手写 adapter 负责把可信调用上下文里的 token 包装成 `Bearer <token>`，并继续使用默认 base URL 与 timeout 策略。
+- 当前改动：`registerSchoolAccessTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经 `unwrapResponseData` 取业务 `data`，再由 `normalizeSchoolAccessData` 要求存在 `userInfos` 数组，并把 `count` 规范为数字或 `null`。单条记录只保留 `dataTime`、`deptName`、`equptName`、`lctnName`、`name`、`portNum` 和 `sex`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询条件，不会拿到上游的 `cardData`、`codeIndex`、`equptId`、`job`、`multiEvent`、`personnelId`、`userId` 等原始字段。成绩、竞赛奖励和奖学金 Tool 仍走原注册路径，输入、输出和错误文案没有被本次改动改变。
+
+### 改动结果与业务影响
+
+- 校门通行查询现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段裁剪后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解为“没有记录”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。也就是说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 已在当前工作区执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 40 个用例通过。
+
+### 风险与待办
+
+- `dataStartTime` 和 `dataEndTime` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里要求 `yyyy-MM-dd HH:mm:ss`，但还没有做格式校验。当前看起来不会破坏已有调用链，但非法时间会被直接转发给上游；建议后续补充格式校验和非法时间输入的拒绝用例。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是校门通行 Tool 的源码或测试资产。提交前建议删除该目录，或把 `.pnpm-store/` 加入 `.gitignore`，避免本地 pnpm 缓存被误加入提交。
+- 真实 Tongji OpenAPI 的校门通行字段类型、业务错误码、数据延迟和 token scope 仍需要在受控联调环境确认。如果上游响应结构演进，应同步更新 `SchoolAccessRecord`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(school-access): add campus gate access MCP tool`
+
 ## CHANGELOG - 2026-07-31 16:14 - 接入学生奖学金查询 Tool 并延续字段裁剪边界
 
 ### 撰写时间

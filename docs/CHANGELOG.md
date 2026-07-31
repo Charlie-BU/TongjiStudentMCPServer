@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-31 19:29 - 接入学生年度统计账单 Tool 并收敛年度画像数据边界
+
+### 撰写时间
+
+- 2026-07-31 19:29
+
+### Base Commit
+
+- 071336afd0d01e187e24cac1074b7ecf06977d9f
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 前面几个校园 Tool 已经把成绩、竞赛奖励、奖学金、校门通行和图书馆通行收敛到同一条链路里：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。年度统计账单同样是授权学生个人数据，而且会聚合图书馆、食堂、进出校等多个维度，因此这次目标不是直接暴露上游年度账单接口，而是延续这条受控边界。
+- 这次新增的是 `tongji.student.annual_bill`。调用方只需要传入统计年份 `year`，不能通过参数指定学号、用户 ID 或其他身份字段；输出只保留年度借阅、消费、图书馆学习、进出校和班车等经过选择的统计字段，不返回上游的 `deptCode`、`userId`、`userTypeCode`、当天进出次数或百分位细节等未批准字段。
+
+### 改动概览
+
+- 新增 `src/tools/annual-bill/`，拆分为 `index.ts` 和 `types.ts`。`registerAnnualBillTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerAnnualBillTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.annual_bill`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getStatisticsInfoByYear` 的 adapter 契约测试，校验 `/v2/dc/user/user_annual_bill`、GET method、`year` 参数、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充年度统计账单 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、年份参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：年度账单数据来自 Tongji OpenAPI 生成客户端的 `Get_statistics_info_by_yearGET`，路径是 `/v2/dc/user/user_annual_bill`，查询参数为必填 `year`。手写 adapter `getStatisticsInfoByYear` 继续复用 `createTongjiOpenapiAdapter`，由可信调用上下文里的 token 生成 `Bearer <token>`，并沿用默认 base URL 与 timeout 策略。
+- 当前改动：`registerAnnualBillTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeAnnualBillData` 要求业务数据本身是数组。单条记录只保留 `annualBorrowedTopPct`、`avgDailySpending`、`booksCount`、`deptName`、`earliestEntryTime`、`latestExitTime`、`libraryAccessCount`、`libraryStudyTime`、`libraryStudyTopPct`、`maxCumulativeLoc`、`maxTransactionAmt`、`maxTransactionLoc`、`maxTransactionTime`、`name`、`shuttleRidesCount`、`totalEntries`、`totalSpendingCanteen` 和 `year`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source/year`，不会拿到上游原始的 `canteenSpendingPct`、`deptCode`、`earliestExitTime`、`lastDepartureCount`、`lateExitPct`、`latestDepartureTime`、`libraryAttendancePct`、`libraryExitPct`、`maxCumulativeAmt`、`todayEntryCount`、`todayLateExitPct`、`userId`、`userTypeCode` 或 `weeklyExitAvg`。既有成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 年度统计账单现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有年度账单”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 54 个用例通过。
+
+### 风险与待办
+
+- `year` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里给了 `2024` 这样的示例，但还没有限制为四位年份或合理年份范围。当前看起来不会破坏已有调用链，但非法年份会被直接转发给上游；后续可以补充格式校验和非法年份输入的拒绝用例。
+- 年度账单输出当前保留了 `name` 和 `deptName`。这延续了既有 Tool 的策略，但年度画像数据聚合程度更高；如果后续隐私策略要求进一步脱敏姓名或学院，需要同步调整 `AnnualBill`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是年度统计账单 Tool 的源码或测试资产。提交时应排除该目录；如本仓后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+- 真实 Tongji OpenAPI 的年度账单字段类型、业务错误码、数据生成周期和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `AnnualBill`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(annual-bill): add student annual bill MCP tool`
+
 ## CHANGELOG - 2026-07-31 19:09 - 接入图书馆通行记录查询 Tool 并延续校园通行数据边界
 
 ### 撰写时间

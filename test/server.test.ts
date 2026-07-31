@@ -8,6 +8,7 @@ import {
   SERVER_NAME,
   SERVER_VERSION,
 } from '../src/server';
+import { ANNUAL_BILL_TOOL_NAME } from '../src/tools/annual-bill';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
@@ -37,6 +38,18 @@ describe('createMcpServer', () => {
       });
       assert.ok(client.getServerCapabilities()?.tools);
       const toolList = await client.listTools();
+      const annualBillTool = toolList.tools.find(
+        (tool) => tool.name === ANNUAL_BILL_TOOL_NAME,
+      );
+      assert.ok(annualBillTool);
+      assert.match(
+        JSON.stringify(annualBillTool.outputSchema),
+        /年度图书馆入馆总次数/,
+      );
+      assert.match(
+        JSON.stringify(annualBillTool.outputSchema),
+        /年度食堂总消费金额/,
+      );
       const scoreTool = toolList.tools.find(
         (tool) => tool.name === UNDERGRADUATE_SCORE_TOOL_NAME,
       );
@@ -99,6 +112,203 @@ describe('createMcpServer', () => {
       );
     } finally {
       await server.close();
+    }
+  });
+
+  it('应拒绝缺失 access token 的年度统计账单查询', async () => {
+    const result = await callAnnualBillTool({}, { year: '2024' });
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token、传递年份并返回裁剪后的年度统计账单', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    let params: unknown;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      params = config.params;
+      return {
+        data: {
+          data: [{
+            annualBorrowedTopPct: 49.3,
+            avgDailySpending: 12.7,
+            booksCount: 3,
+            canteenSpendingPct: 4.71,
+            deptCode: '000170',
+            deptName: '机械与能源工程学院',
+            earliestEntryTime: '2024-10-15 07:30:30',
+            earliestExitTime: '2024-03-06 08:58:13',
+            lastDepartureCount: 1635,
+            lateExitPct: 92.13,
+            latestDepartureTime: '2024-02-28 21:40:01',
+            latestExitTime: '2024-04-27 01:33:26',
+            libraryAccessCount: 76,
+            libraryAttendancePct: 0.14,
+            libraryExitPct: 19.01,
+            libraryStudyTime: 143.41,
+            libraryStudyTopPct: 80.7,
+            maxCumulativeAmt: 43.88,
+            maxCumulativeLoc: '测试校区食堂',
+            maxTransactionAmt: 18,
+            maxTransactionLoc: '测试校区食堂',
+            maxTransactionTime: '2024-05-28',
+            name: '测**',
+            shuttleRidesCount: 0,
+            todayEntryCount: 32,
+            todayLateExitPct: 0.36,
+            totalEntries: 77,
+            totalSpendingCanteen: 50.78,
+            userId: '1*****0',
+            userTypeCode: '4',
+            weeklyExitAvg: 1.68,
+            year: '2024',
+          }],
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callAnnualBillTool(
+        { accessToken: 'access-token-for-test' },
+        { year: '2024' },
+      );
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.deepEqual(params, { year: '2024' });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            annualBorrowedTopPct: 49.3,
+            avgDailySpending: 12.7,
+            booksCount: 3,
+            deptName: '机械与能源工程学院',
+            earliestEntryTime: '2024-10-15 07:30:30',
+            latestExitTime: '2024-04-27 01:33:26',
+            libraryAccessCount: 76,
+            libraryStudyTime: 143.41,
+            libraryStudyTopPct: 80.7,
+            maxCumulativeLoc: '测试校区食堂',
+            maxTransactionAmt: 18,
+            maxTransactionLoc: '测试校区食堂',
+            maxTransactionTime: '2024-05-28',
+            name: '测**',
+            shuttleRidesCount: 0,
+            totalEntries: 77,
+            totalSpendingCanteen: 50.78,
+            year: '2024',
+          }],
+        },
+        source: 'Tongji Open Platform',
+        year: '2024',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /canteenSpendingPct|deptCode|earliestExitTime|lastDepartureCount|lateExitPct|latestDepartureTime|libraryAttendancePct|libraryExitPct|maxCumulativeAmt|todayEntryCount|todayLateExitPct|userId|userTypeCode|weeklyExitAvg|1\*\*\*\*\*0/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空年度统计账单标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: [] },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callAnnualBillTool(
+        { accessToken: 'access-token-for-test' },
+        { year: '2024' },
+      );
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'Tongji Open Platform',
+        year: '2024',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将年度统计账单业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callAnnualBillTool(
+        { accessToken: 'access-token-for-test' },
+        { year: '2024' },
+      );
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济年度统计账单服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将年度统计账单上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callAnnualBillTool(
+        { accessToken: 'expired-token-for-test' },
+        { year: '2024' },
+      );
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将年度统计账单上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callAnnualBillTool(
+        { accessToken: 'access-token-for-test' },
+        { year: '2024' },
+      );
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /年度统计账单服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
     }
   });
 
@@ -958,6 +1168,14 @@ const callScoreTool = async (
   args: { calendarId?: string } = {},
 ) => {
   return callTool(UNDERGRADUATE_SCORE_TOOL_NAME, invocation, args);
+};
+
+// callAnnualBillTool 通过内存传输调用年度统计账单查询工具。
+const callAnnualBillTool = async (
+  invocation: { accessToken?: string },
+  args: { year: string },
+) => {
+  return callTool(ANNUAL_BILL_TOOL_NAME, invocation, args);
 };
 
 // callCompetitionPrizeTool 通过内存传输调用竞赛奖励查询工具。

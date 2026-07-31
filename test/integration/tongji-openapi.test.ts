@@ -5,6 +5,7 @@ import {
   getCompetitionPrizes,
   getLibraryAccess,
   getSchoolAccess,
+  getStatisticsInfoByYear,
   getStudentScholarshipInfo,
   getUndergraduateScores,
 } from '../../src/integration/tongji_openapi';
@@ -202,6 +203,45 @@ describe('getLibraryAccess', () => {
         visitStartTime: '2026-07-01 00:00:00',
         visitEndTime: '2026-07-31 23:59:59',
       });
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getStatisticsInfoByYear', () => {
+  it('应构造年度统计账单查询的地址、参数、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: [] },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getStatisticsInfoByYear(
+        {
+          accessToken: 'test-access-token',
+          baseUrl: 'https://api.example.test/',
+          timeoutMs: 1_234,
+        },
+        '2024',
+      );
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v2/dc/user/user_annual_bill',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.deepEqual(capturedConfig?.params, { year: '2024' });
       assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
       assert.equal(capturedConfig?.timeout, 1_234);
     } finally {

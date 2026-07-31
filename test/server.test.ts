@@ -15,8 +15,10 @@ import { HONORARY_TITLE_TOOL_NAME } from '../src/tools/honorary-title';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
 import { SCHOLARSHIP_INFO_TOOL_NAME } from '../src/tools/scholarship-info';
+import { STUDENT_DETAILED_INFO_TOOL_NAME } from '../src/tools/student-detailed-info';
 import { STUDENT_TIMETABLE_TOOL_NAME } from '../src/tools/student-timetable';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
+import { USER_BASIC_INFO_TOOL_NAME } from '../src/tools/user-basic-info';
 
 // ToolCallResult 表示工具调用的测试结果。
 interface ToolCallResult {
@@ -76,6 +78,22 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(studentTimetableTool.outputSchema),
         /星期几，数字 1-7/,
+      );
+      const studentDetailedInfoTool = toolList.tools.find(
+        (tool) => tool.name === STUDENT_DETAILED_INFO_TOOL_NAME,
+      );
+      assert.ok(studentDetailedInfoTool);
+      assert.match(
+        JSON.stringify(studentDetailedInfoTool.outputSchema),
+        /学生学号/,
+      );
+      assert.match(
+        JSON.stringify(studentDetailedInfoTool.outputSchema),
+        /培养层次/,
+      );
+      assert.match(
+        JSON.stringify(studentDetailedInfoTool.outputSchema),
+        /通讯地址或联系地址/,
       );
       const scoreTool = toolList.tools.find(
         (tool) => tool.name === UNDERGRADUATE_SCORE_TOOL_NAME,
@@ -148,6 +166,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(libraryAccessTool.outputSchema),
         /图书馆出入口名称/,
+      );
+      const userBasicInfoTool = toolList.tools.find(
+        (tool) => tool.name === USER_BASIC_INFO_TOOL_NAME,
+      );
+      assert.ok(userBasicInfoTool);
+      assert.match(
+        JSON.stringify(userBasicInfoTool.outputSchema),
+        /学籍或账号状态/,
+      );
+      assert.match(
+        JSON.stringify(userBasicInfoTool.outputSchema),
+        /人员或身份类型/,
       );
     } finally {
       await server.close();
@@ -745,6 +775,330 @@ describe('createMcpServer', () => {
 
       assert.equal(result.isError, true);
       assert.match(readToolText(result), /课表服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应拒绝缺失 access token 的学生详细学籍信息查询', async () => {
+    const result = await callStudentDetailedInfoTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应从基础信息读取 userId、注入 token 并返回裁剪后的学生详细学籍信息', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    const authorizations: string[] = [];
+    let detailedRequestData: unknown;
+    axios.defaults.adapter = async (config) => {
+      authorizations.push(config.headers?.Authorization as string);
+      if (config.url?.endsWith('/v2/rt/user/all_info')) {
+        return {
+          data: {
+            data: {
+              count: 1,
+              list: [{ userId: 'internal-user-id', name: '测*' }],
+            },
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      if (config.url?.endsWith('/v1/rt/user/all_student')) {
+        detailedRequestData = config.data;
+        return {
+          data: {
+            code: 'A00000',
+            msg: '操作成功',
+            data: [{
+              degreeCode: '31251',
+              isIncumbency: '是',
+              nation: '汉族',
+              stationTerminiCode: '2030',
+              trainingCategoryCode: '3',
+              trainingMethodsCode: '12',
+              specialCategory: '',
+              faculty: '经济与管理学院',
+              statusProfessionCode: '125100',
+              maritalStatusCode: '1',
+              degreeTypeCode: '2',
+              degreeCategory: '专业学位硕士',
+              enrolDate: '2021-09-01 00:00:00',
+              cultureProfession: '工商管理',
+              state: '中国',
+              nameSpelling: '****',
+              spcialPlanCode: '0',
+              profession: '工商管理',
+              isDobleDegree: '否',
+              specialCategoryCode: '',
+              projIdCode: '4',
+              cultureProfessionCode: '125100',
+              expectedGraduationDate: '2026-08-31 00:00:00',
+              campus: '四平路校区',
+              studentCategory: '学历生',
+              degree: '工商管理硕士学位',
+              enrolMethods: '全国统考',
+              studentSource: '吴中区',
+              enrolCategoryCode: '12',
+              degreeCategoryCode: '403',
+              grade: 2021,
+              name: '****',
+              spcialPlan: '无专项计划',
+              stateCode: '156',
+              householdRegister: '吴中区',
+              trainingMethods: '国家任务（定向）',
+              maritalStatus: '已婚',
+              chinaSon: '非港澳台',
+              birthday: '1984-01-03 00:00:00',
+              projId: '在职研究生',
+              leaveSchool: '校内在读',
+              degreeType: '专业型',
+              studentSourceCode: '320506',
+              learningStyle: '半脱产',
+              enrolSeasonCode: '1',
+              formLearningCode: '2',
+              studentCategoryCode: '1',
+              studentId: '****',
+              trainingCategory: '学历学位生',
+              isOverseasCode: '0',
+              enrolCategory: '国家任务(定向)',
+              learningStyleCode: '2',
+              facultyCode: '000192',
+              trainingLevel: '硕士',
+              nationCode: '01',
+              enrolMethodsCode: '21',
+              trainingLevelCode: '4',
+              currentGrade: 2021,
+              professionCode: '125100',
+              politicalStatus: '中共党员',
+              campusCode: '1',
+              sex: '女',
+              politicalStatusCode: '01',
+              categoryCode: '1251',
+              enrolSeason: '秋季',
+              isOverseas: '否',
+              sexCode: '2',
+              teacherId: '08050',
+              mailingAddress: '************************',
+              formLearning: '非全日制',
+              householdRegisterCode: '320506',
+              stationTermini: '上海',
+              statusProfession: '工商管理',
+              researchDirection: '同济综合MBA项目',
+              chinaSonCode: '0',
+              lengthSchooling: '2',
+              leaveSchoolCode: '1',
+              category: '工商管理',
+              stationStart: '上海',
+              isIncumbencyCode: '1',
+              userId: 'internal-user-id',
+            }],
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      throw new Error(`unexpected url: ${config.url}`);
+    };
+
+    try {
+      const result = await callStudentDetailedInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(authorizations, [
+        'Bearer access-token-for-test',
+        'Bearer access-token-for-test',
+      ]);
+      assert.deepEqual(JSON.parse(String(detailedRequestData)), {
+        userId: 'internal-user-id',
+      });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            nation: '汉族',
+            faculty: '经济与管理学院',
+            degreeCategory: '专业学位硕士',
+            enrolDate: '2021-09-01 00:00:00',
+            cultureProfession: '工商管理',
+            state: '中国',
+            profession: '工商管理',
+            expectedGraduationDate: '2026-08-31 00:00:00',
+            campus: '四平路校区',
+            degree: '工商管理硕士学位',
+            enrolMethods: '全国统考',
+            studentSource: '吴中区',
+            grade: 2021,
+            name: '****',
+            householdRegister: '吴中区',
+            trainingMethods: '国家任务（定向）',
+            maritalStatus: '已婚',
+            birthday: '1984-01-03 00:00:00',
+            projId: '在职研究生',
+            leaveSchool: '校内在读',
+            degreeType: '专业型',
+            learningStyle: '半脱产',
+            studentId: '****',
+            enrolCategory: '国家任务(定向)',
+            trainingLevel: '硕士',
+            politicalStatus: '中共党员',
+            sex: '女',
+            enrolSeason: '秋季',
+            teacherId: '08050',
+            mailingAddress: '************************',
+            formLearning: '非全日制',
+            stationTermini: '上海',
+            researchDirection: '同济综合MBA项目',
+            lengthSchooling: '2',
+            stationStart: '上海',
+          }],
+        },
+        source: 'Tongji Open Platform',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /degreeCode|stationTerminiCode|trainingCategoryCode|trainingMethodsCode|facultyCode|sexCode|userId|internal-user-id|nameSpelling|currentGrade|professionCode|leaveSchoolCode|isIncumbencyCode/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空学生详细学籍信息标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      if (config.url?.endsWith('/v2/rt/user/all_info')) {
+        return {
+          data: { data: { list: [{ userId: 'internal-user-id' }] } },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      return {
+        data: { data: [] },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callStudentDetailedInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将无法读取 userId 的基础信息响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, list: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callStudentDetailedInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济人员基础信息服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学生详细学籍信息业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      if (config.url?.endsWith('/v2/rt/user/all_info')) {
+        return {
+          data: { data: { list: [{ userId: 'internal-user-id' }] } },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      return {
+        data: { code: 500, message: 'upstream business error' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callStudentDetailedInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济学生详细学籍信息服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学生详细学籍信息上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callStudentDetailedInfoTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学生详细学籍信息上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callStudentDetailedInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /学生详细学籍信息服务暂时不可用/);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
@@ -1755,6 +2109,162 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  it('应拒绝缺失 access token 的人员基础信息查询', async () => {
+    const result = await callUserBasicInfoTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回裁剪后的人员基础信息', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          code: 'A00000',
+          data: {
+            count: 2,
+            list: [{
+              createTime: '2023-11-06 11:33:53',
+              deptCode: '000033',
+              deptName: '继续教育学院',
+              name: '姚*',
+              statusCode: '0',
+              statusName: '有效',
+              updateTime: '2024-06-26 16:09:48',
+              userId: '21*****7',
+              userTypeCode: '5',
+              userTypeName: '继续教育本科',
+            }],
+            sincePid: '1*****8',
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callUserBasicInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            deptName: '继续教育学院',
+            name: '姚*',
+            statusName: '有效',
+            userTypeName: '继续教育本科',
+          }],
+        },
+        source: 'Tongji Open Platform',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /count|sincePid|createTime|deptCode|statusCode|updateTime|userId|userTypeCode|code|000033|2023-11-06 11:33:53|2024-06-26 16:09:48|21\*\*\*\*\*7|1\*\*\*\*\*8/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空人员基础信息标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, list: [], sincePid: 'empty-since-pid' } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callUserBasicInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将人员基础信息业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callUserBasicInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济人员基础信息服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将人员基础信息上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callUserBasicInfoTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将人员基础信息上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callUserBasicInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /人员基础信息服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 
 // callScoreTool 通过内存传输调用成绩查询工具。
@@ -1790,6 +2300,13 @@ const callStudentTimetableTool = async (
   args: { calendarId?: string } = {},
 ) => {
   return callTool(STUDENT_TIMETABLE_TOOL_NAME, invocation, args);
+};
+
+// callStudentDetailedInfoTool 通过内存传输调用学生详细学籍信息查询工具。
+const callStudentDetailedInfoTool = async (
+  invocation: { accessToken?: string },
+) => {
+  return callTool(STUDENT_DETAILED_INFO_TOOL_NAME, invocation);
 };
 
 // callCompetitionPrizeTool 通过内存传输调用竞赛奖励查询工具。
@@ -1835,6 +2352,13 @@ const callLibraryAccessTool = async (
   } = {},
 ) => {
   return callTool(LIBRARY_ACCESS_TOOL_NAME, invocation, args);
+};
+
+// callUserBasicInfoTool 通过内存传输调用人员基础信息查询工具。
+const callUserBasicInfoTool = async (
+  invocation: { accessToken?: string },
+) => {
+  return callTool(USER_BASIC_INFO_TOOL_NAME, invocation);
 };
 
 // callTool 通过内存传输调用指定工具。

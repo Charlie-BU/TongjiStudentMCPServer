@@ -6,9 +6,11 @@ import { registerCompetitionPrizeTool } from "./competition-prize";
 import { registerHonoraryTitleTool } from "./honorary-title";
 import { registerLibraryAccessTool } from "./library-access";
 import { registerSchoolAccessTool } from "./school-access";
+import { registerStudentDetailedInfoTool } from "./student-detailed-info";
 import { registerScholarshipInfoTool } from "./scholarship-info";
 import { registerStudentTimetableTool } from "./student-timetable";
 import { registerUndergraduateScoreTool } from "./undergraduate-score";
+import { registerUserBasicInfoTool } from "./user-basic-info";
 
 // ToolRegistrationContext 表示注册工具所需的可信调用方上下文。
 export interface ToolRegistrationContext {
@@ -26,6 +28,8 @@ export const registerTools = (
     registerCardSpendingFlowTool(server, context);
     // 注册学生课表查询工具。
     registerStudentTimetableTool(server, context);
+    // 注册学生详细学籍信息查询工具。
+    registerStudentDetailedInfoTool(server, context);
     // 注册本科生成绩查询工具。
     registerUndergraduateScoreTool(server, context);
     // 注册本科生竞赛奖励查询工具。
@@ -38,4 +42,6 @@ export const registerTools = (
     registerSchoolAccessTool(server, context);
     // 注册图书馆通行记录查询工具。
     registerLibraryAccessTool(server, context);
+    // 注册人员基础信息查询工具。
+    registerUserBasicInfoTool(server, context);
 };

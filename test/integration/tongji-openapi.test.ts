@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import axios, { type AxiosRequestConfig } from 'axios';
 import {
+  getAllStudentDetailedInfo,
   getCardSpendingFlow,
   getCompetitionPrizes,
   getLibraryAccess,
@@ -10,6 +11,7 @@ import {
   getStudentHonoraryTitles,
   getStudentScholarshipInfo,
   getStudentTimetable,
+  getUserBasicInfo,
   getUndergraduateScores,
 } from '../../src/integration/tongji_openapi';
 
@@ -151,6 +153,84 @@ describe('getStudentScholarshipInfo', () => {
         'https://api.example.test/v2/dc/student_work_info/scholarship',
       );
       assert.equal(capturedConfig?.method, 'get');
+      assert.equal(capturedConfig?.params, undefined);
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getUserBasicInfo', () => {
+  it('应构造人员基础信息查询的地址、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: { count: 0, list: [] } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getUserBasicInfo({
+        accessToken: 'test-access-token',
+        baseUrl: 'https://api.example.test/',
+        timeoutMs: 1_234,
+      });
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v2/rt/user/all_info',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.equal(capturedConfig?.params, undefined);
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getAllStudentDetailedInfo', () => {
+  it('应构造学生详细信息查询的地址、请求体、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: [] },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getAllStudentDetailedInfo(
+        {
+          accessToken: 'test-access-token',
+          baseUrl: 'https://api.example.test/',
+          timeoutMs: 1_234,
+        },
+        'internal-user-id',
+      );
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v1/rt/user/all_student',
+      );
+      assert.equal(capturedConfig?.method, 'post');
+      assert.deepEqual(JSON.parse(String(capturedConfig?.data)), {
+        userId: 'internal-user-id',
+      });
       assert.equal(capturedConfig?.params, undefined);
       assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
       assert.equal(capturedConfig?.timeout, 1_234);

@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-31 20:27 - 接入人员基础信息与学生详细学籍信息 Tool
+
+### 撰写时间
+
+- 2026-07-31 20:27
+
+### Base Commit
+
+- 92992c3575060a8ec0379eef2894d122aa296845
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 现有校园 Tool 已形成固定边界：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。本次目标是在不改变既有 Tool 输入、输出和错误语义的前提下，补齐人员基础信息与学生详细学籍信息查询能力。
+- `tongji.user.basic_info` 面向当前授权用户可见的人员基础信息，不能把上游 `userId`、部门编码、更新时间等包装字段暴露给 Agent。`tongji.student.detailed_info` 需要先通过人员基础信息读取当前授权用户的 `userId`，再作为服务端内部参数调用学生详细学籍信息接口；调用方仍不能通过 Tool 参数指定学号、用户 ID 或其他身份字段。
+
+### 改动概览
+
+- 新增 `src/tools/user-basic-info/`，拆分为 `index.ts` 与 `types.ts`。`registerUserBasicInfoTool` 定义 Tool 名称、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- 新增 `src/tools/student-detailed-info/`，拆分为 `index.ts` 与 `types.ts`。`registerStudentDetailedInfoTool` 先读取当前授权用户的 `userId`，再调用学生详细学籍信息接口，并只返回经过 allowlist 裁剪后的学籍字段。
+- 更新 `src/tools/registry.ts`，把 `registerStudentDetailedInfoTool` 与 `registerUserBasicInfoTool` 接入 `registerTools`。下游 `createMcpServer -> registerTools` 入口保持不变，MCP 客户端现在可通过 `listTools` 发现新增 Tool。
+- 更新 `test/integration/tongji-openapi.test.ts`，补充 `getUserBasicInfo` 与 `getAllStudentDetailedInfo` 的 adapter 契约测试，校验 URL、HTTP method、请求体、Bearer Authorization 和 timeout。
+- 更新 `test/server.test.ts`，补充两个 Tool 的 MCP 可见性和行为回归，覆盖缺 token、token 注入、字段裁剪、空结果、业务错误、上游未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：两个新 Tool 依赖既有 `src/integration/tongji_openapi.ts` 中的 `getUserBasicInfo` 与 `getAllStudentDetailedInfo`。前者调用 `/v2/rt/user/all_info`，后者调用 `/v1/rt/user/all_student`，均复用 `createTongjiOpenapiAdapter` 的 base URL、timeout 和 Bearer token 注入策略。
+- 当前改动：`registerUserBasicInfoTool` 只保留 `deptName`、`name`、`statusName`、`userTypeName`。`registerStudentDetailedInfoTool` 先从基础信息响应 `data.list[].userId` 中读取内部 userId；读取失败时返回工具错误，读取成功后再请求详细学籍信息，并裁剪掉上游编码、包装字段和内部 userId。
+- 下游影响：既有年度统计账单、一卡通消费流水、学生课表、成绩、竞赛奖励、荣誉称号、奖学金、校门通行和图书馆通行 Tool 的注册顺序只追加新项，不改变其输入参数、输出结构或错误文案。新增 Tool 成功时统一返回 `status/data/source`；失败时沿用 `createErrorResult` 与 `toErrorResult` 的错误归一策略。
+
+### 改动结果与业务影响
+
+- 人员基础信息与学生详细学籍信息现在进入受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会标记为 `empty`，业务格式异常会归一为工具错误，避免把异常响应误解释为真实空数据。
+- 学生详细学籍信息链路明确把 `userId` 限定为服务端内部上游调用参数。测试已反向断言 `userId`、编码字段、上游包装字段和示例内部 ID 不出现在 `structuredContent` 中。
+- 本次本地验证已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 90 个用例通过。
+
+### 风险与待办
+
+- `tongji.student.detailed_info` 当前依赖 `getUserBasicInfo` 返回可用 `userId`，因此一次 Tool 调用会访问两个上游接口。若基础信息接口短时不可用，详细学籍信息也会返回工具错误；当前测试已覆盖无法读取 `userId` 的降级路径。
+- 详细学籍信息输出保留了 `name`、`birthday`、`householdRegister`、`mailingAddress`、`politicalStatus` 等字段。当前实现遵循本次业务 allowlist，但这些字段敏感度较高；后续如隐私策略收紧，应同步调整 `StudentDetailedInfo`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区仍存在未跟踪的 `.pnpm-store/`。它不是本次 Tool 的源码或测试资产，提交时应排除；如后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(student-info): add user and student info MCP tools`
+
 ## CHANGELOG - 2026-07-31 20:09 - 接入学生荣誉称号查询 Tool 并收敛荣誉记录输出边界
 ### 撰写时间
 

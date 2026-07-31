@@ -137,7 +137,13 @@ const normalizeScoreData = (
     data: unknown,
 ): UndergraduateScoreData | undefined => {
     if (!isRecord(data) || !Array.isArray(data.term)) {
-        return undefined;
+        return {
+            actualCredit: null,
+            failingCourseCount: null,
+            failingCredits: null,
+            totalGradePoint: null,
+            term: [],
+        };
     }
     const source = data;
     return {

@@ -9,6 +9,7 @@ import {
   SERVER_VERSION,
 } from '../src/server';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
+import { SCHOLARSHIP_INFO_TOOL_NAME } from '../src/tools/scholarship-info';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
 
 // ToolCallResult 表示工具调用的测试结果。
@@ -57,6 +58,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(competitionPrizeTool.outputSchema),
         /获奖人姓名/,
+      );
+      const scholarshipInfoTool = toolList.tools.find(
+        (tool) => tool.name === SCHOLARSHIP_INFO_TOOL_NAME,
+      );
+      assert.ok(scholarshipInfoTool);
+      assert.match(
+        JSON.stringify(scholarshipInfoTool.outputSchema),
+        /奖学金获奖数量/,
+      );
+      assert.match(
+        JSON.stringify(scholarshipInfoTool.outputSchema),
+        /奖学金奖项名称/,
       );
     } finally {
       await server.close();
@@ -402,6 +415,166 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  it('应拒绝缺失 access token 的奖学金查询', async () => {
+    const result = await callScholarshipInfoTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回裁剪后的奖学金记录', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          data: {
+            count: 3,
+            list: [{
+              amount: '3000',
+              deptCode: '000170',
+              deptName: '机械与能源工程学院',
+              name: '测**',
+              rating: '校内',
+              ratingYear: '2016',
+              scholarshipLevel: '二等奖',
+              scholarshipName: '优秀学生奖学金（本科生）',
+              updateTime: '2025-11-10T00:00:00',
+              userId: '1*****4',
+              wid: 'test-wid-001',
+            }],
+            sinceWid: '0******3',
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callScholarshipInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          count: 3,
+          list: [{
+            deptName: '机械与能源工程学院',
+            name: '测**',
+            rating: '校内',
+            ratingYear: '2016',
+            scholarshipLevel: '二等奖',
+            scholarshipName: '优秀学生奖学金（本科生）',
+            updateTime: '2025-11-10T00:00:00',
+          }],
+        },
+        source: 'Tongji Open Platform',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /amount|deptCode|userId|wid|sinceWid|3000|1\*\*\*\*\*4|test-wid-001|0\*\*\*\*\*\*3/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空奖学金记录标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, list: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callScholarshipInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { count: 0, list: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将奖学金业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callScholarshipInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济奖学金服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将奖学金上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callScholarshipInfoTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将奖学金上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callScholarshipInfoTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /奖学金服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 
 // callScoreTool 通过内存传输调用成绩查询工具。
@@ -417,6 +590,13 @@ const callCompetitionPrizeTool = async (
   invocation: { accessToken?: string },
 ) => {
   return callTool(COMPETITION_PRIZE_TOOL_NAME, invocation);
+};
+
+// callScholarshipInfoTool 通过内存传输调用奖学金查询工具。
+const callScholarshipInfoTool = async (
+  invocation: { accessToken?: string },
+) => {
+  return callTool(SCHOLARSHIP_INFO_TOOL_NAME, invocation);
 };
 
 // callTool 通过内存传输调用指定工具。

@@ -1,3 +1,51 @@
+## CHANGELOG - 2026-07-31 16:14 - 接入学生奖学金查询 Tool 并延续字段裁剪边界
+
+### 撰写时间
+
+- 2026-07-31 16:14
+
+### Base Commit
+
+- fcf7421f3d53bf5208998b9cb738f09a6a093da6
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 成绩查询和竞赛奖励查询已经把校园数据能力收敛到同一条边界里：调用方通过 MCP Tool 发现能力，Tool 只从 `ToolInvocationContext` 读取短期 token，手写 adapter 负责调用 Tongji OpenAPI，最后由 Tool 自己做字段 allowlist。奖学金记录属于同一类学生个人数据，因此这次不是直接暴露生成客户端，而是沿用这条链路新增一个独立的 `tongji.student.scholarship_info` Tool。
+- 这次的目标比较明确：Agent 侧可以查询当前授权学生的奖学金记录，但不能通过 Tool 参数传入他人身份字段，也不能拿到上游原始响应里的 `amount`、`deptCode`、`userId`、`wid`、`sinceWid` 等内部或敏感字段。
+
+### 改动概览
+
+- 新增 `src/tools/scholarship-info/`，拆分 `index.ts` 与 `types.ts`。`registerScholarshipInfoTool` 声明空输入 Schema、结构化输出 Schema、缺 token 拒绝、上游调用、响应结构校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 将 `registerScholarshipInfoTool` 接入现有 Tool Catalog。`createMcpServer -> registerTools` 的入口没有变化，但 MCP 客户端现在能额外发现 `tongji.student.scholarship_info`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getStudentScholarshipInfo` 的 adapter 契约测试，校验 `/v2/dc/student_work_info/scholarship`、GET method、无 query 参数、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充奖学金 Tool 的 MCP 可见性与行为测试，覆盖缺 token、token 注入、字段 allowlist、空结果、业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：奖学金数据来自 `src/integration/tongji_openapi.ts` 的 `getStudentScholarshipInfo`，该 adapter 复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Get_scholarship_infoGET`。生成方法对应路径是 `/v2/dc/student_work_info/scholarship`，请求只需要 Authorization header。
+- 当前改动：`registerScholarshipInfoTool` 从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。上游响应经 `unwrapResponseData` 提取业务 `data`，再由 `normalizeScholarshipInfoData` 要求存在 `list` 数组，并把 `count` 规范成数字或 `null`。单条记录只保留 `deptName`、`name`、`rating`、`ratingYear`、`scholarshipLevel`、`scholarshipName` 和 `updateTime`。
+- 下游影响：MCP 客户端通过 `listTools` 能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source`，不会直接消费 Tongji OpenAPI 的原始字段。成绩 Tool 和竞赛奖励 Tool 仍走原有注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 奖学金查询现在形成了和已有校园 Tool 一致的受控链路：Tool 输入不包含身份字段，token 不进入 Schema 或 Tool Result，上游数据先经过结构校验和字段白名单再返回。空列表会被标记为 `empty`，上游业务格式异常会被归一为工具错误，避免被误解释成“没有奖学金记录”。
+- 测试继续使用 `InMemoryTransport` 与 Fake Axios adapter。也就是说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 33 个用例通过。
+
+### 风险与待办
+
+- 工作区存在未跟踪的 `.pnpm-store/v11/index.db`，这不是本次奖学金 Tool 的源码或测试资产。提交前建议删除 `.pnpm-store/`，或把 `.pnpm-store/` 加入 `.gitignore`，避免本地 pnpm 缓存元数据误入提交。
+- 当前奖学金字段 allowlist 保留了 `name`，语义上沿用了竞赛奖励 Tool 的“以上游返回内容为准”策略。如果后续隐私策略要求进一步脱敏姓名，需要同步调整输出 Schema、`ScholarshipInfo` 类型、裁剪逻辑和测试断言。
+- 真实 Tongji OpenAPI 的奖学金字段类型、业务错误码和 token scope 仍需要在受控联调环境确认。如果上游响应结构演进，应同步更新 `ScholarshipInfo` 类型、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(scholarship): add student scholarship MCP tool`
+
 ## CHANGELOG - 2026-07-31 13:08 - 接入本科生竞赛奖励查询 Tool 并注册 MCP 目录
 
 ### 撰写时间

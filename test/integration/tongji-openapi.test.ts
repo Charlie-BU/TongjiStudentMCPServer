@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import axios, { type AxiosRequestConfig } from 'axios';
 import {
   getCompetitionPrizes,
+  getLibraryAccess,
   getSchoolAccess,
   getStudentScholarshipInfo,
   getUndergraduateScores,
@@ -155,6 +156,51 @@ describe('getSchoolAccess', () => {
         portNum: '出门',
         dataStartTime: '2026-07-01 00:00:00',
         dataEndTime: '2026-07-31 23:59:59',
+      });
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getLibraryAccess', () => {
+  it('应构造图书馆通行查询的地址、参数、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: { count: 0, userInfos: [] } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getLibraryAccess(
+        {
+          accessToken: 'test-access-token',
+          baseUrl: 'https://api.example.test/',
+          timeoutMs: 1_234,
+        },
+        '1',
+        '2026-07-01 00:00:00',
+        '2026-07-31 23:59:59',
+      );
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v1/dc/lib/lib_access_control',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.deepEqual(capturedConfig?.params, {
+        direction: '1',
+        visitStartTime: '2026-07-01 00:00:00',
+        visitEndTime: '2026-07-31 23:59:59',
       });
       assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
       assert.equal(capturedConfig?.timeout, 1_234);

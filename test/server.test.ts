@@ -9,6 +9,7 @@ import {
   SERVER_VERSION,
 } from '../src/server';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
+import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
 import { SCHOLARSHIP_INFO_TOOL_NAME } from '../src/tools/scholarship-info';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
@@ -83,6 +84,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(schoolAccessTool.outputSchema),
         /校门通行点或设备名称/,
+      );
+      const libraryAccessTool = toolList.tools.find(
+        (tool) => tool.name === LIBRARY_ACCESS_TOOL_NAME,
+      );
+      assert.ok(libraryAccessTool);
+      assert.match(
+        JSON.stringify(libraryAccessTool.outputSchema),
+        /图书馆刷卡通行时间/,
+      );
+      assert.match(
+        JSON.stringify(libraryAccessTool.outputSchema),
+        /图书馆出入口名称/,
       );
     } finally {
       await server.close();
@@ -765,6 +778,178 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  it('应拒绝缺失 access token 的图书馆通行查询', async () => {
+    const result = await callLibraryAccessTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token、传递查询参数并返回裁剪后的图书馆通行记录', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    let params: unknown;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      params = config.params;
+      return {
+        data: {
+          data: {
+            count: 3,
+            userInfos: [{
+              deptName: '测试学院',
+              direction: '1',
+              door: '测试图书馆东门',
+              gateNo: '18',
+              libPlace: '嘉定',
+              name: '测**',
+              type: '硕士研究生',
+              userId: '2*****9',
+              visitTime: '2022-12-02 08:19:25.0',
+              visitno: '1*****9',
+            }],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callLibraryAccessTool(
+        { accessToken: 'access-token-for-test' },
+        {
+          direction: '1',
+          visitStartTime: '2026-07-01 00:00:00',
+          visitEndTime: '2026-07-31 23:59:59',
+        },
+      );
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.deepEqual(params, {
+        direction: '1',
+        visitStartTime: '2026-07-01 00:00:00',
+        visitEndTime: '2026-07-31 23:59:59',
+      });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          userInfos: [{
+            deptName: '测试学院',
+            direction: '1',
+            door: '测试图书馆东门',
+            libPlace: '嘉定',
+            name: '测**',
+            type: '硕士研究生',
+            visitTime: '2022-12-02 08:19:25.0',
+          }],
+        },
+        source: 'Tongji Open Platform',
+        direction: '1',
+        visitStartTime: '2026-07-01 00:00:00',
+        visitEndTime: '2026-07-31 23:59:59',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /count|gateNo|userId|visitno|2\*\*\*\*\*9|1\*\*\*\*\*9/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空图书馆通行记录标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, userInfos: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callLibraryAccessTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { userInfos: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将图书馆通行业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callLibraryAccessTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济图书馆通行服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将图书馆通行上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callLibraryAccessTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将图书馆通行上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callLibraryAccessTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /图书馆通行服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 
 // callScoreTool 通过内存传输调用成绩查询工具。
@@ -799,6 +984,18 @@ const callSchoolAccessTool = async (
   } = {},
 ) => {
   return callTool(SCHOOL_ACCESS_TOOL_NAME, invocation, args);
+};
+
+// callLibraryAccessTool 通过内存传输调用图书馆通行查询工具。
+const callLibraryAccessTool = async (
+  invocation: { accessToken?: string },
+  args: {
+    direction?: "1" | "2";
+    visitStartTime?: string;
+    visitEndTime?: string;
+  } = {},
+) => {
+  return callTool(LIBRARY_ACCESS_TOOL_NAME, invocation, args);
 };
 
 // callTool 通过内存传输调用指定工具。

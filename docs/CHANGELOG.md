@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-31 19:09 - 接入图书馆通行记录查询 Tool 并延续校园通行数据边界
+
+### 撰写时间
+
+- 2026-07-31 19:09
+
+### Base Commit
+
+- 4b29699a208ba19e38b4a7b9e5296f4d3281ae6b
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 校门通行 Tool 已经把“授权学生个人通行数据”接入到现有 MCP 边界里：Tool 只从 `ToolInvocationContext` 读取短期 token，手写 adapter 负责调用 Tongji OpenAPI，返回前再按 allowlist 裁剪字段。图书馆闸机记录属于同一类高敏校园轨迹数据，因此这次改动的重点不是简单多注册一个接口，而是继续沿用这条受控链路，避免把上游原始字段或身份参数直接暴露给 MCP 客户端。
+- 这次目标是新增 `tongji.student.library_access`，让 Agent 可以查询当前授权学生在指定时间范围内的图书馆进出记录。输入只允许 `direction`、`visitStartTime` 和 `visitEndTime`；输出只保留学院、进出方向、门点、馆区、姓名、身份类型和刷卡时间，不返回上游的 `gateNo`、`userId`、`visitno` 或 `count` 等内部字段。
+
+### 改动概览
+
+- 新增 `src/tools/library-access/`，拆分为 `index.ts` 和 `types.ts`。`registerLibraryAccessTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerLibraryAccessTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.library_access`。
+- `src/integration/tongji_openapi.ts` 已提供 `getLibraryAccess`，它复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Get_library_accessGET`。本次测试补齐了该 adapter 对 `/v1/dc/lib/lib_access_control`、GET method、`direction/visitStartTime/visitEndTime` 参数、Bearer Authorization 和 timeout 的契约验证。
+- `test/server.test.ts` 补充图书馆通行 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、查询参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：图书馆通行数据来自 Tongji OpenAPI 生成客户端的 `Get_library_accessGET`，路径是 `/v1/dc/lib/lib_access_control`，查询参数为 `direction`、`visitStartTime` 和 `visitEndTime`。手写 adapter 继续负责把可信调用上下文里的 token 包装成 `Bearer <token>`，并复用默认 base URL 与 timeout 策略。
+- 当前改动：`registerLibraryAccessTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeLibraryAccessData` 要求存在 `userInfos` 数组。单条记录只保留 `deptName`、`direction`、`door`、`libPlace`、`name`、`type` 和 `visitTime`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询条件，不会拿到上游原始的 `gateNo`、`userId`、`visitno`、`count` 或其他未知字段。成绩、竞赛奖励、奖学金和校门通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 图书馆通行查询现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释为“没有通行记录”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 47 个用例通过。
+
+### 风险与待办
+
+- `visitStartTime` 和 `visitEndTime` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里要求 `yyyy-MM-dd HH:mm:ss`，但还没有做格式校验。当前看起来不会破坏已有调用链，但非法时间会被直接转发给上游；建议后续补充格式校验和非法时间输入的拒绝用例。
+- 图书馆通行输出当前保留了上游返回的 `name`。这和校门通行 Tool 的策略一致，但仍属于个人信息字段；如果后续隐私策略要求进一步脱敏姓名，需要同步调整 `LibraryAccessRecord`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是图书馆通行 Tool 的源码或测试资产。提交前建议删除该目录，或把 `.pnpm-store/` 加入 `.gitignore`，避免本地 pnpm 缓存被误加入提交。
+- 真实 Tongji OpenAPI 的图书馆通行字段类型、业务错误码、数据延迟和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `LibraryAccessRecord`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(library-access): add library gate access MCP tool`
+
 ## CHANGELOG - 2026-07-31 16:41 - 接入校门通行记录查询 Tool 并收敛进出校门数据边界
 
 ### 撰写时间

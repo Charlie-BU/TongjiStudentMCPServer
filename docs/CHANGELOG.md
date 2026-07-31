@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-31 19:45 - 接入一卡通消费流水查询 Tool 并限制流水明细输出边界
+
+### 撰写时间
+
+- 2026-07-31 19:45
+
+### Base Commit
+
+- 43944079f67142fc775eb671886b146fb72f1c57
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 前几个校园 Tool 已经形成了一条固定边界：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。一卡通消费流水属于更细粒度的校园行为数据，既包含消费时间、地点和金额，也可能带出上游的账号、交易编码或人员标识。因此这次目标不是把 `Get_card_spending_flowGET` 原样暴露给 Agent，而是把它收敛成一个只面向当前授权用户的 MCP Tool。
+- 这次新增的是 `tongji.student.card_spending_flow`。调用方只能传入可选的 `tradeStartTime` 和 `tradeEndTime`，不能通过 Tool 参数指定学号、用户 ID 或其他身份字段；输出只保留校区、余额、商户、消费类型、姓名、人员类型、餐厅、消费金额和完整交易时间戳，不返回上游的账户号、POS 编码、性别编码、交易日期拆分字段、交易码或用户 ID。
+
+### 改动概览
+
+- 新增 `src/tools/card-spending-flow/`，拆分为 `index.ts` 和 `types.ts`。`registerCardSpendingFlowTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerCardSpendingFlowTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.card_spending_flow`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getCardSpendingFlow` 的 adapter 契约测试，校验 `/v1/dc/card/card_history_flow`、GET method、`tradeStartTime/tradeEndTime` 参数、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充一卡通消费流水 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、时间参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：一卡通流水数据来自 Tongji OpenAPI 生成客户端的 `Get_card_spending_flowGET`，路径是 `/v1/dc/card/card_history_flow`，查询参数为 `tradeStartTime` 和 `tradeEndTime`。手写 adapter `getCardSpendingFlow` 继续复用 `createTongjiOpenapiAdapter`，由可信调用上下文里的 token 生成 `Bearer <token>`，并沿用默认 base URL 与 timeout 策略。
+- 当前改动：`registerCardSpendingFlowTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeCardSpendingFlowData` 要求存在 `userInfos` 数组。单条记录只保留 `campusAreaName`、`cardBalance`、`mercName`、`mercTypeName`、`name`、`personTypeCode`、`restaurantName`、`tradeAmount` 和 `tradeDateTime`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询条件，不会拿到上游原始的 `count`、`fromAccount`、`posCode`、`sexCode`、`tradeDate`、`tradeMonth`、`tradeTime`、`tranCode` 或 `userId`。既有年度统计账单、成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 一卡通消费流水现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有消费流水”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 61 个用例通过。
+
+### 风险与待办
+
+- `tradeStartTime` 和 `tradeEndTime` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里要求 `yyyy-MM-dd HH:mm:ss`，但还没有做格式校验。当前看起来不会破坏已有调用链，但非法时间会被直接转发给上游；后续可以补充格式校验和非法时间输入的拒绝用例。
+- 一卡通消费流水输出当前保留了 `name`、`cardBalance`、`mercName` 和 `tradeAmount`。这和当前校园 Tool 的 allowlist 策略一致，但流水明细本身敏感度更高；如果后续隐私策略要求进一步脱敏姓名、余额或商户名称，需要同步调整 `CardSpendingFlowRecord`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是一卡通消费流水 Tool 的源码或测试资产。提交时应排除该目录；如本仓后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+- 真实 Tongji OpenAPI 的一卡通流水字段类型、业务错误码、数据延迟和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `CardSpendingFlowRecord`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(card-spending-flow): add card spending flow MCP tool`
+
 ## CHANGELOG - 2026-07-31 19:29 - 接入学生年度统计账单 Tool 并收敛年度画像数据边界
 
 ### 撰写时间

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import axios, { type AxiosRequestConfig } from 'axios';
 import {
+  getCardSpendingFlow,
   getCompetitionPrizes,
   getLibraryAccess,
   getSchoolAccess,
@@ -242,6 +243,49 @@ describe('getStatisticsInfoByYear', () => {
       );
       assert.equal(capturedConfig?.method, 'get');
       assert.deepEqual(capturedConfig?.params, { year: '2024' });
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getCardSpendingFlow', () => {
+  it('应构造一卡通消费流水查询的地址、参数、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: { count: 0, userInfos: [] } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getCardSpendingFlow(
+        {
+          accessToken: 'test-access-token',
+          baseUrl: 'https://api.example.test/',
+          timeoutMs: 1_234,
+        },
+        '2025-05-01 00:00:00',
+        '2025-05-31 23:59:59',
+      );
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v1/dc/card/card_history_flow',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.deepEqual(capturedConfig?.params, {
+        tradeStartTime: '2025-05-01 00:00:00',
+        tradeEndTime: '2025-05-31 23:59:59',
+      });
       assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
       assert.equal(capturedConfig?.timeout, 1_234);
     } finally {

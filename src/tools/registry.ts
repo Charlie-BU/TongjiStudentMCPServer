@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerAnnualBillTool } from "./annual-bill";
+import { registerCardSpendingFlowTool } from "./card-spending-flow";
 import { registerCompetitionPrizeTool } from "./competition-prize";
 import { registerLibraryAccessTool } from "./library-access";
 import { registerSchoolAccessTool } from "./school-access";
@@ -19,6 +20,8 @@ export const registerTools = (
 ): void => {
     // 注册学生年度统计账单查询工具。
     registerAnnualBillTool(server, context);
+    // 注册一卡通消费流水查询工具。
+    registerCardSpendingFlowTool(server, context);
     // 注册本科生成绩查询工具。
     registerUndergraduateScoreTool(server, context);
     // 注册本科生竞赛奖励查询工具。

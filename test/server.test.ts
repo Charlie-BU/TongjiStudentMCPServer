@@ -9,6 +9,7 @@ import {
   SERVER_VERSION,
 } from '../src/server';
 import { ANNUAL_BILL_TOOL_NAME } from '../src/tools/annual-bill';
+import { CARD_SPENDING_FLOW_TOOL_NAME } from '../src/tools/card-spending-flow';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
@@ -49,6 +50,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(annualBillTool.outputSchema),
         /年度食堂总消费金额/,
+      );
+      const cardSpendingFlowTool = toolList.tools.find(
+        (tool) => tool.name === CARD_SPENDING_FLOW_TOOL_NAME,
+      );
+      assert.ok(cardSpendingFlowTool);
+      assert.match(
+        JSON.stringify(cardSpendingFlowTool.outputSchema),
+        /本次一卡通消费金额/,
+      );
+      assert.match(
+        JSON.stringify(cardSpendingFlowTool.outputSchema),
+        /完整交易时间戳/,
       );
       const scoreTool = toolList.tools.find(
         (tool) => tool.name === UNDERGRADUATE_SCORE_TOOL_NAME,
@@ -307,6 +320,184 @@ describe('createMcpServer', () => {
 
       assert.equal(result.isError, true);
       assert.match(readToolText(result), /年度统计账单服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应拒绝缺失 access token 的一卡通消费流水查询', async () => {
+    const result = await callCardSpendingFlowTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token、传递时间参数并返回裁剪后的一卡通消费流水', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    let params: unknown;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      params = config.params;
+      return {
+        data: {
+          data: {
+            count: 5,
+            userInfos: [{
+              campusAreaName: '四平校区',
+              cardBalance: 184.45,
+              fromAccount: 342668,
+              mercName: '四平路校区西北超市',
+              mercTypeName: '超市与店铺',
+              name: '测试用户',
+              personTypeCode: '派遣人员',
+              posCode: 9,
+              restaurantName: '无',
+              sexCode: '1',
+              tradeAmount: 4.5,
+              tradeDate: '2025-05-28',
+              tradeDateTime: '2025-05-28 14:03:36',
+              tradeMonth: '05',
+              tradeTime: '14:00',
+              tranCode: '15',
+              userId: '1*****9',
+            }],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callCardSpendingFlowTool(
+        { accessToken: 'access-token-for-test' },
+        {
+          tradeStartTime: '2025-05-01 00:00:00',
+          tradeEndTime: '2025-05-31 23:59:59',
+        },
+      );
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.deepEqual(params, {
+        tradeStartTime: '2025-05-01 00:00:00',
+        tradeEndTime: '2025-05-31 23:59:59',
+      });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          userInfos: [{
+            campusAreaName: '四平校区',
+            cardBalance: 184.45,
+            mercName: '四平路校区西北超市',
+            mercTypeName: '超市与店铺',
+            name: '测试用户',
+            personTypeCode: '派遣人员',
+            restaurantName: '无',
+            tradeAmount: 4.5,
+            tradeDateTime: '2025-05-28 14:03:36',
+          }],
+        },
+        source: 'Tongji Open Platform',
+        tradeStartTime: '2025-05-01 00:00:00',
+        tradeEndTime: '2025-05-31 23:59:59',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /"count"|"fromAccount"|"posCode"|"sexCode"|"tradeDate"|"tradeMonth"|"tradeTime"|"tranCode"|"userId"|342668|1\*\*\*\*\*9/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空一卡通消费流水标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, userInfos: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCardSpendingFlowTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { userInfos: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将一卡通消费流水业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCardSpendingFlowTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济一卡通消费流水服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将一卡通消费流水上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callCardSpendingFlowTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将一卡通消费流水上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callCardSpendingFlowTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /一卡通消费流水服务暂时不可用/);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
@@ -1176,6 +1367,17 @@ const callAnnualBillTool = async (
   args: { year: string },
 ) => {
   return callTool(ANNUAL_BILL_TOOL_NAME, invocation, args);
+};
+
+// callCardSpendingFlowTool 通过内存传输调用一卡通消费流水查询工具。
+const callCardSpendingFlowTool = async (
+  invocation: { accessToken?: string },
+  args: {
+    tradeStartTime?: string;
+    tradeEndTime?: string;
+  } = {},
+) => {
+  return callTool(CARD_SPENDING_FLOW_TOOL_NAME, invocation, args);
 };
 
 // callCompetitionPrizeTool 通过内存传输调用竞赛奖励查询工具。

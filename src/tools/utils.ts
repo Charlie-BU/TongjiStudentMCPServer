@@ -55,7 +55,10 @@ export const createErrorResult = (status: ToolStatus, message: string) => ({
 
 
 // toErrorResult 将上游错误转换为 MCP 工具错误结果。
-export const toErrorResult = (error: unknown) => {
+export const toErrorResult = (
+    error: unknown,
+    upstreamUnavailableMessage = "同济成绩服务暂时不可用，请稍后重试。",
+) => {
     if (isUnauthorizedUpstreamError(error)) {
         return createErrorResult(
             "unauthorized",
@@ -64,6 +67,6 @@ export const toErrorResult = (error: unknown) => {
     }
     return createErrorResult(
         "upstream_unavailable",
-        "同济成绩服务暂时不可用，请稍后重试。",
+        upstreamUnavailableMessage,
     );
 };

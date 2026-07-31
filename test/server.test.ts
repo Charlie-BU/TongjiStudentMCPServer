@@ -8,10 +8,11 @@ import {
   SERVER_NAME,
   SERVER_VERSION,
 } from '../src/server';
+import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
 
-// ScoreToolCallResult 表示成绩查询工具的测试结果。
-interface ScoreToolCallResult {
+// ToolCallResult 表示工具调用的测试结果。
+interface ToolCallResult {
   isError?: boolean;
   structuredContent?: unknown;
   content: Array<{ type: string; text?: string }>;
@@ -44,6 +45,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(scoreTool.outputSchema),
         /本学期课程成绩列表/,
+      );
+      const competitionPrizeTool = toolList.tools.find(
+        (tool) => tool.name === COMPETITION_PRIZE_TOOL_NAME,
+      );
+      assert.ok(competitionPrizeTool);
+      assert.match(
+        JSON.stringify(competitionPrizeTool.outputSchema),
+        /比赛名称/,
+      );
+      assert.match(
+        JSON.stringify(competitionPrizeTool.outputSchema),
+        /获奖人姓名/,
       );
     } finally {
       await server.close();
@@ -228,12 +241,189 @@ describe('createMcpServer', () => {
       axios.defaults.adapter = previousAdapter;
     }
   });
+
+  it('应拒绝缺失 access token 的竞赛奖励查询', async () => {
+    const result = await callCompetitionPrizeTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回裁剪后的竞赛奖励记录', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          data: {
+            count: 2,
+            list: [{
+              achievementRecognitionType: '竞赛获奖',
+              awardCategory: '竞赛获奖',
+              awardDate: '2015',
+              awardLevel: '一等奖',
+              competitionLevel: '校级',
+              competitionName: '卓越杯测试选拔赛',
+              credit: 3,
+              deptCode: '000255',
+              deptName: '医学院',
+              id: 10721,
+              name: '测**',
+              schoolYear: '2016-2017',
+              userId: '1*****5',
+            }],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callCompetitionPrizeTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            awardCategory: '竞赛获奖',
+            awardDate: '2015',
+            awardLevel: '一等奖',
+            competitionLevel: '校级',
+            competitionName: '卓越杯测试选拔赛',
+            deptName: '医学院',
+            name: '测**',
+            schoolYear: '2016-2017',
+          }],
+        },
+        source: 'Tongji Open Platform',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /achievementRecognitionType|credit|deptCode|id|userId|count|1\*\*\*\*\*5|10721/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空竞赛奖励记录标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, list: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCompetitionPrizeTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将竞赛奖励业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCompetitionPrizeTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济竞赛奖励服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将竞赛奖励上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callCompetitionPrizeTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将竞赛奖励上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callCompetitionPrizeTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /竞赛奖励服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
 });
 
 // callScoreTool 通过内存传输调用成绩查询工具。
 const callScoreTool = async (
   invocation: { accessToken?: string },
   args: { calendarId?: string } = {},
+) => {
+  return callTool(UNDERGRADUATE_SCORE_TOOL_NAME, invocation, args);
+};
+
+// callCompetitionPrizeTool 通过内存传输调用竞赛奖励查询工具。
+const callCompetitionPrizeTool = async (
+  invocation: { accessToken?: string },
+) => {
+  return callTool(COMPETITION_PRIZE_TOOL_NAME, invocation);
+};
+
+// callTool 通过内存传输调用指定工具。
+const callTool = async (
+  name: string,
+  invocation: { accessToken?: string },
+  args: Record<string, unknown> = {},
 ) => {
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const server = createMcpServer({ invocation });
@@ -243,16 +433,16 @@ const callScoreTool = async (
     await server.connect(serverTransport);
     await client.connect(clientTransport);
     return (await client.callTool({
-      name: UNDERGRADUATE_SCORE_TOOL_NAME,
+      name,
       arguments: args,
-    })) as ScoreToolCallResult;
+    })) as ToolCallResult;
   } finally {
     await server.close();
   }
 };
 
 // readToolText 读取 MCP 工具结果中的文本内容。
-const readToolText = (result: ScoreToolCallResult): string => {
+const readToolText = (result: ToolCallResult): string => {
   const text = result.content.find((item) => item.type === 'text')?.text;
   return text ?? '';
 };

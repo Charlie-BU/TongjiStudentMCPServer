@@ -1,3 +1,53 @@
+## CHANGELOG - 2026-07-31 13:08 - 接入本科生竞赛奖励查询 Tool 并注册 MCP 目录
+
+### 撰写时间
+
+- 2026-07-31 13:08
+
+### Base Commit
+
+- b1c088d21dd458bca00ee3b502f9ca237d8d950e
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 成绩查询 Tool 已经验证了 `Agent -> MCP invocation -> 手写 adapter -> Tongji OpenAPI -> 字段 allowlist -> Tool Result` 这条链路。接下来接入竞赛奖励记录时，重点仍然是控制暴露面：Tool 参数不接收身份字段，token 只来自 `ToolInvocationContext`，上游响应必须先裁剪再返回给 MCP 客户端。
+- 这次主目标是把本科生竞赛奖励记录封装成独立的 `tongji.student.competition_prize` Tool，并挂到现有 `registerTools` 目录里。这样 Agent 侧可以通过 MCP 发现和调用竞赛奖励能力，而不需要直接接触 CAM 生成客户端的方法名、上游原始字段或 Authorization header。
+
+### 改动概览
+
+- 新增 `src/tools/competition-prize/`，拆分 `index.ts` 与 `types.ts`。`registerCompetitionPrizeTool` 声明空输入 Schema、结构化输出 Schema、缺 token 拒绝、上游调用、字段裁剪、空结果判断和错误归一。
+- `src/integration/tongji_openapi.ts` 新增 `getCompetitionPrizes`，通过既有 `createTongjiOpenapiAdapter` 调用 CAM 生成的 `Get_competition_prizesGET`，继续复用默认 base URL、请求超时和 Bearer Authorization 注入方式。
+- `src/tools/registry.ts` 将 `registerCompetitionPrizeTool` 加入 Tool Catalog。`createMcpServer -> registerTools` 的下游入口不变，但 MCP 客户端现在能额外发现 `tongji.student.competition_prize`。
+- `src/tools/utils.ts` 给 `toErrorResult` 增加可选的上游不可用提示文案。成绩 Tool 仍使用默认“成绩服务”文案，竞赛奖励 Tool 可以返回更准确的“竞赛奖励服务”文案。
+- `test/integration/tongji-openapi.test.ts` 覆盖竞赛奖励 adapter 的 URL、HTTP method、无 query 参数、Authorization header 和 timeout；`test/server.test.ts` 覆盖 Tool 发现、缺 token、token 注入、字段 allowlist、空结果、业务异常、401 未授权和普通上游不可用。
+- 当前工作区还包含 `src/integration/tongji_openapi.ts`、`src/integration/yourtj.ts` 中若干尚未注册为 MCP Tool 的 OpenAPI/YourTJ wrapper。它们和竞赛奖励主链路不直接绑定，提交前建议确认是否拆分。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：竞赛奖励数据来自 Tongji OpenAPI 生成客户端的 `Get_competition_prizesGET`，生成方法路径是 `/v2/dc/student_work_info/competition_winners`，请求只需要 Authorization header。手写 adapter 负责把可信调用上下文里的短期 token 包装成 `Bearer <token>`。
+- 当前改动：`registerCompetitionPrizeTool` 从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。上游响应经 `unwrapResponseData` 取业务 `data`，再由 `normalizeCompetitionPrizeData` 要求存在 `list` 数组，最后只保留 `awardCategory`、`awardDate`、`awardLevel`、`competitionLevel`、`competitionName`、`deptName`、`name` 和 `schoolYear`。
+- 下游影响：MCP 客户端通过 `listTools` 能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source`，不会拿到上游的 `userId`、`id`、`deptCode`、`credit`、`count` 或其他未知字段。成绩 Tool 仍走原注册路径，`toErrorResult` 的默认参数保持原有错误文案。
+
+### 改动结果与业务影响
+
+- 竞赛奖励查询已经形成和成绩 Tool 一致的安全边界：调用方不传身份字段，MCP 服务不持久化 token，Tool Result 只返回白名单字段。空列表会被显式标记为 `empty`，上游业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有竞赛奖励”。
+- 这次测试使用 `InMemoryTransport` 与 Fake Axios adapter，覆盖的是 MCP 契约和上游请求构造，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck`、`pnpm build`，四项均通过；`git diff --check` 也通过，仅提示工作区文件下次被 Git 触碰时可能发生 LF/CRLF 替换。
+
+### 风险与待办
+
+- 当前 diff 中混入了竞赛奖励之外的多个 wrapper，尤其是 `getAllStudentDetailedInfo(config, userId)` 这类带显式身份参数的 helper。它们尚未进入 MCP Tool，也没有字段裁剪和 ownership 约束；如果本次提交只面向竞赛奖励能力，建议拆到后续独立改动。
+- 工作区存在未跟踪的 `.pnpm-store/`，且当前 `.gitignore` 没有忽略它。提交前应删除该本地缓存目录，或将 `.pnpm-store/` 加入忽略规则，避免把依赖缓存带入仓库。
+- 真实 Tongji OpenAPI 的竞赛奖励字段类型、业务错误码和 token scope 仍需要在受控联调环境确认。如果上游响应结构演进，应同步更新 `CompetitionPrize` 类型、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(competition-prize): add undergraduate prize MCP tool`
+
 ## CHANGELOG - 2026-07-29 19:38 - 拆分本科成绩 Tool 的类型与通用响应处理
 
 ### 撰写时间

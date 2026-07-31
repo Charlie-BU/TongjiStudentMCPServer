@@ -55,3 +55,106 @@ export const getUndergraduateScores = async (
     adapter.withAuthorization({ calendarId }),
   );
 };
+
+// getCompetitionPrizes 查询本科生竞赛奖励记录。
+export const getCompetitionPrizes = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_competition_prizesGET(adapter.withAuthorization({}));
+};
+
+// getStudentHonoraryTitles 查询学生获得荣誉称号情况信息。
+export const getStudentHonoraryTitles = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Student_honorary_titleGET(adapter.withAuthorization({}));
+};
+
+// getStudentScholarshipInfo 查询学生获得奖学金情况信息。
+export const getStudentScholarshipInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_scholarship_infoGET(adapter.withAuthorization({}));
+};
+
+// getAllStudentDetailedInfo 获取教务系统所有的学生详细信息。
+export const getAllStudentDetailedInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+  userId: string,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_student_detailed_infoPOST(
+    adapter.withAuthorization({ userId }),
+  );
+};
+
+// getUserBasicInfo 获取人员基础信息。
+export const getUserBasicInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_user_basic_infoGET(adapter.withAuthorization({}));
+};
+
+// getStatisticsInfoByYear 根据年份查询当前授权人员的全校师生统计数据。
+export const getStatisticsInfoByYear = async (
+  config: TongjiOpenapiAdapterConfig,
+  year: string,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_statistics_info_by_yearGET(
+    adapter.withAuthorization({ year }),
+  );
+};
+
+// getCardSpendingFlow 根据数据时间查询人员一卡通历史流水信息。
+export const getCardSpendingFlow = async (
+  config: TongjiOpenapiAdapterConfig,
+  tradeStartTime?: string,
+  tradeEndTime?: string,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_card_spending_flowGET(
+    adapter.withAuthorization({ tradeStartTime, tradeEndTime }),
+  );
+};
+
+// getStudentTimetable 获取1tongji系统上学生课表信息，支持当前学期和历史学期实时查询。
+export const getStudentTimetable = async (
+  config: TongjiOpenapiAdapterConfig,
+  calendarId?: string,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Student_timetableGET(
+    adapter.withAuthorization({ calendarId }),
+  );
+};
+
+// getSchoolAccess 查询在某一段时间内进出校门门禁的信息。
+export const getSchoolAccess = async (
+  config: TongjiOpenapiAdapterConfig,
+  portNum?: string,
+  dataStartTime?: string,
+  dataEndTime?: string,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_school_accessGET(
+    adapter.withAuthorization({ portNum, dataStartTime, dataEndTime }),
+  );
+};
+
+// getLibraryAccess 根据学工号查询在某一段时间内进出图书馆闸机门禁信息。
+export const getLibraryAccess = async (
+  config: TongjiOpenapiAdapterConfig,
+  direction?: string,
+  visitStartTime?: string,
+  visitEndTime?: string,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_library_accessGET(
+    adapter.withAuthorization({ direction, visitStartTime, visitEndTime }),
+  );
+};

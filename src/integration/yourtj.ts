@@ -29,3 +29,32 @@ export const createYourtjAdapter = (
         .then((response) => response.data),
   });
 };
+
+// getCourses 获取课程列表。
+export const getCourses = async (
+  config: YourtjAdapterConfig = {},
+  page?: number,
+  limit?: number,
+  q?: string,
+  includeTotal?: boolean,
+): Promise<unknown> => {
+  const service = createYourtjAdapter(config);
+  return service.CoursesGET({ page, limit, q, includeTotal });
+};
+
+// getAllCalendars 获取所有学期列表。
+export const getAllCalendars = async (
+  config: YourtjAdapterConfig = {},
+): Promise<unknown> => {
+  const service = createYourtjAdapter(config);
+  return service.GetAllCalendarGET();
+};
+
+// getGradesByCalendarId 获取当前学期所有年级。
+export const getGradesByCalendarId = async (
+  config: YourtjAdapterConfig = {},
+  calendarId: number,
+): Promise<unknown> => {
+  const service = createYourtjAdapter(config);
+  return service.FindGradeByCalendarIdPOST({ calendarId });
+};

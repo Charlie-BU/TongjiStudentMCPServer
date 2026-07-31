@@ -11,6 +11,7 @@ import {
 import { ANNUAL_BILL_TOOL_NAME } from '../src/tools/annual-bill';
 import { CARD_SPENDING_FLOW_TOOL_NAME } from '../src/tools/card-spending-flow';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
+import { HONORARY_TITLE_TOOL_NAME } from '../src/tools/honorary-title';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
 import { SCHOLARSHIP_INFO_TOOL_NAME } from '../src/tools/scholarship-info';
@@ -99,6 +100,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(competitionPrizeTool.outputSchema),
         /获奖人姓名/,
+      );
+      const honoraryTitleTool = toolList.tools.find(
+        (tool) => tool.name === HONORARY_TITLE_TOOL_NAME,
+      );
+      assert.ok(honoraryTitleTool);
+      assert.match(
+        JSON.stringify(honoraryTitleTool.outputSchema),
+        /荣誉称号或奖项名称/,
+      );
+      assert.match(
+        JSON.stringify(honoraryTitleTool.outputSchema),
+        /评定年份/,
       );
       const scholarshipInfoTool = toolList.tools.find(
         (tool) => tool.name === SCHOLARSHIP_INFO_TOOL_NAME,
@@ -1077,6 +1090,163 @@ describe('createMcpServer', () => {
     }
   });
 
+  it('应拒绝缺失 access token 的荣誉称号查询', async () => {
+    const result = await callHonoraryTitleTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token 并返回裁剪后的荣誉称号记录', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      return {
+        data: {
+          code: 'A00000',
+          data: {
+            count: 3,
+            list: [{
+              deptCode: '000182',
+              deptName: '土木工程学院',
+              honorTitle: '同济大学优生优干',
+              name: '吕**',
+              ratingTerm: null,
+              ratingYear: '2010',
+              rewardLevel: null,
+              updateTime: '2025-04-02T00:00:00',
+              userId: '0*****1',
+              wid: 'D8CAE0FC060574DEE040A8C0018420C5',
+            }],
+            sinceWid: '1******0',
+          },
+          msg: '成功',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callHonoraryTitleTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            deptName: '土木工程学院',
+            honorTitle: '同济大学优生优干',
+            name: '吕**',
+            ratingYear: '2010',
+          }],
+        },
+        source: 'Tongji Open Platform',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /count|sinceWid|deptCode|ratingTerm|rewardLevel|updateTime|userId|wid|code|msg|000182|2025-04-02T00:00:00|0\*\*\*\*\*1|D8CAE0FC060574DEE040A8C0018420C5|1\*\*\*\*\*\*0|成功/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空荣誉称号记录标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { count: 0, list: [], sinceWid: 'empty-since-wid' } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callHonoraryTitleTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将荣誉称号业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callHonoraryTitleTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济荣誉称号服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将荣誉称号上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callHonoraryTitleTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将荣誉称号上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callHonoraryTitleTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /荣誉称号服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
   it('应拒绝缺失 access token 的奖学金查询', async () => {
     const result = await callScholarshipInfoTool({});
 
@@ -1627,6 +1797,13 @@ const callCompetitionPrizeTool = async (
   invocation: { accessToken?: string },
 ) => {
   return callTool(COMPETITION_PRIZE_TOOL_NAME, invocation);
+};
+
+// callHonoraryTitleTool 通过内存传输调用荣誉称号查询工具。
+const callHonoraryTitleTool = async (
+  invocation: { accessToken?: string },
+) => {
+  return callTool(HONORARY_TITLE_TOOL_NAME, invocation);
 };
 
 // callScholarshipInfoTool 通过内存传输调用奖学金查询工具。

@@ -1,3 +1,46 @@
+## CHANGELOG - 2026-07-31 20:09 - 接入学生荣誉称号查询 Tool 并收敛荣誉记录输出边界
+### 撰写时间
+
+- 2026-07-31 20:09
+
+### Base Commit
+
+- 70681a08acaaf3ab33217076dd294d81866247f9
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+- 前几个校园 Tool 已经形成了一条相对稳定的边界：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。荣誉称号和竞赛奖励、奖学金一样，属于当前授权学生的个人校园荣誉数据；它不应该把 CAM 生成客户端的原始响应直接暴露给 Agent。
+- 这次目标是新增 `tongji.student.honorary_title`。调用方不需要传入任何业务参数，也不能通过 Tool 参数指定学号、用户 ID 或其他身份字段；输出只保留学院或部门名称、荣誉称号或奖项名称、获奖人姓名和评定年份，避免把上游的 `deptCode`、`userId`、`wid`、`sinceWid`、更新时间或业务包装字段带到 Tool Result。
+
+### 改动概览
+
+- 新增 `src/tools/honorary-title/`，拆分为 `index.ts` 和 `types.ts`。`registerHonoraryTitleTool` 定义 Tool 名称、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerHonoraryTitleTool`。下游 `createMcpServer -> registerTools` 的入口不变，MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.honorary_title`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getStudentHonoraryTitles` 的 adapter 契约测试，校验 `/v2/dc/student_work_info/honorary_title`、GET method、无 query params、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充荣誉称号 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：荣誉称号数据来自 Tongji OpenAPI 生成客户端的 `Student_honorary_titleGET`，路径是 `/v2/dc/student_work_info/honorary_title`。手写 adapter `getStudentHonoraryTitles` 继续复用 `createTongjiOpenapiAdapter`，由可信调用上下文里的 token 生成 `Bearer <token>`，并沿用默认 base URL 与 timeout 策略。
+- 当前改动：`registerHonoraryTitleTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeHonoraryTitleData` 要求存在 `list` 数组。单条记录只保留 `deptName`、`honorTitle`、`name` 和 `ratingYear`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source`，不会拿到上游原始的 `count`、`sinceWid`、`deptCode`、`ratingTerm`、`rewardLevel`、`updateTime`、`userId`、`wid`、`code` 或 `msg`。既有年度统计账单、一卡通消费流水、学生课表、成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+- 学生荣誉称号现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有荣誉称号记录”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 75 个用例通过。
+
+### 风险与待办
+- 荣誉称号 Tool 当前没有输入参数，因此身份边界主要依赖 `ToolInvocationContext` 中的短期 token。这个模式和现有校园 Tool 一致；如果后续新增按年份、学院或人员筛选的能力，仍应避免把 `userId`、学号或其他身份字段开放为 Tool 参数。
+- 输出保留了上游返回的 `name`。当前测试使用脱敏样例 `吕**`，并通过反向断言排除了 `userId`、`wid` 等字段；真实上游是否始终返回脱敏姓名仍需要在受控联调环境确认。如果上游可能返回完整姓名，后续应在 Tool 层增加姓名脱敏策略并补充对应测试。
+- 工作区仍存在未跟踪的 `.pnpm-store/`，它不是本次荣誉称号 Tool 的源码或测试资产。提交时应排除该目录；如果后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+
+### 建议 Commit Message（git-cz）
+- `feat(honorary-title): add honorary title MCP tool`
+
 ## CHANGELOG - 2026-07-31 19:56 - 接入学生课表查询 Tool 并补齐课表链路回归验证
 
 ### 撰写时间

@@ -7,6 +7,7 @@ import {
   getLibraryAccess,
   getSchoolAccess,
   getStatisticsInfoByYear,
+  getStudentHonoraryTitles,
   getStudentScholarshipInfo,
   getStudentTimetable,
   getUndergraduateScores,
@@ -76,6 +77,42 @@ describe('getCompetitionPrizes', () => {
       assert.equal(
         capturedConfig?.url,
         'https://api.example.test/v2/dc/student_work_info/competition_winners',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.equal(capturedConfig?.params, undefined);
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getStudentHonoraryTitles', () => {
+  it('应构造荣誉称号查询的地址、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: { count: 0, list: [] } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getStudentHonoraryTitles({
+        accessToken: 'test-access-token',
+        baseUrl: 'https://api.example.test/',
+        timeoutMs: 1_234,
+      });
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v2/dc/student_work_info/honorary_title',
       );
       assert.equal(capturedConfig?.method, 'get');
       assert.equal(capturedConfig?.params, undefined);

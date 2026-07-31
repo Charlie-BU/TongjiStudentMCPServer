@@ -3,6 +3,7 @@ import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerAnnualBillTool } from "./annual-bill";
 import { registerCardSpendingFlowTool } from "./card-spending-flow";
 import { registerCompetitionPrizeTool } from "./competition-prize";
+import { registerHonoraryTitleTool } from "./honorary-title";
 import { registerLibraryAccessTool } from "./library-access";
 import { registerSchoolAccessTool } from "./school-access";
 import { registerScholarshipInfoTool } from "./scholarship-info";
@@ -29,6 +30,8 @@ export const registerTools = (
     registerUndergraduateScoreTool(server, context);
     // 注册本科生竞赛奖励查询工具。
     registerCompetitionPrizeTool(server, context);
+    // 注册学生荣誉称号查询工具。
+    registerHonoraryTitleTool(server, context);
     // 注册学生奖学金查询工具。
     registerScholarshipInfoTool(server, context);
     // 注册校门通行记录查询工具。

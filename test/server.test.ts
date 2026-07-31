@@ -14,6 +14,7 @@ import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
 import { SCHOLARSHIP_INFO_TOOL_NAME } from '../src/tools/scholarship-info';
+import { STUDENT_TIMETABLE_TOOL_NAME } from '../src/tools/student-timetable';
 import { UNDERGRADUATE_SCORE_TOOL_NAME } from '../src/tools/undergraduate-score';
 
 // ToolCallResult 表示工具调用的测试结果。
@@ -62,6 +63,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(cardSpendingFlowTool.outputSchema),
         /完整交易时间戳/,
+      );
+      const studentTimetableTool = toolList.tools.find(
+        (tool) => tool.name === STUDENT_TIMETABLE_TOOL_NAME,
+      );
+      assert.ok(studentTimetableTool);
+      assert.match(
+        JSON.stringify(studentTimetableTool.outputSchema),
+        /结构化课表细则数组/,
+      );
+      assert.match(
+        JSON.stringify(studentTimetableTool.outputSchema),
+        /星期几，数字 1-7/,
       );
       const scoreTool = toolList.tools.find(
         (tool) => tool.name === UNDERGRADUATE_SCORE_TOOL_NAME,
@@ -498,6 +511,227 @@ describe('createMcpServer', () => {
 
       assert.equal(result.isError, true);
       assert.match(readToolText(result), /一卡通消费流水服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应拒绝缺失 access token 的学生课表查询', async () => {
+    const result = await callStudentTimetableTool({});
+
+    assert.equal(result.isError, true);
+    assert.match(readToolText(result), /未提供同济账号授权/);
+  });
+
+  it('应注入 token、传递学期编号并返回裁剪后的学生课表', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let authorization: string | undefined;
+    let params: unknown;
+    axios.defaults.adapter = async (config) => {
+      authorization = config.headers?.Authorization as string | undefined;
+      params = config.params;
+      return {
+        data: {
+          data: [{
+            teachingClassId: 1111111124870610,
+            classCode: '10101901',
+            className: '01班',
+            campus: '1',
+            courseCode: '101019',
+            courseName: '数据结构',
+            assessmentMode: '2',
+            isExemptionCourse: null,
+            credits: 4,
+            teacherName: '张亚英',
+            classTime: '星期五 3-4节 [1-17],星期三 5-6节 [1-17]',
+            classRoom: '2515',
+            classRoomName: null,
+            classRoomPractice: '校内',
+            remark: '',
+            timeTableList: [{
+              dayOfWeek: 3,
+              timeStart: 5,
+              timeEnd: 6,
+              roomId: '2515',
+              teacherCode: '05152',
+              weekNum: '[1-17]',
+              weekstr: '星期三',
+              teacherName: '张亚英(05152)',
+              timeAndRoom: '星期三 5-6节[1-17]北115',
+              timeTab: '星期三 5-6节 [1-17]',
+              className: '01班',
+              classCode: '10101901',
+              courseName: '数据结构',
+              courseCode: '101019',
+              teachingClassId: 1111111124870610,
+              campus: '1',
+              weeks: [1, 2, 3, 4],
+              timeId: null,
+              popover: '[5-6节] [1-17] 数据结构(101019) 张亚英(05152) 北115 ',
+              roomCategory: '1',
+              roomLable: '',
+              roomIdI18n: '北115',
+              campusI18n: '四平路校区',
+            }],
+            compulsory: '0',
+            classType: '1',
+            roomCategory: '1',
+            roomLable: '',
+            courseTakeType: 1,
+            teachingWay: '2',
+            cloudCourseType: '',
+            nonpubCloudCourseAddr: '',
+            teachMode: null,
+            campusI18n: '四平路校区',
+            assessmentModeI18n: '考查',
+            classRoomI18n: '北115',
+            teachingWayI18n: '线下授课',
+            teachModeI18n: '',
+          }],
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callStudentTimetableTool(
+        { accessToken: 'access-token-for-test' },
+        { calendarId: '120' },
+      );
+
+      assert.equal(authorization, 'Bearer access-token-for-test');
+      assert.deepEqual(params, { calendarId: '120' });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            classCode: '10101901',
+            className: '01班',
+            courseCode: '101019',
+            courseName: '数据结构',
+            credits: 4,
+            teacherName: '张亚英',
+            classTime: '星期五 3-4节 [1-17],星期三 5-6节 [1-17]',
+            classRoom: '2515',
+            classRoomPractice: '校内',
+            remark: '',
+            timeTableList: [{
+              dayOfWeek: 3,
+              timeStart: 5,
+              timeEnd: 6,
+              weekNum: '[1-17]',
+              weekstr: '星期三',
+              weeks: [1, 2, 3, 4],
+              popover: '[5-6节] [1-17] 数据结构(101019) 张亚英(05152) 北115 ',
+              roomIdI18n: '北115',
+              campusI18n: '四平路校区',
+            }],
+            campusI18n: '四平路校区',
+            assessmentModeI18n: '考查',
+            classRoomI18n: '北115',
+            teachingWayI18n: '线下授课',
+          }],
+        },
+        source: 'Tongji Open Platform',
+        calendarId: '120',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /"teachingClassId"|"campus"|"assessmentMode"|"isExemptionCourse"|"classRoomName"|"compulsory"|"classType"|"roomCategory"|"roomLable"|"courseTakeType"|"teachingWay"|"cloudCourseType"|"nonpubCloudCourseAddr"|"teachMode"|"teachModeI18n"|"roomId"|"teacherCode"|"timeAndRoom"|"timeTab"|"timeId"/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空学生课表标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: [] },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callStudentTimetableTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'Tongji Open Platform',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学生课表业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callStudentTimetableTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /同济课表服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学生课表上游未授权错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => {
+      throw new AxiosError('Unauthorized', undefined, config, undefined, {
+        data: {},
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      });
+    };
+
+    try {
+      const result = await callStudentTimetableTool({
+        accessToken: 'expired-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /授权无效或已过期/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学生课表上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callStudentTimetableTool({
+        accessToken: 'access-token-for-test',
+      });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /课表服务暂时不可用/);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
@@ -1378,6 +1612,14 @@ const callCardSpendingFlowTool = async (
   } = {},
 ) => {
   return callTool(CARD_SPENDING_FLOW_TOOL_NAME, invocation, args);
+};
+
+// callStudentTimetableTool 通过内存传输调用学生课表查询工具。
+const callStudentTimetableTool = async (
+  invocation: { accessToken?: string },
+  args: { calendarId?: string } = {},
+) => {
+  return callTool(STUDENT_TIMETABLE_TOOL_NAME, invocation, args);
 };
 
 // callCompetitionPrizeTool 通过内存传输调用竞赛奖励查询工具。

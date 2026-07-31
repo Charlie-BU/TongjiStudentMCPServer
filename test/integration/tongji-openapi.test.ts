@@ -8,6 +8,7 @@ import {
   getSchoolAccess,
   getStatisticsInfoByYear,
   getStudentScholarshipInfo,
+  getStudentTimetable,
   getUndergraduateScores,
 } from '../../src/integration/tongji_openapi';
 
@@ -286,6 +287,45 @@ describe('getCardSpendingFlow', () => {
         tradeStartTime: '2025-05-01 00:00:00',
         tradeEndTime: '2025-05-31 23:59:59',
       });
+      assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
+      assert.equal(capturedConfig?.timeout, 1_234);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+});
+
+describe('getStudentTimetable', () => {
+  it('应构造学生课表查询的地址、参数、认证头与超时', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let capturedConfig: AxiosRequestConfig | undefined;
+    axios.defaults.adapter = async (config) => {
+      capturedConfig = config;
+      return {
+        data: { data: [] },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      await getStudentTimetable(
+        {
+          accessToken: 'test-access-token',
+          baseUrl: 'https://api.example.test/',
+          timeoutMs: 1_234,
+        },
+        '120',
+      );
+
+      assert.equal(
+        capturedConfig?.url,
+        'https://api.example.test/v1/rt/onetongji/student_timetable',
+      );
+      assert.equal(capturedConfig?.method, 'get');
+      assert.deepEqual(capturedConfig?.params, { calendarId: '120' });
       assert.equal(capturedConfig?.headers?.Authorization, 'Bearer test-access-token');
       assert.equal(capturedConfig?.timeout, 1_234);
     } finally {

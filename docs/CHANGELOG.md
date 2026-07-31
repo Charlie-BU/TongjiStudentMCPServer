@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-07-31 19:56 - 接入学生课表查询 Tool 并补齐课表链路回归验证
+
+### 撰写时间
+
+- 2026-07-31 19:56
+
+### Base Commit
+
+- 55088b50efd906ae4b70c7740e047795efd7e974
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 前几个校园 Tool 已经形成了一条稳定模式：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。学生课表和成绩、一卡通、门禁一样，都是当前授权学生的个人校园数据；它不应该作为 CAM 生成客户端的原始接口直接暴露给 Agent。
+- 这次目标是新增 `tongji.student.timetable`。调用方只能传入可选 `calendarId`，不允许通过 Tool 参数指定学号、用户 ID 或其他身份字段；输出只保留课程、班级、学分、教师、上课时间、教室、校区、考核方式和结构化排课细则等当前业务需要展示的字段。
+
+### 改动概览
+
+- 新增 `src/tools/student-timetable/`，拆分为 `index.ts` 和 `types.ts`。`registerStudentTimetableTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/integration/tongji_openapi.ts` 已新增 `getStudentTimetable`，复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Student_timetableGET`。该接口走 `/v1/rt/onetongji/student_timetable`，使用 `calendarId` 作为可选查询参数。
+- `src/tools/registry.ts` 引入并注册 `registerStudentTimetableTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.timetable`。
+- `test/integration/tongji-openapi.test.ts` 补充学生课表 adapter 契约测试，校验 URL、GET method、`calendarId` 参数、Bearer Authorization 和 timeout。`test/server.test.ts` 补充课表 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、学期编号透传、字段裁剪、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：课表数据来自 Tongji OpenAPI 生成客户端的 `Student_timetableGET`，路径是 `/v1/rt/onetongji/student_timetable`，查询参数为可选 `calendarId`。手写 adapter 继续负责把可信调用上下文里的 token 包装成 `Bearer <token>`，并复用默认 base URL 与 timeout 策略。
+- 当前改动：`registerStudentTimetableTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeStudentTimetableData` 要求业务数据本身是数组。单门课程只保留 `classCode`、`className`、`courseCode`、`courseName`、`credits`、`teacherName`、`classTime`、`classRoom`、`classRoomPractice`、`remark`、`timeTableList`、`campusI18n`、`assessmentModeI18n`、`classRoomI18n` 和 `teachingWayI18n`；单次排课细则只保留星期、节次、周次、弹窗文本、教室和校区。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询指定的 `calendarId`。既有年度统计账单、一卡通消费流水、成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 学生课表现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空数组会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有课表”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 68 个用例通过。
+
+### 风险与待办
+
+- `calendarId` 目前只在 Schema 中使用 `z.string().trim().min(1)`，还没有限制为明确的学期编号格式。当前看起来不会破坏已有调用链，但非法编号会被直接转发给上游；后续可以补充格式校验和非法 `calendarId` 输入的拒绝用例。
+- 课表输出当前保留了 `teacherName` 和 `popover`。其中 `popover` 是上游组合展示文本，可能重新携带已经裁剪掉的教师编号或其他原始字段；如果要严格执行输出 allowlist，后续应移除该字段，或用已允许字段重新生成脱敏展示文本，并补充对被排除字段值的反向断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是学生课表 Tool 的源码或测试资产。提交时应排除该目录；如本仓后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+- 真实 Tongji OpenAPI 的课表字段类型、业务错误码、历史学期编号规则和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `StudentTimetableCourse`、`TimetableSchedule`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(student-timetable): add student timetable MCP tool`
+
 ## CHANGELOG - 2026-07-31 19:45 - 接入一卡通消费流水查询 Tool 并限制流水明细输出边界
 
 ### 撰写时间

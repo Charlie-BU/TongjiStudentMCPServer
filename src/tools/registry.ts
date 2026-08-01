@@ -3,6 +3,7 @@ import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerAnnualBillTool } from "./annual-bill";
 import { registerCardSpendingFlowTool } from "./card-spending-flow";
 import { registerCompetitionPrizeTool } from "./competition-prize";
+import { registerCourseCatalogTool } from "./course-catalog";
 import { registerHonoraryTitleTool } from "./honorary-title";
 import { registerLibraryAccessTool } from "./library-access";
 import { registerSchoolAccessTool } from "./school-access";
@@ -26,6 +27,8 @@ export const registerTools = (
     registerAnnualBillTool(server, context);
     // 注册一卡通消费流水查询工具。
     registerCardSpendingFlowTool(server, context);
+    // 注册课程目录查询工具。
+    registerCourseCatalogTool(server, context);
     // 注册学生课表查询工具。
     registerStudentTimetableTool(server, context);
     // 注册学生详细学籍信息查询工具。

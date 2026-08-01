@@ -1,3 +1,52 @@
+## CHANGELOG - 2026-08-01 14:30 - 接入 YourTJ 课程目录查询 Tool
+
+### 撰写时间
+
+- 2026-08-01 14:30
+
+### Base Commit
+
+- 7f37cd7a8e1827ed9c1583e189f112c1d4bc63fe
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 现有校园 Tool 已经形成 MCP 注册、上游适配器、字段裁剪和错误归一的固定链路。本次目标是在不要求同济账号 access token 的前提下，把 YourTJ 课程目录检索能力接入 MCP Tool Catalog，供调用方按页码、条数和关键词查询课程基础信息。
+- 课程目录属于公开课程检索数据，边界不同于成绩、课表、荣誉称号等个人授权数据；因此 Tool 不读取 `ToolInvocationContext.accessToken`，也不会向 YourTJ 请求注入 Authorization header。
+
+### 改动概览
+
+- 新增 `src/tools/course-catalog/`，拆分为 `index.ts` 与 `types.ts`，定义 `tongji.course.catalog` 的输入参数、输出 Schema、YourTJ 调用、响应裁剪、空结果状态和错误归一逻辑。
+- 更新 `src/tools/registry.ts`，将 `registerCourseCatalogTool` 接入 `registerTools`，使 MCP 客户端可通过 `listTools` 发现课程目录查询能力。
+- 更新 `src/integration/yourtj.ts`，通过 `getCourses` 封装生成客户端的 `CoursesGET`，统一复用 YourTJ base URL、请求超时和 Axios adapter 注入方式。
+- 更新 `test/server.test.ts` 与新增 `test/integration/yourtj.test.ts`，覆盖 Tool 可见性、参数透传、字段裁剪、空列表、业务异常、上游不可用，以及 YourTJ adapter 的 URL、method、params、timeout 和无 Authorization 约束。
+- `src/tools/honorary-title/index.ts` 同时调整了荣誉称号业务响应格式异常时的归一行为；该调整改变了既有错误语义，当前已触发回归测试失败。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/integration/openapi/yourtj/index.ts` 的 `CoursesGET` 负责构造 `/api/courses` GET 请求，参数包含 `page`、`limit`、`q` 和 `includeTotal`；`src/integration/yourtj.ts` 的 `getCourses` 是当前 Tool 层直接依赖的手写适配器。
+- 当前改动：`registerCourseCatalogTool` 定义可选 `page`、`limit`、`q` 输入，调用 `getCourses({}, page, limit, q, undefined)` 后用 `unwrapResponseData` 提取业务数据，并仅保留 `code`、`name`、`rating`、`review_count`、`teacher_name`、`department`、`credit` 和 `semesters`。
+- 下游影响：`createMcpServer -> registerTools` 的入口保持不变，只新增一个可发现 Tool；既有学生课表、成绩、竞赛奖励、荣誉称号、奖学金、通行记录和人员信息 Tool 的注册入口没有被移除。课程目录 Tool 成功时返回 `status/data/source` 以及本次查询参数，失败时沿用 `createErrorResult` 和 `toErrorResult` 的工具错误格式。
+
+### 改动结果与业务影响
+
+- MCP 客户端现在可以查询 YourTJ 课程目录，并获得经过 allowlist 裁剪后的结构化课程列表；上游原始 `id`、`is_legacy`、`semester_names` 等字段不会进入 `structuredContent`。
+- 课程目录查询不会携带校园 access token，测试已反向断言 adapter 不设置 Authorization header，避免把个人授权链路混入公开 YourTJ 查询。
+- 当前 `pnpm test:typecheck`、`pnpm typecheck`、`pnpm build` 均通过；`pnpm test` 运行 95 个用例，其中 94 个通过、1 个失败，失败点属于荣誉称号 Tool 的既有业务错误归一语义回归。
+
+### 风险与待办
+
+- 需要修复 `src/tools/honorary-title/index.ts` 中 `normalizeHonoraryTitleData` 对异常业务格式的处理。当前代码在 `data` 不是 `{ list: [...] }` 时返回 `{ list: [] }`，会把上游业务错误响应误报为 `empty`，导致 `test/server.test.ts` 中“荣誉称号业务错误响应归一为工具错误”用例失败。
+- `src/integration/tongji_openapi.ts` 在工作区显示为已修改但没有内容 diff，提交前应确认是否仅为换行符变化，避免无意义文件状态进入提交。
+- `.codex/rules/unit-testing.md` 在当前仓库不存在，本次审查按 `docs/UTSpec.md` 和现有测试结构执行；若后续恢复该规则文件，应同步复核测试要求是否有新增约束。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(course-catalog): add YourTJ course catalog MCP tool`
+
 ## CHANGELOG - 2026-07-31 20:27 - 接入人员基础信息与学生详细学籍信息 Tool
 
 ### 撰写时间

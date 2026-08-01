@@ -97,9 +97,9 @@ export const registerHonoraryTitleTool = (
 // normalizeHonoraryTitleData 裁剪并规范化学生荣誉称号业务数据。
 const normalizeHonoraryTitleData = (
     data: unknown,
-): HonoraryTitleData | undefined => {
+): HonoraryTitleData => {
     if (!isRecord(data) || !Array.isArray(data.list)) {
-        return undefined;
+        return { list: [] };
     }
     return {
         list: readArray(data.list).map(normalizeHonoraryTitle),

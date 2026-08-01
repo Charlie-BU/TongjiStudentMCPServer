@@ -114,6 +114,7 @@ export const registerUndergraduateScoreTool = (
                         "upstream_unavailable",
                         "同济成绩服务返回异常，请稍后重试。",
                     );
+
                 }
                 const result: ScoreToolResult = {
                     status: isTermDataEmpty(data) ? "empty" : "ok",

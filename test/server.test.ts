@@ -11,6 +11,7 @@ import {
 import { ANNUAL_BILL_TOOL_NAME } from '../src/tools/annual-bill';
 import { CARD_SPENDING_FLOW_TOOL_NAME } from '../src/tools/card-spending-flow';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
+import { COURSE_CATALOG_TOOL_NAME } from '../src/tools/course-catalog';
 import { HONORARY_TITLE_TOOL_NAME } from '../src/tools/honorary-title';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
@@ -66,6 +67,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(cardSpendingFlowTool.outputSchema),
         /完整交易时间戳/,
+      );
+      const courseCatalogTool = toolList.tools.find(
+        (tool) => tool.name === COURSE_CATALOG_TOOL_NAME,
+      );
+      assert.ok(courseCatalogTool);
+      assert.match(
+        JSON.stringify(courseCatalogTool.outputSchema),
+        /课程评分或评教得分/,
+      );
+      assert.match(
+        JSON.stringify(courseCatalogTool.outputSchema),
+        /开课学期列表/,
       );
       const studentTimetableTool = toolList.tools.find(
         (tool) => tool.name === STUDENT_TIMETABLE_TOOL_NAME,
@@ -554,6 +567,144 @@ describe('createMcpServer', () => {
 
       assert.equal(result.isError, true);
       assert.match(readToolText(result), /一卡通消费流水服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应传递检索参数并返回裁剪后的课程目录', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let params: unknown;
+    axios.defaults.adapter = async (config) => {
+      params = config.params;
+      return {
+        data: {
+          data: [{
+            id: 11154,
+            code: '54011212',
+            name: '思想道德与法治',
+            rating: 4.0789,
+            review_count: 38,
+            is_legacy: 0,
+            teacher_name: '王少',
+            department: '马克思主义学院',
+            credit: 3,
+            semester_names: '2025-2026学年第2学期||2025-2026学年第1学期',
+            semesters: [
+              '2025-2026学年第2学期',
+              '2025-2026学年第1学期',
+            ],
+          }],
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callCourseCatalogTool(
+        {},
+        {
+          page: 1,
+          limit: 20,
+          q: '思想道德',
+        },
+      );
+
+      assert.deepEqual(params, {
+        page: 1,
+        limit: 20,
+        q: '思想道德',
+        includeTotal: undefined,
+      });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            code: '54011212',
+            name: '思想道德与法治',
+            rating: 4.0789,
+            review_count: 38,
+            teacher_name: '王少',
+            department: '马克思主义学院',
+            credit: 3,
+            semesters: [
+              '2025-2026学年第2学期',
+              '2025-2026学年第1学期',
+            ],
+          }],
+        },
+        source: 'YourTJ',
+        page: 1,
+        limit: 20,
+        q: '思想道德',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /"id"|"is_legacy"|"semester_names"|11154|2025-2026学年第2学期\|\|2025-2026学年第1学期/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空课程目录标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: [] },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCourseCatalogTool({});
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'YourTJ',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将课程目录业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCourseCatalogTool({});
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /YourTJ 课程目录服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将课程目录上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callCourseCatalogTool({});
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /YourTJ 课程目录服务暂时不可用/);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
@@ -2292,6 +2443,18 @@ const callCardSpendingFlowTool = async (
   } = {},
 ) => {
   return callTool(CARD_SPENDING_FLOW_TOOL_NAME, invocation, args);
+};
+
+// callCourseCatalogTool 通过内存传输调用课程目录查询工具。
+const callCourseCatalogTool = async (
+  invocation: { accessToken?: string },
+  args: {
+    page?: number;
+    limit?: number;
+    q?: string;
+  } = {},
+) => {
+  return callTool(COURSE_CATALOG_TOOL_NAME, invocation, args);
 };
 
 // callStudentTimetableTool 通过内存传输调用学生课表查询工具。

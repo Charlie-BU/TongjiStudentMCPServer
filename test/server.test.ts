@@ -9,6 +9,7 @@ import {
   SERVER_VERSION,
 } from '../src/server';
 import { ANNUAL_BILL_TOOL_NAME } from '../src/tools/annual-bill';
+import { CALENDAR_LIST_TOOL_NAME } from '../src/tools/calendar-list';
 import { CARD_SPENDING_FLOW_TOOL_NAME } from '../src/tools/card-spending-flow';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
 import { COURSE_CATALOG_TOOL_NAME } from '../src/tools/course-catalog';
@@ -80,6 +81,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(courseCatalogTool.outputSchema),
         /开课学期列表/,
+      );
+      const calendarListTool = toolList.tools.find(
+        (tool) => tool.name === CALENDAR_LIST_TOOL_NAME,
+      );
+      assert.ok(calendarListTool);
+      assert.match(
+        JSON.stringify(calendarListTool.outputSchema),
+        /选中的学期 ID/,
+      );
+      assert.match(
+        JSON.stringify(calendarListTool.outputSchema),
+        /下拉菜单展示/,
       );
       const gradeListTool = toolList.tools.find(
         (tool) => tool.name === GRADE_LIST_TOOL_NAME,
@@ -718,6 +731,111 @@ describe('createMcpServer', () => {
 
       assert.equal(result.isError, true);
       assert.match(readToolText(result), /YourTJ 课程目录服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应返回裁剪后的学期列表', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: {
+        code: 200,
+        msg: '查询成功',
+        data: [{
+          calendarId: 122,
+          calendarName: '2026-2027学年第1学期',
+        }, {
+          calendarId: 121,
+          calendarName: '2025-2026学年第2学期',
+        }],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCalendarListTool({});
+
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          list: [{
+            calendarId: 122,
+            calendarName: '2026-2027学年第1学期',
+          }, {
+            calendarId: 121,
+            calendarName: '2025-2026学年第2学期',
+          }],
+        },
+        source: 'YourTJ',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /"code"|"msg"|查询成功/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空学期列表标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: [] },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCalendarListTool({});
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { list: [] },
+        source: 'YourTJ',
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学期列表业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callCalendarListTool({});
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /YourTJ 学期列表服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将学期列表上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callCalendarListTool({});
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /YourTJ 学期列表服务暂时不可用/);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
@@ -2575,6 +2693,13 @@ const callCourseCatalogTool = async (
   } = {},
 ) => {
   return callTool(COURSE_CATALOG_TOOL_NAME, invocation, args);
+};
+
+// callCalendarListTool 通过内存传输调用学期列表查询工具。
+const callCalendarListTool = async (
+  invocation: { accessToken?: string },
+) => {
+  return callTool(CALENDAR_LIST_TOOL_NAME, invocation);
 };
 
 // callGradeListTool 通过内存传输调用年级界别列表查询工具。

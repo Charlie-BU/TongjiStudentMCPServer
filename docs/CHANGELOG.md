@@ -1,3 +1,50 @@
+## CHANGELOG - 2026-08-01 18:50 - 接入 YourTJ 学期列表查询 Tool
+
+### 撰写时间
+
+- 2026-08-01 18:50
+
+### Base Commit
+
+- 1f67190e6b5c3c6ff49c1f1608fe87dea629ba0f
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 课程目录和年级界别 Tool 已经依赖 YourTJ 的学期编号作为筛选入口，但 MCP 侧此前缺少一个独立的学期列表查询能力。调用方如果要构造课程筛选菜单，只能依赖外部约定或历史编号，链路不够闭合。
+- 本次目标是在不改变既有课程目录、年级界别、学生课表和成绩查询行为的前提下，新增 `tongji.course.calendar_list`。它面向公开 YourTJ 学期数据，不读取 `ToolInvocationContext.accessToken`，也不把 YourTJ 原始 `code`、`msg` 等业务包装字段透传给 MCP 调用方。
+
+### 改动概览
+
+- 新增 `src/tools/calendar-list/`，拆分为 `index.ts` 和 `types.ts`，定义 Tool 名称、输出 Schema、YourTJ 调用、字段裁剪、空结果状态和错误归一逻辑。
+- 更新 `src/tools/registry.ts`，把 `registerCalendarListTool` 接入 `registerTools`，使 MCP 客户端可以通过 `listTools` 发现学期列表查询能力。
+- 更新 `test/integration/yourtj.test.ts`，补充 `getAllCalendars` 的 adapter 契约测试，覆盖 GET 地址、无 query 参数、无 Authorization header 和 timeout。
+- 更新 `test/server.test.ts`，补充 Tool 可见性、输出 Schema 关键描述、正常返回、空列表、业务错误和上游不可用路径的回归用例。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/integration/yourtj.ts` 已提供 `getAllCalendars`，它封装 CAM 生成客户端的 `GetAllCalendarGET`，最终请求 YourTJ 的 `/api/getAllCalendar`，并复用 YourTJ base URL、timeout 和 Axios adapter 注入方式。
+- 当前改动：`registerCalendarListTool` 不声明输入参数，调用 `getAllCalendars({})` 后通过 `unwrapResponseData` 提取业务数据，再用 `normalizeCalendarListData` 和 `normalizeCalendarListItem` 只保留 `calendarId` 与 `calendarName`。无法识别的业务结构会返回工具错误，空数组会返回 `status: "empty"`。
+- 下游影响：`createMcpServer -> registerTools` 的入口保持不变，只新增一个公开课程筛选辅助 Tool。既有课程目录、年级界别、课表、成绩、奖项、人员信息等 Tool 的输入输出契约没有被改写。
+
+### 改动结果与业务影响
+
+- MCP 调用方现在可以先查询 YourTJ 可用学期列表，再把返回的 `calendarId` 传给年级界别、课程目录或其他依赖学期编号的能力。Tool Result 只包含 `{ status, data: { list }, source }`，不会暴露上游原始包装字段。
+- 本次新增链路不依赖校园 access token。相关测试已经断言 adapter 不设置 Authorization header，避免把个人授权链路混入公开 YourTJ 查询。
+- 学期列表相关定向验证已在全量 `pnpm test` 中通过；`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build` 均通过。
+
+### 风险与待办
+
+- 全量 `pnpm test` 当前仍有 1 个失败用例：`test/server.test.ts` 中“应将荣誉称号业务错误响应归一为工具错误”返回了非 `isError` 结果。该失败点不在本次 `calendar-list` diff 的实现链路中，但提交前仍建议单独修复或拆分提交边界，避免带着已知红灯合入新的 Tool 变更。
+- 当前学期列表只裁剪 `calendarId` 和 `calendarName`。如果 YourTJ 后续扩展可见字段，需要先明确 MCP 输出 allowlist，再补充 fake 响应和反向断言，避免无意透传上游字段。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(calendar-list): add YourTJ calendar list MCP tool`
+
 ## CHANGELOG - 2026-08-01 15:17 - 接入 YourTJ 年级界别列表查询 Tool
 
 ### 撰写时间

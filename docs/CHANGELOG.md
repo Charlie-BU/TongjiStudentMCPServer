@@ -1,3 +1,99 @@
+## CHANGELOG - 2026-08-01 18:50 - 接入 YourTJ 学期列表查询 Tool
+
+### 撰写时间
+
+- 2026-08-01 18:50
+
+### Base Commit
+
+- 1f67190e6b5c3c6ff49c1f1608fe87dea629ba0f
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 课程目录和年级界别 Tool 已经依赖 YourTJ 的学期编号作为筛选入口，但 MCP 侧此前缺少一个独立的学期列表查询能力。调用方如果要构造课程筛选菜单，只能依赖外部约定或历史编号，链路不够闭合。
+- 本次目标是在不改变既有课程目录、年级界别、学生课表和成绩查询行为的前提下，新增 `tongji.course.calendar_list`。它面向公开 YourTJ 学期数据，不读取 `ToolInvocationContext.accessToken`，也不把 YourTJ 原始 `code`、`msg` 等业务包装字段透传给 MCP 调用方。
+
+### 改动概览
+
+- 新增 `src/tools/calendar-list/`，拆分为 `index.ts` 和 `types.ts`，定义 Tool 名称、输出 Schema、YourTJ 调用、字段裁剪、空结果状态和错误归一逻辑。
+- 更新 `src/tools/registry.ts`，把 `registerCalendarListTool` 接入 `registerTools`，使 MCP 客户端可以通过 `listTools` 发现学期列表查询能力。
+- 更新 `test/integration/yourtj.test.ts`，补充 `getAllCalendars` 的 adapter 契约测试，覆盖 GET 地址、无 query 参数、无 Authorization header 和 timeout。
+- 更新 `test/server.test.ts`，补充 Tool 可见性、输出 Schema 关键描述、正常返回、空列表、业务错误和上游不可用路径的回归用例。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/integration/yourtj.ts` 已提供 `getAllCalendars`，它封装 CAM 生成客户端的 `GetAllCalendarGET`，最终请求 YourTJ 的 `/api/getAllCalendar`，并复用 YourTJ base URL、timeout 和 Axios adapter 注入方式。
+- 当前改动：`registerCalendarListTool` 不声明输入参数，调用 `getAllCalendars({})` 后通过 `unwrapResponseData` 提取业务数据，再用 `normalizeCalendarListData` 和 `normalizeCalendarListItem` 只保留 `calendarId` 与 `calendarName`。无法识别的业务结构会返回工具错误，空数组会返回 `status: "empty"`。
+- 下游影响：`createMcpServer -> registerTools` 的入口保持不变，只新增一个公开课程筛选辅助 Tool。既有课程目录、年级界别、课表、成绩、奖项、人员信息等 Tool 的输入输出契约没有被改写。
+
+### 改动结果与业务影响
+
+- MCP 调用方现在可以先查询 YourTJ 可用学期列表，再把返回的 `calendarId` 传给年级界别、课程目录或其他依赖学期编号的能力。Tool Result 只包含 `{ status, data: { list }, source }`，不会暴露上游原始包装字段。
+- 本次新增链路不依赖校园 access token。相关测试已经断言 adapter 不设置 Authorization header，避免把个人授权链路混入公开 YourTJ 查询。
+- 学期列表相关定向验证已在全量 `pnpm test` 中通过；`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build` 均通过。
+
+### 风险与待办
+
+- 全量 `pnpm test` 当前仍有 1 个失败用例：`test/server.test.ts` 中“应将荣誉称号业务错误响应归一为工具错误”返回了非 `isError` 结果。该失败点不在本次 `calendar-list` diff 的实现链路中，但提交前仍建议单独修复或拆分提交边界，避免带着已知红灯合入新的 Tool 变更。
+- 当前学期列表只裁剪 `calendarId` 和 `calendarName`。如果 YourTJ 后续扩展可见字段，需要先明确 MCP 输出 allowlist，再补充 fake 响应和反向断言，避免无意透传上游字段。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(calendar-list): add YourTJ calendar list MCP tool`
+
+
+## CHANGELOG - 2026-08-01 15:17 - 接入 YourTJ 年级界别列表查询 Tool
+
+### 撰写时间
+
+- 2026-08-01 15:17
+
+### Base Commit
+
+- 87a159154320efc2a61bf69edeaddb03d1d1feb5
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 课程目录 Tool 已经接入 YourTJ 公开课程查询链路，但课程筛选还缺少“年级/界别”维度的结构化入口。前端或 Agent 如果要构造课程筛选菜单，需要先知道指定学期下可用的年级列表，而不是把上游接口原始响应直接暴露给 MCP 调用方。
+- 本次目标是在不改变既有课程目录、课表、成绩等 Tool 行为的前提下，新增 `tongji.course.grade_list`。它只接收 `calendarId`，不读取同济账号 access token，也不把 YourTJ 的 `code`、`msg` 等业务包装字段透传到 `structuredContent`。
+
+### 改动概览
+
+- 新增 `src/tools/grade-list/`，拆分为 `index.ts` 与 `types.ts`，定义 `GRADE_LIST_TOOL_NAME`、输入参数、输出 Schema、YourTJ 调用、字段裁剪、空结果状态和错误归一逻辑。
+- 更新 `src/tools/registry.ts`，把 `registerGradeListTool` 接入 `registerTools`，使 MCP 客户端可通过 `listTools` 发现年级界别列表查询能力。
+- 更新 `test/integration/yourtj.test.ts`，补充 `getGradesByCalendarId` 的 adapter 契约测试，覆盖 POST 地址、请求体、timeout 和不注入 Authorization header 的约束。
+- 更新 `test/server.test.ts`，补充 Tool 可见性以及年级界别列表的正常返回、空列表、业务错误和上游不可用路径。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/integration/yourtj.ts` 的 `getGradesByCalendarId` 封装 CAM 生成客户端 `FindGradeByCalendarIdPOST`，最终请求 `/api/findGradeByCalendarId`，请求体为 `{ calendarId }`。这条链路复用 YourTJ base URL、timeout 和 Axios adapter 注入方式。
+- 当前改动：`registerGradeListTool` 使用 `z.number().int().positive()` 约束必填学期编号，调用 `getGradesByCalendarId({}, calendarId)` 后通过 `unwrapResponseData` 提取业务数据，再由 `normalizeGradeListData` 只保留数值型 `gradeList`。无法识别的业务结构会归一为工具错误，空数组会返回 `status: "empty"`。
+- 下游影响：`createMcpServer -> registerTools` 的入口保持不变，只新增一个公开课程筛选辅助 Tool。既有课程目录、学生课表、成绩、荣誉称号、奖学金、通行记录等 Tool 的注册和输入输出契约没有被改写。
+
+### 改动结果与业务影响
+
+- MCP 客户端现在可以按学期编号查询 YourTJ 可用的年级/界别列表，并得到 `{ status, data: { gradeList }, source, calendarId }` 形式的结构化结果。上游原始业务包装字段不会进入 Tool Result。
+- 本次新增链路不依赖校园 access token。相关测试已经断言 adapter 不设置 Authorization header，避免把个人授权链路混入公开 YourTJ 查询。
+- 年级界别相关定向验证已通过：`node --import tsx --test --test-name-pattern="年级界别|getGradesByCalendarId" test/integration/yourtj.test.ts test/server.test.ts` 共 5 个用例通过。`pnpm test:typecheck`、`pnpm typecheck` 与 `pnpm build` 均通过。
+
+### 风险与待办
+
+- 全量 `pnpm test` 当前仍有 1 个失败用例：`test/server.test.ts` 中“应将荣誉称号业务错误响应归一为工具错误”返回了非 `isError` 结果。该失败点不在本次年级界别 diff 的实现链路中，但提交前仍建议修复或明确拆分提交边界，避免把已知红灯混入新的 Tool 变更。
+- 当前 `calendarId` 只校验为正整数。真实 YourTJ 学期编号的可用范围和历史学期兼容性仍需要在受控联调环境确认；如果上游对不存在的学期返回特殊业务结构，应同步补充 fake 响应和断言。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(grade-list): add YourTJ grade list MCP tool`
+
+
 ## CHANGELOG - 2026-08-01 15:00 - 工具目录重构与公共模块提取
 
 ### 撰写时间
@@ -57,6 +153,500 @@
 
 - `refactor(tools): extract shared utils and reorganize tool directories`
 
+
+## CHANGELOG - 2026-08-01 14:30 - 接入 YourTJ 课程目录查询 Tool
+
+### 撰写时间
+
+- 2026-08-01 14:30
+
+### Base Commit
+
+- 7f37cd7a8e1827ed9c1583e189f112c1d4bc63fe
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 现有校园 Tool 已经形成 MCP 注册、上游适配器、字段裁剪和错误归一的固定链路。本次目标是在不要求同济账号 access token 的前提下，把 YourTJ 课程目录检索能力接入 MCP Tool Catalog，供调用方按页码、条数和关键词查询课程基础信息。
+- 课程目录属于公开课程检索数据，边界不同于成绩、课表、荣誉称号等个人授权数据；因此 Tool 不读取 `ToolInvocationContext.accessToken`，也不会向 YourTJ 请求注入 Authorization header。
+
+### 改动概览
+
+- 新增 `src/tools/course-catalog/`，拆分为 `index.ts` 与 `types.ts`，定义 `tongji.course.catalog` 的输入参数、输出 Schema、YourTJ 调用、响应裁剪、空结果状态和错误归一逻辑。
+- 更新 `src/tools/registry.ts`，将 `registerCourseCatalogTool` 接入 `registerTools`，使 MCP 客户端可通过 `listTools` 发现课程目录查询能力。
+- 更新 `src/integration/yourtj.ts`，通过 `getCourses` 封装生成客户端的 `CoursesGET`，统一复用 YourTJ base URL、请求超时和 Axios adapter 注入方式。
+- 更新 `test/server.test.ts` 与新增 `test/integration/yourtj.test.ts`，覆盖 Tool 可见性、参数透传、字段裁剪、空列表、业务异常、上游不可用，以及 YourTJ adapter 的 URL、method、params、timeout 和无 Authorization 约束。
+- `src/tools/honorary-title/index.ts` 同时调整了荣誉称号业务响应格式异常时的归一行为；该调整改变了既有错误语义，当前已触发回归测试失败。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/integration/openapi/yourtj/index.ts` 的 `CoursesGET` 负责构造 `/api/courses` GET 请求，参数包含 `page`、`limit`、`q` 和 `includeTotal`；`src/integration/yourtj.ts` 的 `getCourses` 是当前 Tool 层直接依赖的手写适配器。
+- 当前改动：`registerCourseCatalogTool` 定义可选 `page`、`limit`、`q` 输入，调用 `getCourses({}, page, limit, q, undefined)` 后用 `unwrapResponseData` 提取业务数据，并仅保留 `code`、`name`、`rating`、`review_count`、`teacher_name`、`department`、`credit` 和 `semesters`。
+- 下游影响：`createMcpServer -> registerTools` 的入口保持不变，只新增一个可发现 Tool；既有学生课表、成绩、竞赛奖励、荣誉称号、奖学金、通行记录和人员信息 Tool 的注册入口没有被移除。课程目录 Tool 成功时返回 `status/data/source` 以及本次查询参数，失败时沿用 `createErrorResult` 和 `toErrorResult` 的工具错误格式。
+
+### 改动结果与业务影响
+
+- MCP 客户端现在可以查询 YourTJ 课程目录，并获得经过 allowlist 裁剪后的结构化课程列表；上游原始 `id`、`is_legacy`、`semester_names` 等字段不会进入 `structuredContent`。
+- 课程目录查询不会携带校园 access token，测试已反向断言 adapter 不设置 Authorization header，避免把个人授权链路混入公开 YourTJ 查询。
+- 当前 `pnpm test:typecheck`、`pnpm typecheck`、`pnpm build` 均通过；`pnpm test` 运行 95 个用例，其中 94 个通过、1 个失败，失败点属于荣誉称号 Tool 的既有业务错误归一语义回归。
+
+### 风险与待办
+
+- 需要修复 `src/tools/honorary-title/index.ts` 中 `normalizeHonoraryTitleData` 对异常业务格式的处理。当前代码在 `data` 不是 `{ list: [...] }` 时返回 `{ list: [] }`，会把上游业务错误响应误报为 `empty`，导致 `test/server.test.ts` 中“荣誉称号业务错误响应归一为工具错误”用例失败。
+- `src/integration/tongji_openapi.ts` 在工作区显示为已修改但没有内容 diff，提交前应确认是否仅为换行符变化，避免无意义文件状态进入提交。
+- `.codex/rules/unit-testing.md` 在当前仓库不存在，本次审查按 `docs/UTSpec.md` 和现有测试结构执行；若后续恢复该规则文件，应同步复核测试要求是否有新增约束。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(course-catalog): add YourTJ course catalog MCP tool`
+
+
+## CHANGELOG - 2026-07-31 20:27 - 接入人员基础信息与学生详细学籍信息 Tool
+
+### 撰写时间
+
+- 2026-07-31 20:27
+
+### Base Commit
+
+- 92992c3575060a8ec0379eef2894d122aa296845
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 现有校园 Tool 已形成固定边界：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。本次目标是在不改变既有 Tool 输入、输出和错误语义的前提下，补齐人员基础信息与学生详细学籍信息查询能力。
+- `tongji.user.basic_info` 面向当前授权用户可见的人员基础信息，不能把上游 `userId`、部门编码、更新时间等包装字段暴露给 Agent。`tongji.student.detailed_info` 需要先通过人员基础信息读取当前授权用户的 `userId`，再作为服务端内部参数调用学生详细学籍信息接口；调用方仍不能通过 Tool 参数指定学号、用户 ID 或其他身份字段。
+
+### 改动概览
+
+- 新增 `src/tools/user-basic-info/`，拆分为 `index.ts` 与 `types.ts`。`registerUserBasicInfoTool` 定义 Tool 名称、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- 新增 `src/tools/student-detailed-info/`，拆分为 `index.ts` 与 `types.ts`。`registerStudentDetailedInfoTool` 先读取当前授权用户的 `userId`，再调用学生详细学籍信息接口，并只返回经过 allowlist 裁剪后的学籍字段。
+- 更新 `src/tools/registry.ts`，把 `registerStudentDetailedInfoTool` 与 `registerUserBasicInfoTool` 接入 `registerTools`。下游 `createMcpServer -> registerTools` 入口保持不变，MCP 客户端现在可通过 `listTools` 发现新增 Tool。
+- 更新 `test/integration/tongji-openapi.test.ts`，补充 `getUserBasicInfo` 与 `getAllStudentDetailedInfo` 的 adapter 契约测试，校验 URL、HTTP method、请求体、Bearer Authorization 和 timeout。
+- 更新 `test/server.test.ts`，补充两个 Tool 的 MCP 可见性和行为回归，覆盖缺 token、token 注入、字段裁剪、空结果、业务错误、上游未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：两个新 Tool 依赖既有 `src/integration/tongji_openapi.ts` 中的 `getUserBasicInfo` 与 `getAllStudentDetailedInfo`。前者调用 `/v2/rt/user/all_info`，后者调用 `/v1/rt/user/all_student`，均复用 `createTongjiOpenapiAdapter` 的 base URL、timeout 和 Bearer token 注入策略。
+- 当前改动：`registerUserBasicInfoTool` 只保留 `deptName`、`name`、`statusName`、`userTypeName`。`registerStudentDetailedInfoTool` 先从基础信息响应 `data.list[].userId` 中读取内部 userId；读取失败时返回工具错误，读取成功后再请求详细学籍信息，并裁剪掉上游编码、包装字段和内部 userId。
+- 下游影响：既有年度统计账单、一卡通消费流水、学生课表、成绩、竞赛奖励、荣誉称号、奖学金、校门通行和图书馆通行 Tool 的注册顺序只追加新项，不改变其输入参数、输出结构或错误文案。新增 Tool 成功时统一返回 `status/data/source`；失败时沿用 `createErrorResult` 与 `toErrorResult` 的错误归一策略。
+
+### 改动结果与业务影响
+
+- 人员基础信息与学生详细学籍信息现在进入受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会标记为 `empty`，业务格式异常会归一为工具错误，避免把异常响应误解释为真实空数据。
+- 学生详细学籍信息链路明确把 `userId` 限定为服务端内部上游调用参数。测试已反向断言 `userId`、编码字段、上游包装字段和示例内部 ID 不出现在 `structuredContent` 中。
+- 本次本地验证已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 90 个用例通过。
+
+### 风险与待办
+
+- `tongji.student.detailed_info` 当前依赖 `getUserBasicInfo` 返回可用 `userId`，因此一次 Tool 调用会访问两个上游接口。若基础信息接口短时不可用，详细学籍信息也会返回工具错误；当前测试已覆盖无法读取 `userId` 的降级路径。
+- 详细学籍信息输出保留了 `name`、`birthday`、`householdRegister`、`mailingAddress`、`politicalStatus` 等字段。当前实现遵循本次业务 allowlist，但这些字段敏感度较高；后续如隐私策略收紧，应同步调整 `StudentDetailedInfo`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区仍存在未跟踪的 `.pnpm-store/`。它不是本次 Tool 的源码或测试资产，提交时应排除；如后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(student-info): add user and student info MCP tools`
+
+
+## CHANGELOG - 2026-07-31 20:09 - 接入学生荣誉称号查询 Tool 并收敛荣誉记录输出边界
+### 撰写时间
+
+- 2026-07-31 20:09
+
+### Base Commit
+
+- 70681a08acaaf3ab33217076dd294d81866247f9
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+- 前几个校园 Tool 已经形成了一条相对稳定的边界：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。荣誉称号和竞赛奖励、奖学金一样，属于当前授权学生的个人校园荣誉数据；它不应该把 CAM 生成客户端的原始响应直接暴露给 Agent。
+- 这次目标是新增 `tongji.student.honorary_title`。调用方不需要传入任何业务参数，也不能通过 Tool 参数指定学号、用户 ID 或其他身份字段；输出只保留学院或部门名称、荣誉称号或奖项名称、获奖人姓名和评定年份，避免把上游的 `deptCode`、`userId`、`wid`、`sinceWid`、更新时间或业务包装字段带到 Tool Result。
+
+### 改动概览
+
+- 新增 `src/tools/honorary-title/`，拆分为 `index.ts` 和 `types.ts`。`registerHonoraryTitleTool` 定义 Tool 名称、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerHonoraryTitleTool`。下游 `createMcpServer -> registerTools` 的入口不变，MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.honorary_title`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getStudentHonoraryTitles` 的 adapter 契约测试，校验 `/v2/dc/student_work_info/honorary_title`、GET method、无 query params、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充荣誉称号 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：荣誉称号数据来自 Tongji OpenAPI 生成客户端的 `Student_honorary_titleGET`，路径是 `/v2/dc/student_work_info/honorary_title`。手写 adapter `getStudentHonoraryTitles` 继续复用 `createTongjiOpenapiAdapter`，由可信调用上下文里的 token 生成 `Bearer <token>`，并沿用默认 base URL 与 timeout 策略。
+- 当前改动：`registerHonoraryTitleTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeHonoraryTitleData` 要求存在 `list` 数组。单条记录只保留 `deptName`、`honorTitle`、`name` 和 `ratingYear`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source`，不会拿到上游原始的 `count`、`sinceWid`、`deptCode`、`ratingTerm`、`rewardLevel`、`updateTime`、`userId`、`wid`、`code` 或 `msg`。既有年度统计账单、一卡通消费流水、学生课表、成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+- 学生荣誉称号现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有荣誉称号记录”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 75 个用例通过。
+
+### 风险与待办
+- 荣誉称号 Tool 当前没有输入参数，因此身份边界主要依赖 `ToolInvocationContext` 中的短期 token。这个模式和现有校园 Tool 一致；如果后续新增按年份、学院或人员筛选的能力，仍应避免把 `userId`、学号或其他身份字段开放为 Tool 参数。
+- 输出保留了上游返回的 `name`。当前测试使用脱敏样例 `吕**`，并通过反向断言排除了 `userId`、`wid` 等字段；真实上游是否始终返回脱敏姓名仍需要在受控联调环境确认。如果上游可能返回完整姓名，后续应在 Tool 层增加姓名脱敏策略并补充对应测试。
+- 工作区仍存在未跟踪的 `.pnpm-store/`，它不是本次荣誉称号 Tool 的源码或测试资产。提交时应排除该目录；如果后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+
+### 建议 Commit Message（git-cz）
+- `feat(honorary-title): add honorary title MCP tool`
+
+
+## CHANGELOG - 2026-07-31 19:56 - 接入学生课表查询 Tool 并补齐课表链路回归验证
+
+### 撰写时间
+
+- 2026-07-31 19:56
+
+### Base Commit
+
+- 55088b50efd906ae4b70c7740e047795efd7e974
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 前几个校园 Tool 已经形成了一条稳定模式：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。学生课表和成绩、一卡通、门禁一样，都是当前授权学生的个人校园数据；它不应该作为 CAM 生成客户端的原始接口直接暴露给 Agent。
+- 这次目标是新增 `tongji.student.timetable`。调用方只能传入可选 `calendarId`，不允许通过 Tool 参数指定学号、用户 ID 或其他身份字段；输出只保留课程、班级、学分、教师、上课时间、教室、校区、考核方式和结构化排课细则等当前业务需要展示的字段。
+
+### 改动概览
+
+- 新增 `src/tools/student-timetable/`，拆分为 `index.ts` 和 `types.ts`。`registerStudentTimetableTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/integration/tongji_openapi.ts` 已新增 `getStudentTimetable`，复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Student_timetableGET`。该接口走 `/v1/rt/onetongji/student_timetable`，使用 `calendarId` 作为可选查询参数。
+- `src/tools/registry.ts` 引入并注册 `registerStudentTimetableTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.timetable`。
+- `test/integration/tongji-openapi.test.ts` 补充学生课表 adapter 契约测试，校验 URL、GET method、`calendarId` 参数、Bearer Authorization 和 timeout。`test/server.test.ts` 补充课表 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、学期编号透传、字段裁剪、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：课表数据来自 Tongji OpenAPI 生成客户端的 `Student_timetableGET`，路径是 `/v1/rt/onetongji/student_timetable`，查询参数为可选 `calendarId`。手写 adapter 继续负责把可信调用上下文里的 token 包装成 `Bearer <token>`，并复用默认 base URL 与 timeout 策略。
+- 当前改动：`registerStudentTimetableTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeStudentTimetableData` 要求业务数据本身是数组。单门课程只保留 `classCode`、`className`、`courseCode`、`courseName`、`credits`、`teacherName`、`classTime`、`classRoom`、`classRoomPractice`、`remark`、`timeTableList`、`campusI18n`、`assessmentModeI18n`、`classRoomI18n` 和 `teachingWayI18n`；单次排课细则只保留星期、节次、周次、弹窗文本、教室和校区。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询指定的 `calendarId`。既有年度统计账单、一卡通消费流水、成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 学生课表现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空数组会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有课表”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 68 个用例通过。
+
+### 风险与待办
+
+- `calendarId` 目前只在 Schema 中使用 `z.string().trim().min(1)`，还没有限制为明确的学期编号格式。当前看起来不会破坏已有调用链，但非法编号会被直接转发给上游；后续可以补充格式校验和非法 `calendarId` 输入的拒绝用例。
+- 课表输出当前保留了 `teacherName` 和 `popover`。其中 `popover` 是上游组合展示文本，可能重新携带已经裁剪掉的教师编号或其他原始字段；如果要严格执行输出 allowlist，后续应移除该字段，或用已允许字段重新生成脱敏展示文本，并补充对被排除字段值的反向断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是学生课表 Tool 的源码或测试资产。提交时应排除该目录；如本仓后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+- 真实 Tongji OpenAPI 的课表字段类型、业务错误码、历史学期编号规则和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `StudentTimetableCourse`、`TimetableSchedule`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(student-timetable): add student timetable MCP tool`
+
+
+## CHANGELOG - 2026-07-31 19:45 - 接入一卡通消费流水查询 Tool 并限制流水明细输出边界
+
+### 撰写时间
+
+- 2026-07-31 19:45
+
+### Base Commit
+
+- 43944079f67142fc775eb671886b146fb72f1c57
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 前几个校园 Tool 已经形成了一条固定边界：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。一卡通消费流水属于更细粒度的校园行为数据，既包含消费时间、地点和金额，也可能带出上游的账号、交易编码或人员标识。因此这次目标不是把 `Get_card_spending_flowGET` 原样暴露给 Agent，而是把它收敛成一个只面向当前授权用户的 MCP Tool。
+- 这次新增的是 `tongji.student.card_spending_flow`。调用方只能传入可选的 `tradeStartTime` 和 `tradeEndTime`，不能通过 Tool 参数指定学号、用户 ID 或其他身份字段；输出只保留校区、余额、商户、消费类型、姓名、人员类型、餐厅、消费金额和完整交易时间戳，不返回上游的账户号、POS 编码、性别编码、交易日期拆分字段、交易码或用户 ID。
+
+### 改动概览
+
+- 新增 `src/tools/card-spending-flow/`，拆分为 `index.ts` 和 `types.ts`。`registerCardSpendingFlowTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerCardSpendingFlowTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.card_spending_flow`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getCardSpendingFlow` 的 adapter 契约测试，校验 `/v1/dc/card/card_history_flow`、GET method、`tradeStartTime/tradeEndTime` 参数、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充一卡通消费流水 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、时间参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：一卡通流水数据来自 Tongji OpenAPI 生成客户端的 `Get_card_spending_flowGET`，路径是 `/v1/dc/card/card_history_flow`，查询参数为 `tradeStartTime` 和 `tradeEndTime`。手写 adapter `getCardSpendingFlow` 继续复用 `createTongjiOpenapiAdapter`，由可信调用上下文里的 token 生成 `Bearer <token>`，并沿用默认 base URL 与 timeout 策略。
+- 当前改动：`registerCardSpendingFlowTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeCardSpendingFlowData` 要求存在 `userInfos` 数组。单条记录只保留 `campusAreaName`、`cardBalance`、`mercName`、`mercTypeName`、`name`、`personTypeCode`、`restaurantName`、`tradeAmount` 和 `tradeDateTime`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询条件，不会拿到上游原始的 `count`、`fromAccount`、`posCode`、`sexCode`、`tradeDate`、`tradeMonth`、`tradeTime`、`tranCode` 或 `userId`。既有年度统计账单、成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 一卡通消费流水现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有消费流水”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 61 个用例通过。
+
+### 风险与待办
+
+- `tradeStartTime` 和 `tradeEndTime` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里要求 `yyyy-MM-dd HH:mm:ss`，但还没有做格式校验。当前看起来不会破坏已有调用链，但非法时间会被直接转发给上游；后续可以补充格式校验和非法时间输入的拒绝用例。
+- 一卡通消费流水输出当前保留了 `name`、`cardBalance`、`mercName` 和 `tradeAmount`。这和当前校园 Tool 的 allowlist 策略一致，但流水明细本身敏感度更高；如果后续隐私策略要求进一步脱敏姓名、余额或商户名称，需要同步调整 `CardSpendingFlowRecord`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是一卡通消费流水 Tool 的源码或测试资产。提交时应排除该目录；如本仓后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+- 真实 Tongji OpenAPI 的一卡通流水字段类型、业务错误码、数据延迟和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `CardSpendingFlowRecord`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(card-spending-flow): add card spending flow MCP tool`
+
+
+## CHANGELOG - 2026-07-31 19:29 - 接入学生年度统计账单 Tool 并收敛年度画像数据边界
+
+### 撰写时间
+
+- 2026-07-31 19:29
+
+### Base Commit
+
+- 071336afd0d01e187e24cac1074b7ecf06977d9f
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 前面几个校园 Tool 已经把成绩、竞赛奖励、奖学金、校门通行和图书馆通行收敛到同一条链路里：MCP Tool 只从 `ToolInvocationContext` 读取短期 token，`src/integration/tongji_openapi.ts` 负责封装 Tongji OpenAPI 调用，Tool 层再按 allowlist 裁剪字段并返回 `structuredContent`。年度统计账单同样是授权学生个人数据，而且会聚合图书馆、食堂、进出校等多个维度，因此这次目标不是直接暴露上游年度账单接口，而是延续这条受控边界。
+- 这次新增的是 `tongji.student.annual_bill`。调用方只需要传入统计年份 `year`，不能通过参数指定学号、用户 ID 或其他身份字段；输出只保留年度借阅、消费、图书馆学习、进出校和班车等经过选择的统计字段，不返回上游的 `deptCode`、`userId`、`userTypeCode`、当天进出次数或百分位细节等未批准字段。
+
+### 改动概览
+
+- 新增 `src/tools/annual-bill/`，拆分为 `index.ts` 和 `types.ts`。`registerAnnualBillTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerAnnualBillTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.annual_bill`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getStatisticsInfoByYear` 的 adapter 契约测试，校验 `/v2/dc/user/user_annual_bill`、GET method、`year` 参数、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充年度统计账单 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、年份参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：年度账单数据来自 Tongji OpenAPI 生成客户端的 `Get_statistics_info_by_yearGET`，路径是 `/v2/dc/user/user_annual_bill`，查询参数为必填 `year`。手写 adapter `getStatisticsInfoByYear` 继续复用 `createTongjiOpenapiAdapter`，由可信调用上下文里的 token 生成 `Bearer <token>`，并沿用默认 base URL 与 timeout 策略。
+- 当前改动：`registerAnnualBillTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeAnnualBillData` 要求业务数据本身是数组。单条记录只保留 `annualBorrowedTopPct`、`avgDailySpending`、`booksCount`、`deptName`、`earliestEntryTime`、`latestExitTime`、`libraryAccessCount`、`libraryStudyTime`、`libraryStudyTopPct`、`maxCumulativeLoc`、`maxTransactionAmt`、`maxTransactionLoc`、`maxTransactionTime`、`name`、`shuttleRidesCount`、`totalEntries`、`totalSpendingCanteen` 和 `year`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source/year`，不会拿到上游原始的 `canteenSpendingPct`、`deptCode`、`earliestExitTime`、`lastDepartureCount`、`lateExitPct`、`latestDepartureTime`、`libraryAttendancePct`、`libraryExitPct`、`maxCumulativeAmt`、`todayEntryCount`、`todayLateExitPct`、`userId`、`userTypeCode` 或 `weeklyExitAvg`。既有成绩、竞赛奖励、奖学金、校门通行和图书馆通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 年度统计账单现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有年度账单”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 54 个用例通过。
+
+### 风险与待办
+
+- `year` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里给了 `2024` 这样的示例，但还没有限制为四位年份或合理年份范围。当前看起来不会破坏已有调用链，但非法年份会被直接转发给上游；后续可以补充格式校验和非法年份输入的拒绝用例。
+- 年度账单输出当前保留了 `name` 和 `deptName`。这延续了既有 Tool 的策略，但年度画像数据聚合程度更高；如果后续隐私策略要求进一步脱敏姓名或学院，需要同步调整 `AnnualBill`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是年度统计账单 Tool 的源码或测试资产。提交时应排除该目录；如本仓后续持续产生本地 pnpm store，建议把 `.pnpm-store/` 加入 `.gitignore`。
+- 真实 Tongji OpenAPI 的年度账单字段类型、业务错误码、数据生成周期和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `AnnualBill`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(annual-bill): add student annual bill MCP tool`
+
+
+## CHANGELOG - 2026-07-31 19:09 - 接入图书馆通行记录查询 Tool 并延续校园通行数据边界
+
+### 撰写时间
+
+- 2026-07-31 19:09
+
+### Base Commit
+
+- 4b29699a208ba19e38b4a7b9e5296f4d3281ae6b
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 校门通行 Tool 已经把“授权学生个人通行数据”接入到现有 MCP 边界里：Tool 只从 `ToolInvocationContext` 读取短期 token，手写 adapter 负责调用 Tongji OpenAPI，返回前再按 allowlist 裁剪字段。图书馆闸机记录属于同一类高敏校园轨迹数据，因此这次改动的重点不是简单多注册一个接口，而是继续沿用这条受控链路，避免把上游原始字段或身份参数直接暴露给 MCP 客户端。
+- 这次目标是新增 `tongji.student.library_access`，让 Agent 可以查询当前授权学生在指定时间范围内的图书馆进出记录。输入只允许 `direction`、`visitStartTime` 和 `visitEndTime`；输出只保留学院、进出方向、门点、馆区、姓名、身份类型和刷卡时间，不返回上游的 `gateNo`、`userId`、`visitno` 或 `count` 等内部字段。
+
+### 改动概览
+
+- 新增 `src/tools/library-access/`，拆分为 `index.ts` 和 `types.ts`。`registerLibraryAccessTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerLibraryAccessTool`。下游 `createMcpServer -> registerTools` 的入口不变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.library_access`。
+- `src/integration/tongji_openapi.ts` 已提供 `getLibraryAccess`，它复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Get_library_accessGET`。本次测试补齐了该 adapter 对 `/v1/dc/lib/lib_access_control`、GET method、`direction/visitStartTime/visitEndTime` 参数、Bearer Authorization 和 timeout 的契约验证。
+- `test/server.test.ts` 补充图书馆通行 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、查询参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：图书馆通行数据来自 Tongji OpenAPI 生成客户端的 `Get_library_accessGET`，路径是 `/v1/dc/lib/lib_access_control`，查询参数为 `direction`、`visitStartTime` 和 `visitEndTime`。手写 adapter 继续负责把可信调用上下文里的 token 包装成 `Bearer <token>`，并复用默认 base URL 与 timeout 策略。
+- 当前改动：`registerLibraryAccessTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经过 `unwrapResponseData` 提取业务 `data`，再由 `normalizeLibraryAccessData` 要求存在 `userInfos` 数组。单条记录只保留 `deptName`、`direction`、`door`、`libPlace`、`name`、`type` 和 `visitTime`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询条件，不会拿到上游原始的 `gateNo`、`userId`、`visitno`、`count` 或其他未知字段。成绩、竞赛奖励、奖学金和校门通行 Tool 仍走原注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 图书馆通行查询现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段 allowlist 后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解释为“没有通行记录”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。换句话说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 当前工作区审查时已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 47 个用例通过。
+
+### 风险与待办
+
+- `visitStartTime` 和 `visitEndTime` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里要求 `yyyy-MM-dd HH:mm:ss`，但还没有做格式校验。当前看起来不会破坏已有调用链，但非法时间会被直接转发给上游；建议后续补充格式校验和非法时间输入的拒绝用例。
+- 图书馆通行输出当前保留了上游返回的 `name`。这和校门通行 Tool 的策略一致，但仍属于个人信息字段；如果后续隐私策略要求进一步脱敏姓名，需要同步调整 `LibraryAccessRecord`、输出 Schema、裁剪逻辑和 Fake 响应断言。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是图书馆通行 Tool 的源码或测试资产。提交前建议删除该目录，或把 `.pnpm-store/` 加入 `.gitignore`，避免本地 pnpm 缓存被误加入提交。
+- 真实 Tongji OpenAPI 的图书馆通行字段类型、业务错误码、数据延迟和 token scope 仍需要在受控联调环境确认。如上游响应结构演进，应同步更新 `LibraryAccessRecord`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(library-access): add library gate access MCP tool`
+
+
+## CHANGELOG - 2026-07-31 16:41 - 接入校门通行记录查询 Tool 并收敛进出校门数据边界
+
+### 撰写时间
+
+- 2026-07-31 16:41
+
+### Base Commit
+
+- d5adcaddb2ffec1838fd956f2f8c56893ab602a8
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 现有校园 Tool 已经形成了一条相对稳定的边界：`createMcpServer` 创建无状态 MCP 服务，`registerTools` 暴露领域能力，具体 Tool 只从 `ToolInvocationContext` 读取短期 token，再经 `src/integration/tongji_openapi.ts` 的手写 adapter 调用 Tongji OpenAPI，最后用字段 allowlist 返回 `structuredContent`。校门进出记录属于同一类授权学生个人数据，因此这次改动继续沿用这条链路，而不是把 CAM 生成客户端或上游原始字段直接暴露给 MCP 客户端。
+- 这次目标是新增 `tongji.student.school_access`，让 Agent 可以查询当前授权学生在指定时间范围内的校门通行记录。输入只允许查询方向和时间范围，不接收学号、用户 ID 或其他身份字段；输出只保留通行时间、学院、通行点、位置、姓名、进出状态和性别等经过明确选择的字段。
+
+### 改动概览
+
+- 新增 `src/tools/school-access/`，拆分为 `index.ts` 和 `types.ts`。`registerSchoolAccessTool` 定义 Tool 名称、输入 Schema、输出 Schema、缺 token 拒绝、上游调用、业务响应校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 引入并注册 `registerSchoolAccessTool`。下游 `createMcpServer -> registerTools` 的入口没有改变，但 MCP 客户端现在可以通过 `listTools` 发现 `tongji.student.school_access`。
+- `src/integration/tongji_openapi.ts` 已提供 `getSchoolAccess`，它复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Get_school_accessGET`。本次测试补齐了该 adapter 对 `/v1/dc/door/school_access_control`、GET method、`portNum/dataStartTime/dataEndTime` 参数、Bearer Authorization 和 timeout 的契约验证。
+- `test/server.test.ts` 补充校门通行 Tool 的 MCP 可见性与行为覆盖，包括缺 token、token 注入、查询参数透传、字段 allowlist、空结果、上游业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：校门通行数据来自 Tongji OpenAPI 的 `Get_school_accessGET`，生成客户端注释说明该接口对应 `/v1/dc/door/school_access_control`，查询参数为 `portNum`、`dataStartTime` 和 `dataEndTime`。手写 adapter 负责把可信调用上下文里的 token 包装成 `Bearer <token>`，并继续使用默认 base URL 与 timeout 策略。
+- 当前改动：`registerSchoolAccessTool` 只从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。成功响应先经 `unwrapResponseData` 取业务 `data`，再由 `normalizeSchoolAccessData` 要求存在 `userInfos` 数组，并把 `count` 规范为数字或 `null`。单条记录只保留 `dataTime`、`deptName`、`equptName`、`lctnName`、`name`、`portNum` 和 `sex`。
+- 下游影响：MCP 客户端能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source` 和本次查询条件，不会拿到上游的 `cardData`、`codeIndex`、`equptId`、`job`、`multiEvent`、`personnelId`、`userId` 等原始字段。成绩、竞赛奖励和奖学金 Tool 仍走原注册路径，输入、输出和错误文案没有被本次改动改变。
+
+### 改动结果与业务影响
+
+- 校门通行查询现在进入了和其他校园能力一致的受控 MCP 边界：调用方不传身份字段，token 不进入 Tool Schema 或 Tool Result，上游响应经过结构校验和字段裁剪后才返回。空列表会被标记为 `empty`，业务格式异常会被归一为工具错误，避免把异常响应误解为“没有记录”。
+- 测试继续使用 `InMemoryTransport` 和 Fake Axios adapter。也就是说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 已在当前工作区执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 40 个用例通过。
+
+### 风险与待办
+
+- `dataStartTime` 和 `dataEndTime` 目前只在 Schema 中使用 `z.string().trim().min(1)`，描述里要求 `yyyy-MM-dd HH:mm:ss`，但还没有做格式校验。当前看起来不会破坏已有调用链，但非法时间会被直接转发给上游；建议后续补充格式校验和非法时间输入的拒绝用例。
+- 工作区存在未跟踪的 `.pnpm-store/`，它不是校门通行 Tool 的源码或测试资产。提交前建议删除该目录，或把 `.pnpm-store/` 加入 `.gitignore`，避免本地 pnpm 缓存被误加入提交。
+- 真实 Tongji OpenAPI 的校门通行字段类型、业务错误码、数据延迟和 token scope 仍需要在受控联调环境确认。如果上游响应结构演进，应同步更新 `SchoolAccessRecord`、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(school-access): add campus gate access MCP tool`
+
+
+## CHANGELOG - 2026-07-31 16:14 - 接入学生奖学金查询 Tool 并延续字段裁剪边界
+
+### 撰写时间
+
+- 2026-07-31 16:14
+
+### Base Commit
+
+- fcf7421f3d53bf5208998b9cb738f09a6a093da6
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 成绩查询和竞赛奖励查询已经把校园数据能力收敛到同一条边界里：调用方通过 MCP Tool 发现能力，Tool 只从 `ToolInvocationContext` 读取短期 token，手写 adapter 负责调用 Tongji OpenAPI，最后由 Tool 自己做字段 allowlist。奖学金记录属于同一类学生个人数据，因此这次不是直接暴露生成客户端，而是沿用这条链路新增一个独立的 `tongji.student.scholarship_info` Tool。
+- 这次的目标比较明确：Agent 侧可以查询当前授权学生的奖学金记录，但不能通过 Tool 参数传入他人身份字段，也不能拿到上游原始响应里的 `amount`、`deptCode`、`userId`、`wid`、`sinceWid` 等内部或敏感字段。
+
+### 改动概览
+
+- 新增 `src/tools/scholarship-info/`，拆分 `index.ts` 与 `types.ts`。`registerScholarshipInfoTool` 声明空输入 Schema、结构化输出 Schema、缺 token 拒绝、上游调用、响应结构校验、字段裁剪、空结果状态和错误归一。
+- `src/tools/registry.ts` 将 `registerScholarshipInfoTool` 接入现有 Tool Catalog。`createMcpServer -> registerTools` 的入口没有变化，但 MCP 客户端现在能额外发现 `tongji.student.scholarship_info`。
+- `test/integration/tongji-openapi.test.ts` 补充 `getStudentScholarshipInfo` 的 adapter 契约测试，校验 `/v2/dc/student_work_info/scholarship`、GET method、无 query 参数、Bearer Authorization 和 timeout。
+- `test/server.test.ts` 补充奖学金 Tool 的 MCP 可见性与行为测试，覆盖缺 token、token 注入、字段 allowlist、空结果、业务异常、401 未授权和普通上游不可用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：奖学金数据来自 `src/integration/tongji_openapi.ts` 的 `getStudentScholarshipInfo`，该 adapter 复用 `createTongjiOpenapiAdapter`，最终调用 CAM 生成客户端的 `Get_scholarship_infoGET`。生成方法对应路径是 `/v2/dc/student_work_info/scholarship`，请求只需要 Authorization header。
+- 当前改动：`registerScholarshipInfoTool` 从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。上游响应经 `unwrapResponseData` 提取业务 `data`，再由 `normalizeScholarshipInfoData` 要求存在 `list` 数组，并把 `count` 规范成数字或 `null`。单条记录只保留 `deptName`、`name`、`rating`、`ratingYear`、`scholarshipLevel`、`scholarshipName` 和 `updateTime`。
+- 下游影响：MCP 客户端通过 `listTools` 能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source`，不会直接消费 Tongji OpenAPI 的原始字段。成绩 Tool 和竞赛奖励 Tool 仍走原有注册路径，本次没有改变它们的输入、输出或错误文案。
+
+### 改动结果与业务影响
+
+- 奖学金查询现在形成了和已有校园 Tool 一致的受控链路：Tool 输入不包含身份字段，token 不进入 Schema 或 Tool Result，上游数据先经过结构校验和字段白名单再返回。空列表会被标记为 `empty`，上游业务格式异常会被归一为工具错误，避免被误解释成“没有奖学金记录”。
+- 测试继续使用 `InMemoryTransport` 与 Fake Axios adapter。也就是说，本地回归验证的是 MCP 契约、请求构造、错误归一和隐私裁剪，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck` 和 `pnpm build`，四项均通过。其中 `pnpm test` 当前为 33 个用例通过。
+
+### 风险与待办
+
+- 工作区存在未跟踪的 `.pnpm-store/v11/index.db`，这不是本次奖学金 Tool 的源码或测试资产。提交前建议删除 `.pnpm-store/`，或把 `.pnpm-store/` 加入 `.gitignore`，避免本地 pnpm 缓存元数据误入提交。
+- 当前奖学金字段 allowlist 保留了 `name`，语义上沿用了竞赛奖励 Tool 的“以上游返回内容为准”策略。如果后续隐私策略要求进一步脱敏姓名，需要同步调整输出 Schema、`ScholarshipInfo` 类型、裁剪逻辑和测试断言。
+- 真实 Tongji OpenAPI 的奖学金字段类型、业务错误码和 token scope 仍需要在受控联调环境确认。如果上游响应结构演进，应同步更新 `ScholarshipInfo` 类型、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(scholarship): add student scholarship MCP tool`
+
+
+## CHANGELOG - 2026-07-31 13:08 - 接入本科生竞赛奖励查询 Tool 并注册 MCP 目录
+
+### 撰写时间
+
+- 2026-07-31 13:08
+
+### Base Commit
+
+- b1c088d21dd458bca00ee3b502f9ca237d8d950e
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 成绩查询 Tool 已经验证了 `Agent -> MCP invocation -> 手写 adapter -> Tongji OpenAPI -> 字段 allowlist -> Tool Result` 这条链路。接下来接入竞赛奖励记录时，重点仍然是控制暴露面：Tool 参数不接收身份字段，token 只来自 `ToolInvocationContext`，上游响应必须先裁剪再返回给 MCP 客户端。
+- 这次主目标是把本科生竞赛奖励记录封装成独立的 `tongji.student.competition_prize` Tool，并挂到现有 `registerTools` 目录里。这样 Agent 侧可以通过 MCP 发现和调用竞赛奖励能力，而不需要直接接触 CAM 生成客户端的方法名、上游原始字段或 Authorization header。
+
+### 改动概览
+
+- 新增 `src/tools/competition-prize/`，拆分 `index.ts` 与 `types.ts`。`registerCompetitionPrizeTool` 声明空输入 Schema、结构化输出 Schema、缺 token 拒绝、上游调用、字段裁剪、空结果判断和错误归一。
+- `src/integration/tongji_openapi.ts` 新增 `getCompetitionPrizes`，通过既有 `createTongjiOpenapiAdapter` 调用 CAM 生成的 `Get_competition_prizesGET`，继续复用默认 base URL、请求超时和 Bearer Authorization 注入方式。
+- `src/tools/registry.ts` 将 `registerCompetitionPrizeTool` 加入 Tool Catalog。`createMcpServer -> registerTools` 的下游入口不变，但 MCP 客户端现在能额外发现 `tongji.student.competition_prize`。
+- `src/tools/utils.ts` 给 `toErrorResult` 增加可选的上游不可用提示文案。成绩 Tool 仍使用默认“成绩服务”文案，竞赛奖励 Tool 可以返回更准确的“竞赛奖励服务”文案。
+- `test/integration/tongji-openapi.test.ts` 覆盖竞赛奖励 adapter 的 URL、HTTP method、无 query 参数、Authorization header 和 timeout；`test/server.test.ts` 覆盖 Tool 发现、缺 token、token 注入、字段 allowlist、空结果、业务异常、401 未授权和普通上游不可用。
+- 当前工作区还包含 `src/integration/tongji_openapi.ts`、`src/integration/yourtj.ts` 中若干尚未注册为 MCP Tool 的 OpenAPI/YourTJ wrapper。它们和竞赛奖励主链路不直接绑定，提交前建议确认是否拆分。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：竞赛奖励数据来自 Tongji OpenAPI 生成客户端的 `Get_competition_prizesGET`，生成方法路径是 `/v2/dc/student_work_info/competition_winners`，请求只需要 Authorization header。手写 adapter 负责把可信调用上下文里的短期 token 包装成 `Bearer <token>`。
+- 当前改动：`registerCompetitionPrizeTool` 从 `context.invocation.accessToken` 取 token；缺失时直接返回 `unauthorized`。上游响应经 `unwrapResponseData` 取业务 `data`，再由 `normalizeCompetitionPrizeData` 要求存在 `list` 数组，最后只保留 `awardCategory`、`awardDate`、`awardLevel`、`competitionLevel`、`competitionName`、`deptName`、`name` 和 `schoolYear`。
+- 下游影响：MCP 客户端通过 `listTools` 能看到新增 Tool 及其输出 Schema；调用成功时得到 `status/data/source`，不会拿到上游的 `userId`、`id`、`deptCode`、`credit`、`count` 或其他未知字段。成绩 Tool 仍走原注册路径，`toErrorResult` 的默认参数保持原有错误文案。
+
+### 改动结果与业务影响
+
+- 竞赛奖励查询已经形成和成绩 Tool 一致的安全边界：调用方不传身份字段，MCP 服务不持久化 token，Tool Result 只返回白名单字段。空列表会被显式标记为 `empty`，上游业务格式异常会被归一为工具错误，避免把异常响应误解释成“没有竞赛奖励”。
+- 这次测试使用 `InMemoryTransport` 与 Fake Axios adapter，覆盖的是 MCP 契约和上游请求构造，不访问真实校园平台，也没有写入真实 token、学号或学生数据。
+- 已执行 `pnpm test`、`pnpm test:typecheck`、`pnpm typecheck`、`pnpm build`，四项均通过；`git diff --check` 也通过，仅提示工作区文件下次被 Git 触碰时可能发生 LF/CRLF 替换。
+
+### 风险与待办
+
+- 当前 diff 中混入了竞赛奖励之外的多个 wrapper，尤其是 `getAllStudentDetailedInfo(config, userId)` 这类带显式身份参数的 helper。它们尚未进入 MCP Tool，也没有字段裁剪和 ownership 约束；如果本次提交只面向竞赛奖励能力，建议拆到后续独立改动。
+- 工作区存在未跟踪的 `.pnpm-store/`，且当前 `.gitignore` 没有忽略它。提交前应删除该本地缓存目录，或将 `.pnpm-store/` 加入忽略规则，避免把依赖缓存带入仓库。
+- 真实 Tongji OpenAPI 的竞赛奖励字段类型、业务错误码和 token scope 仍需要在受控联调环境确认。如果上游响应结构演进，应同步更新 `CompetitionPrize` 类型、输出 Schema、字段 allowlist 和 Fake 响应。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(competition-prize): add undergraduate prize MCP tool`
+
+
 ## CHANGELOG - 2026-07-30 18:00 - 接入按学期年级查询专业 MCP Tool
 
 ### 撰写时间
@@ -101,6 +691,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(find-major-by-grade): add major list query MCP tool via YourTJ`
+
 
 ## CHANGELOG - 2026-07-30 17:00 - 接入课程关联查询 MCP Tool
 
@@ -149,6 +740,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(course-related): add course related info query MCP tool`
+
 
 ## CHANGELOG - 2026-07-30 16:00 - 接入课程详情查询 MCP Tool（首个 YourTJ 服务）
 
@@ -201,6 +793,7 @@
 
 - `feat(course-detail): add course detail query MCP tool via YourTJ`
 
+
 ## CHANGELOG - 2026-07-30 14:00 - 接入住宿信息查询 MCP Tool
 
 ### 撰写时间
@@ -250,6 +843,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(accommodation-info): add accommodation info query MCP tool`
+
 
 ## CHANGELOG - 2026-07-30 10:00 - 接入助学金信息查询 MCP Tool 并通过 MCP Inspector 联调修正
 
@@ -304,6 +898,7 @@
 
 - `feat(stipend-info): add stipend info query MCP tool`
 
+
 ## CHANGELOG - 2026-07-29 19:38 - 拆分本科成绩 Tool 的类型与通用响应处理
 
 ### 撰写时间
@@ -351,6 +946,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `refactor(score): split tool types and response utilities`
+
 
 ## CHANGELOG - 2026-07-29 16:00 - 接入个人校园统计 MCP Tool
 
@@ -400,6 +996,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(statistics-info): add personal campus statistics MCP tool`
+
 
 ## CHANGELOG - 2026-07-29 14:00 - 接入图书借阅信息查询 MCP Tool 并通过 MCP Inspector 联调修正
 
@@ -452,6 +1049,7 @@
 
 - `feat(book-lend-info): add book lending info query MCP tool`
 
+
 ## CHANGELOG - 2026-07-28 13:00 - 接入四六级成绩查询 MCP Tool 并标注脱敏字段
 
 ### 撰写时间
@@ -502,6 +1100,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(cet-score): add CET score query MCP tool`
+
 
 ## CHANGELOG - 2026-07-28 11:00 - 接入当前学期日历查询 MCP Tool 并增强数据校验
 
@@ -555,6 +1154,7 @@
 
 - `feat(current-term-calendar): add current term calendar MCP tool`
 
+
 ## CHANGELOG - 2026-07-27 20:00 - 接入学期日历查询 MCP Tool 并补齐测试覆盖
 
 ### 撰写时间
@@ -605,6 +1205,7 @@
 
 - `feat(term-calendar): add term calendar query MCP tool`
 
+
 ## CHANGELOG - 2026-07-26 21:29 - 接入本科成绩查询 MCP Tool 并收敛上游成绩数据
 
 ### 撰写时间
@@ -653,6 +1254,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(score): add undergraduate score MCP tool`
+
 
 ## CHANGELOG - 2026-07-26 15:55 - 建立 MCP Server 本地单测闭环并补齐骨架边界验证
 
@@ -703,6 +1305,7 @@
 
 - `test(mcp): establish local regression suite`
 
+
 ## CHANGELOG - 2026-07-26 12:55 - 将校园 access token 收敛为单次 MCP 工具调用上下文
 
 ### 撰写时间
@@ -750,6 +1353,7 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(transport): pass campus token through tool context`
+
 
 ## CHANGELOG - 2026-07-25 15:22 - 统一 CAM OpenAPI 客户端输出并收敛 YourTJ 契约
 
@@ -799,6 +1403,7 @@
 
 - `chore(openapi): consolidate CAM generated clients`
 
+
 ## CHANGELOG - 2026-07-25 02:28 - 建立同济校园能力 MCP Streamable HTTP 骨架
 
 ### 撰写时间
@@ -846,3 +1451,4 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(mcp): scaffold stateless campus MCP server`
+

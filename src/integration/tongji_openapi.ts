@@ -55,3 +55,73 @@ export const getUndergraduateScores = async (
     adapter.withAuthorization({ calendarId }),
   );
 };
+
+// getAllTermCalendars 查询所有学期日历。
+export const getAllTermCalendars = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_all_term_calendarGET(
+    adapter.withAuthorization({}),
+  );
+};
+
+// getCurrentTermCalendar 查询当前学期日历。
+export const getCurrentTermCalendar = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_current_term_calendarGET(
+    adapter.withAuthorization({}),
+  );
+};
+
+// getCetScores 查询四六级成绩。
+export const getCetScores = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Cet_scoreGET(
+    adapter.withAuthorization({}),
+  );
+};
+
+// getBookLendInfo 查询图书借阅信息。
+export const getBookLendInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_book_lend_infoGET(
+    adapter.withAuthorization({}),
+  );
+};
+
+// getStipendInfo 查询助学金信息。
+export const getStipendInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_stipendGET(
+    adapter.withAuthorization({}),
+  );
+};
+
+// getAccommodationInfo 查询住宿信息。
+export const getAccommodationInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Student_accommodation_infoGET(
+    adapter.withAuthorization({}),
+  );
+};
+
+// getStatisticsInfo 查询个人统计数据。
+export const getStatisticsInfo = async (
+  config: TongjiOpenapiAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createTongjiOpenapiAdapter(config);
+  return adapter.service.Get_statistics_infoGET(
+    adapter.withAuthorization({}),
+  );
+};

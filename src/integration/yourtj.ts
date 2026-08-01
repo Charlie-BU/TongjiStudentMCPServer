@@ -29,3 +29,31 @@ export const createYourtjAdapter = (
         .then((response) => response.data),
   });
 };
+
+// getCourseDetail 查询课程详情。
+export const getCourseDetail = async (
+  id: number,
+  config?: YourtjAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createYourtjAdapter(config);
+  return adapter.CourseDetailGET({ id });
+};
+
+// getCourseRelated 查询课程关联信息。
+export const getCourseRelated = async (
+  id: number,
+  config?: YourtjAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createYourtjAdapter(config);
+  return adapter.CourseidRelatedGET({ id });
+};
+
+// getMajorsByGrade 按学期和年级查询专业列表。
+export const getMajorsByGrade = async (
+  calendarId: number,
+  grade: number,
+  config?: YourtjAdapterConfig,
+): Promise<unknown> => {
+  const adapter = createYourtjAdapter(config);
+  return adapter.FindMajorByGradePOST({ calendarId, grade });
+};

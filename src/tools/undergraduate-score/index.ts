@@ -11,7 +11,6 @@ import type {
 import {
     createErrorResult,
     isRecord,
-    isUnauthorizedUpstreamError,
     readArray,
     readNumber,
     readString,
@@ -126,7 +125,10 @@ export const registerUndergraduateScoreTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(error);
+                return toErrorResult(error, {
+                    unauthorized: "同济账号授权无效或已过期，请重新完成授权后再试。",
+                    upstreamUnavailable: "同济成绩服务暂时不可用，请稍后重试。",
+                });
             }
         },
     );

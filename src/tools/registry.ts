@@ -1,6 +1,16 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerUndergraduateScoreTool } from "./undergraduate-score";
+import { registerAllTermCalendarTool } from "./term-calendar";
+import { registerCurrentTermCalendarTool } from "./current-term-calendar";
+import { registerCetScoreTool } from "./cet-score";
+import { registerBookLendInfoTool } from "./book-lend-info";
+import { registerStatisticsInfoTool } from "./statistics-info";
+import { registerStipendInfoTool } from "./stipend-info";
+import { registerAccommodationInfoTool } from "./accommodation-info";
+import { registerCourseDetailTool } from "./course-detail";
+import { registerCourseRelatedTool } from "./course-related";
+import { registerFindMajorByGradeTool } from "./find-major-by-grade";
 
 // ToolRegistrationContext 表示注册工具所需的可信调用方上下文。
 export interface ToolRegistrationContext {
@@ -13,4 +23,14 @@ export const registerTools = (
     context: ToolRegistrationContext,
 ): void => {
     registerUndergraduateScoreTool(server, context);
+    registerAllTermCalendarTool(server, context);
+    registerCurrentTermCalendarTool(server, context);
+    registerCetScoreTool(server, context);
+    registerBookLendInfoTool(server, context);
+    registerStatisticsInfoTool(server, context);
+    registerStipendInfoTool(server, context);
+    registerAccommodationInfoTool(server, context);
+    registerCourseDetailTool(server, context);
+    registerCourseRelatedTool(server, context);
+    registerFindMajorByGradeTool(server, context);
 };

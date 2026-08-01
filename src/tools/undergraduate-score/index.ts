@@ -83,12 +83,14 @@ export const registerUndergraduateScoreTool = (
                 "查询当前已授权本科生在指定学期的成绩；不传 calendarId 时查询当前学期。",
             inputSchema: {
                 calendarId: z
-                    .string()
-                    .trim()
-                    .min(1)
+                    .preprocess(
+                        (value) =>
+                            typeof value === "number" ? String(value) : value,
+                        z.string().trim().min(1),
+                    )
                     .optional()
                     .describe(
-                        "可选的学期编号；不传时由同济开放平台查询当前学期。",
+                        "可选的学期编号；支持字符串或整数，不传时由同济开放平台查询当前学期。",
                     ),
             },
             outputSchema: SCORE_TOOL_OUTPUT_SCHEMA,

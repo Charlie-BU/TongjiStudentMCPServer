@@ -504,6 +504,38 @@ describe("createMcpServer", () => {
         }
     });
 
+    it("应兼容数字年份参数并转为字符串传递给年度统计账单接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: [] },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callAnnualBillTool(
+                { accessToken: "access-token-for-test" },
+                { year: 2024 },
+            );
+
+            assert.deepEqual(params, { year: "2024" });
+            assert.deepEqual(result.structuredContent, {
+                status: "empty",
+                data: { list: [] },
+                source: "Tongji Open Platform",
+                year: "2024",
+            });
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
     it("应将空年度统计账单标记为空结果", async () => {
         const previousAdapter = axios.defaults.adapter;
         axios.defaults.adapter = async (config) => ({
@@ -885,6 +917,40 @@ describe("createMcpServer", () => {
                 status: "empty",
                 data: { list: [] },
                 source: "YourTJ",
+            });
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字检索关键词并转为字符串传递给课程目录接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: [] },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callCourseCatalogTool({}, { q: 54011212 });
+
+            assert.deepEqual(params, {
+                page: undefined,
+                limit: undefined,
+                q: "54011212",
+                includeTotal: undefined,
+            });
+            assert.deepEqual(result.structuredContent, {
+                status: "empty",
+                data: { list: [] },
+                source: "YourTJ",
+                q: "54011212",
             });
         } finally {
             axios.defaults.adapter = previousAdapter;
@@ -1284,6 +1350,38 @@ describe("createMcpServer", () => {
                 JSON.stringify(result.structuredContent),
                 /"teachingClassId"|"campus"|"assessmentMode"|"isExemptionCourse"|"classRoomName"|"compulsory"|"classType"|"roomCategory"|"roomLable"|"courseTakeType"|"teachingWay"|"cloudCourseType"|"nonpubCloudCourseAddr"|"teachMode"|"teachModeI18n"|"roomId"|"teacherCode"|"timeAndRoom"|"timeTab"|"timeId"/,
             );
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字学期编号并转为字符串传递给学生课表接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: [] },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callStudentTimetableTool(
+                { accessToken: "access-token-for-test" },
+                { calendarId: 120 },
+            );
+
+            assert.deepEqual(params, { calendarId: "120" });
+            assert.deepEqual(result.structuredContent, {
+                status: "empty",
+                data: { list: [] },
+                source: "Tongji Open Platform",
+                calendarId: "120",
+            });
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -1806,6 +1904,44 @@ describe("createMcpServer", () => {
                             termcode: "120",
                         },
                     ],
+                },
+                source: "Tongji Open Platform",
+                calendarId: "118",
+            });
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字学期编号并转为字符串传递给本科成绩接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: { term: [] } },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callScoreTool(
+                { accessToken: "access-token-for-test" },
+                { calendarId: 118 },
+            );
+
+            assert.deepEqual(params, { calendarId: "118" });
+            assert.deepEqual(result.structuredContent, {
+                status: "empty",
+                data: {
+                    actualCredit: null,
+                    failingCourseCount: null,
+                    failingCredits: null,
+                    totalGradePoint: null,
+                    term: [],
                 },
                 source: "Tongji Open Platform",
                 calendarId: "118",
@@ -2712,6 +2848,42 @@ describe("createMcpServer", () => {
                 JSON.stringify(result.structuredContent),
                 /count|gateNo|userId|visitno|2\*\*\*\*\*9|1\*\*\*\*\*9/,
             );
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字进出方向并转为字符串传递给图书馆通行接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: { count: 0, userInfos: [] } },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callLibraryAccessTool(
+                { accessToken: "access-token-for-test" },
+                { direction: 1 },
+            );
+
+            assert.deepEqual(params, {
+                direction: "1",
+                visitStartTime: undefined,
+                visitEndTime: undefined,
+            });
+            assert.deepEqual(result.structuredContent, {
+                status: "empty",
+                data: { userInfos: [] },
+                source: "Tongji Open Platform",
+                direction: "1",
+            });
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -4552,7 +4724,7 @@ it("应将上游不可用错误归一为专业查询工具错误", async () => {
 });
 const callScoreTool = async (
     invocation: { accessToken?: string },
-    args: { calendarId?: string } = {},
+    args: { calendarId?: string | number } = {},
 ) => {
     return callTool(UNDERGRADUATE_SCORE_TOOL_NAME, invocation, args);
 };
@@ -4560,7 +4732,7 @@ const callScoreTool = async (
 // callAnnualBillTool 通过内存传输调用年度统计账单查询工具。
 const callAnnualBillTool = async (
     invocation: { accessToken?: string },
-    args: { year: string },
+    args: { year: string | number },
 ) => {
     return callTool(ANNUAL_BILL_TOOL_NAME, invocation, args);
 };
@@ -4582,7 +4754,7 @@ const callCourseCatalogTool = async (
     args: {
         page?: number;
         limit?: number;
-        q?: string;
+        q?: string | number;
     } = {},
 ) => {
     return callTool(COURSE_CATALOG_TOOL_NAME, invocation, args);
@@ -4604,7 +4776,7 @@ const callGradeListTool = async (
 // callStudentTimetableTool 通过内存传输调用学生课表查询工具。
 const callStudentTimetableTool = async (
     invocation: { accessToken?: string },
-    args: { calendarId?: string } = {},
+    args: { calendarId?: string | number } = {},
 ) => {
     return callTool(STUDENT_TIMETABLE_TOOL_NAME, invocation, args);
 };
@@ -4651,7 +4823,7 @@ const callSchoolAccessTool = async (
 const callLibraryAccessTool = async (
     invocation: { accessToken?: string },
     args: {
-        direction?: "1" | "2";
+        direction?: "1" | "2" | 1 | 2;
         visitStartTime?: string;
         visitEndTime?: string;
     } = {},

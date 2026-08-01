@@ -62,9 +62,15 @@ export const registerLibraryAccessTool = (
                 "查询当前已授权学生在指定时间范围内的图书馆闸机进出记录。",
             inputSchema: {
                 direction: z
-                    .enum(["1", "2"])
+                    .preprocess(
+                        (value) =>
+                            typeof value === "number" ? String(value) : value,
+                        z.enum(["1", "2"]),
+                    )
                     .optional()
-                    .describe("可选的进出方向；1 表示进，2 表示出；不传时查询全部。"),
+                    .describe(
+                        "可选的进出方向；支持字符串或整数，1 表示进，2 表示出；不传时查询全部。",
+                    ),
                 visitStartTime: z
                     .string()
                     .trim()

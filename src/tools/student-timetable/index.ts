@@ -102,12 +102,14 @@ export const registerStudentTimetableTool = (
                 "查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。",
             inputSchema: {
                 calendarId: z
-                    .string()
-                    .trim()
-                    .min(1)
+                    .preprocess(
+                        (value) =>
+                            typeof value === "number" ? String(value) : value,
+                        z.string().trim().min(1),
+                    )
                     .optional()
                     .describe(
-                        "可选的学期编号；不传时由同济开放平台查询当前学期。",
+                        "可选的学期编号；支持字符串或整数，不传时由同济开放平台查询当前学期。",
                     ),
             },
             outputSchema: STUDENT_TIMETABLE_OUTPUT_SCHEMA,

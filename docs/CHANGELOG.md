@@ -1,3 +1,49 @@
+## CHANGELOG - 2026-08-02 01:38 - 兼容数值形式的 Tool 查询参数
+
+### 撰写时间
+
+- 2026-08-02 01:38
+
+### Base Commit
+
+- 066fe28569618054366c39a2f28c7625db8a8123
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- MCP Tool 的 JSON Schema 原先要求若干查询标识必须是字符串。但实际调用中，年份、学期编号、课程代码和进出方向经常以 JSON number 产生；这些值虽然语义正确，却会在 Zod 校验阶段被拒绝，无法进入既有的上游适配链路。
+- 这次没有扩大 Tool 的业务参数范围，而是在字符串型标识的输入边界兼容整数，并继续把上游请求统一为字符串，避免适配器和返回契约出现类型漂移。
+
+### 改动概览
+
+- `tongji.student.annual-bill` 的 `year`、`tongji.course.catalog` 的 `q`、学生课表和本科成绩 Tool 的 `calendarId`，现在接受字符串或 number，并在校验后规范化为字符串。
+- 图书馆通行 Tool 的 `direction` 同样兼容 number；归一后仍使用既有 `"1" | "2"` 枚举校验，其他数字不会被放行。
+- `test/server.test.ts` 为五个入口分别增加 Fake Axios 请求断言，验证数值输入、规范化后的上游参数和结构化 Tool Result。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：MCP SDK 将客户端 arguments 交给各 Tool 的 `inputSchema`；年度账单、课表、成绩和图书馆通行随后调用 Tongji Open Platform 适配器，课程目录调用 YourTJ 的 `getCourses`。
+- 当前改动：`z.preprocess` 仅把 number 转为字符串，然后继续经过原有 `trim`、非空或枚举规则。Handler 接收到的 `year`、`q`、`calendarId` 和 `direction` 均为字符串，并按原参数位置传入 `getStatisticsInfoByYear`、`getCourses`、`getStudentTimetable`、`getUndergraduateScores` 和 `getLibraryAccess`。
+- 下游影响：上游 HTTP 查询参数与 Tool Result 中回显的查询字段保持字符串契约；`page`、`limit`、课程详情 ID、年级等本来就是 number Schema 的参数未被改写。
+
+### 改动结果与业务影响
+
+- Agent 或 MCP 客户端即使将 `2024`、`120`、`54011212` 或 `1` 作为 JSON number 传入，也能完成原有查询，不需要调用方做额外的字符串转换。
+- 数字方向值在转换后仍受枚举限制，避免兼容逻辑意外接受未知方向；空值、非数值/非字符串值和空字符串仍由原有 Schema 拒绝。
+- 已执行 `pnpm test`（175/175 通过）、`pnpm test:typecheck`、`pnpm typecheck`、`pnpm build` 与 `git diff --check`，均通过。
+
+### 风险与待办
+
+- 本次沿用已有“非空字符串”规则，未额外限制年份或学期编号的业务范围；若开放平台后续要求固定年份、正整数或特定日历编号格式，应在 Tool Schema 中显式增加约束并补充拒绝用例。
+- `q` 是检索关键词，number 会被作为文本关键词发送给 YourTJ；这是兼容课程代码检索的取舍，不应将该转换复用到日期、自由文本或身份字段。
+
+### 建议 Commit Message（git-cz）
+
+- `fix(tools): accept numeric query identifiers`
+
 ## CHANGELOG - 2026-08-02 00:49 - 完善 Tool 返回字段、空数据与错误归一
 
 ### 撰写时间

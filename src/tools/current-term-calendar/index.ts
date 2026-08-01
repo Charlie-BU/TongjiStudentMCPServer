@@ -24,6 +24,13 @@ export const CURRENT_TERM_CALENDAR_TOOL_NAME = "tongji.student.current-term-cale
 const CURRENT_TERM_CALENDAR_OUTPUT_SCHEMA = z.object({
     status: z.enum(["ok", "empty"]).describe("查询状态，empty 表示没有可返回的当前学期数据。"),
     data: z.object({
+        calendarId: z.number().nullable().describe("当前学期的 calendarId。"),
+        beginDay: z.number().nullable().describe("当前学期开始日期的时间戳。"),
+        endDay: z.number().nullable().describe("当前学期结束日期的时间戳。"),
+        examWeekEnd: z.number().nullable().describe("考试周结束周次。"),
+        examWeekStart: z.number().nullable().describe("考试周开始周次。"),
+        teachingWeekEnd: z.number().nullable().describe("教学周结束周次。"),
+        teachingWeekStart: z.number().nullable().describe("教学周开始周次。"),
         year: z.number().nullable().describe("学年年份。"),
         term: z.number().nullable().describe("学期序号，1 表示第一学期，2 表示第二学期。"),
         weekNum: z.number().nullable().describe("该学期包含的教学周数。"),
@@ -90,6 +97,13 @@ export const registerCurrentTermCalendarTool = (
 
 // EMPTY_CURRENT_TERM_CALENDAR 表示全字段为 null 的空当前学期日历。
 const EMPTY_CURRENT_TERM_CALENDAR: CurrentTermCalendar = {
+    calendarId: null,
+    beginDay: null,
+    endDay: null,
+    examWeekEnd: null,
+    examWeekStart: null,
+    teachingWeekEnd: null,
+    teachingWeekStart: null,
     year: null,
     term: null,
     weekNum: null,
@@ -109,6 +123,13 @@ const normalizeCurrentTermCalendarData = (data: unknown): CurrentTermCalendar | 
     }
     const schoolCalendar = data.schoolCalendar;
     return {
+        calendarId: readNumber(schoolCalendar.id),
+        beginDay: readNumber(schoolCalendar.beginDay),
+        endDay: readNumber(schoolCalendar.endDay),
+        examWeekEnd: readNumber(schoolCalendar.examWeekEnd),
+        examWeekStart: readNumber(schoolCalendar.examWeekStart),
+        teachingWeekEnd: readNumber(schoolCalendar.teachingWeekEnd),
+        teachingWeekStart: readNumber(schoolCalendar.teachingWeekStart),
         year: readNumber(schoolCalendar.year),
         term: readNumber(schoolCalendar.term),
         weekNum: readNumber(schoolCalendar.weekNum),
@@ -121,6 +142,13 @@ const normalizeCurrentTermCalendarData = (data: unknown): CurrentTermCalendar | 
 
 // isEmptyData 判断业务数据是否为空。
 const isEmptyData = (data: CurrentTermCalendar): boolean =>
+    data.calendarId === null &&
+    data.beginDay === null &&
+    data.endDay === null &&
+    data.examWeekEnd === null &&
+    data.examWeekStart === null &&
+    data.teachingWeekEnd === null &&
+    data.teachingWeekStart === null &&
     data.year === null &&
     data.term === null &&
     data.weekNum === null &&
@@ -128,4 +156,3 @@ const isEmptyData = (data: CurrentTermCalendar): boolean =>
     data.simpleName === null &&
     data.now === null &&
     data.name === null;
-

@@ -87,10 +87,10 @@ export const registerCompetitionPrizeTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(
-                    error,
-                    { upstreamUnavailable: "同济竞赛奖励服务暂时不可用，请稍后重试。" },
-                );
+                return toErrorResult(error, {
+                    upstreamUnavailable:
+                        "同济竞赛奖励服务暂时不可用，请稍后重试。",
+                });
             }
         },
     );
@@ -100,7 +100,15 @@ export const registerCompetitionPrizeTool = (
 const normalizeCompetitionPrizeData = (
     data: unknown,
 ): CompetitionPrizeData | undefined => {
-    if (!isRecord(data) || !Array.isArray(data.list)) {
+    if (!isRecord(data)) {
+        return undefined;
+    }
+    if (data.list === null) {
+        return {
+            list: [],
+        };
+    }
+    if (!Array.isArray(data.list)) {
         return undefined;
     }
     return {

@@ -90,10 +90,10 @@ export const registerScholarshipInfoTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(
-                    error,
-                    { upstreamUnavailable: "同济奖学金服务暂时不可用，请稍后重试。" },
-                );
+                return toErrorResult(error, {
+                    upstreamUnavailable:
+                        "同济奖学金服务暂时不可用，请稍后重试。",
+                });
             }
         },
     );
@@ -103,7 +103,16 @@ export const registerScholarshipInfoTool = (
 const normalizeScholarshipInfoData = (
     data: unknown,
 ): ScholarshipInfoData | undefined => {
-    if (!isRecord(data) || !Array.isArray(data.list)) {
+    if (!isRecord(data)) {
+        return undefined;
+    }
+    if (data.list === null) {
+        return {
+            count: 0,
+            list: [],
+        };
+    }
+    if (!Array.isArray(data.list)) {
         return undefined;
     }
     return {

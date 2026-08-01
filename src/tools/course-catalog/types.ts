@@ -2,6 +2,7 @@ import { ToolStatus } from "../types";
 
 // CourseCatalogItem 表示单条课程目录信息。
 export interface CourseCatalogItem {
+    id: number | null;
     code: string | null;
     name: string | null;
     rating: number | null;

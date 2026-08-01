@@ -1,3 +1,51 @@
+## CHANGELOG - 2026-08-02 00:49 - 完善 Tool 返回字段、空数据与错误归一
+
+### 撰写时间
+
+- 2026-08-02 00:49
+
+### Base Commit
+
+- 3e0691d55bca778c1530d95d9aca9ba06207939d
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 课程目录结果此前未提供可用于衔接课程详情等后续查询的课程 ID；当前学期日历也缺少日历编号、起止时间和教学/考试周边界等已由上游返回的摘要字段。
+- 竞赛奖励与奖学金接口在无记录时可能返回 `list: null`。原有实现将其视为上游异常，调用方无法把该合法空值识别为可展示的空结果。
+
+### 改动概览
+
+- `tongji.course.catalog` 的单条课程结果新增 nullable `id`，并同步 MCP 输出 Schema、类型定义和测试期望。
+- `tongji.student.current-term-calendar` 新增 `calendarId`、学期起止时间、教学周及考试周边界字段；空日历的完整性判断同步覆盖这些字段，避免仅有新增字段时被错误标为空结果。
+- 竞赛奖励和奖学金 Tool 将合法的 `list: null` 归一为 `{ list: [] }` 或 `{ count: 0, list: [] }`，并返回既有的 `empty` 状态。
+- 统一上游 401/403 的默认提示为授权失效；成绩与荣誉称号 Tool 仅将合法空数据归一为空结果，无效业务对象改为返回 `upstream_unavailable`。
+- 工具注册表按 Tongji Open Platform 与 YourTJ 来源分组，不改变已注册 Tool 的名称或调用入口；`test/server.test.ts` 同步新增字段、空值用例并完成格式整理。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：课程目录继续通过 YourTJ `getCourses` 获取课程记录；当前学期日历、竞赛奖励和奖学金继续使用 Tongji Open Platform 适配器。认证与请求构造均未改动。
+- 当前改动：各 Tool 仍先经 `unwrapResponseData` 提取业务数据，再以 allowlist 方式读取新增字段或归一空列表。未识别的对象结构返回统一上游异常；Axios 401/403 会返回可操作的重新授权提示，不透传原始响应。
+- 下游影响：MCP 调用方可以直接使用课程 `id` 衔接课程详情查询，并获得当前学期的日历范围信息；依赖既有字段的调用方保持兼容。Tool 目录的展示顺序会按数据来源调整，但 Tool 名称、输入 Schema 和注册数量不变。
+
+### 改动结果与业务影响
+
+- 课程和日历查询可以提供更完整的筛选、跳转和时间范围信息，同时继续只返回显式允许的字段。
+- 上游以 `null` 表示“无奖励/无奖学金记录”时，调用方可稳定收到空列表而非错误，减少前端或 Agent 层的特殊分支。
+- 相关离线用例已覆盖课程 ID、当前学期新增字段、两种 `list: null` 场景及上游错误归一；全量 170 个离线测试均通过。
+
+### 风险与待办
+
+- 新增日历字段属于对外 MCP 输出契约扩展；后续若修改字段命名或时间戳单位，需要保留兼容策略并同步更新 Schema 与测试。
+- `pnpm test:typecheck`、`pnpm typecheck` 与 `pnpm build` 在本机验证中未正常结束，尚未标记为通过；需要在可完成 TypeScript 校验的环境中补跑。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(tools): enrich responses and normalize upstream errors`
+
 ## CHANGELOG - 2026-08-01 18:50 - 接入 YourTJ 学期列表查询 Tool
 
 ### 撰写时间
@@ -1451,4 +1499,3 @@
 ### 建议 Commit Message（git-cz）
 
 - `feat(mcp): scaffold stateless campus MCP server`
-

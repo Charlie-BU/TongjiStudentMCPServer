@@ -22,6 +22,7 @@ export const COURSE_CATALOG_TOOL_NAME = "tongji.course.catalog";
 
 // COURSE_CATALOG_ITEM_SCHEMA 表示单条课程目录信息的 MCP 输出结构。
 const COURSE_CATALOG_ITEM_SCHEMA = z.object({
+    id: z.number().nullable().describe("课程 ID。"),
     code: z.string().nullable().describe("课程代码，例如 54011212。"),
     name: z.string().nullable().describe("课程名称。"),
     rating: z
@@ -145,6 +146,7 @@ const normalizeCourseCatalogData = (
 const normalizeCourseCatalogItem = (item: unknown): CourseCatalogItem => {
     const source = isRecord(item) ? item : {};
     return {
+        id: readNumber(source.id),
         code: readString(source.code),
         name: readString(source.name),
         rating: readNumber(source.rating),

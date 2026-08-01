@@ -85,10 +85,10 @@ export const registerHonoraryTitleTool = (
                     structuredContent: result,
                 };
             } catch (error) {
-                return toErrorResult(
-                    error,
-                    { upstreamUnavailable: "同济荣誉称号服务暂时不可用，请稍后重试。" },
-                );
+                return toErrorResult(error, {
+                    upstreamUnavailable:
+                        "同济荣誉称号服务暂时不可用，请稍后重试。",
+                });
             }
         },
     );
@@ -97,9 +97,17 @@ export const registerHonoraryTitleTool = (
 // normalizeHonoraryTitleData 裁剪并规范化学生荣誉称号业务数据。
 const normalizeHonoraryTitleData = (
     data: unknown,
-): HonoraryTitleData => {
-    if (!isRecord(data) || !Array.isArray(data.list)) {
-        return { list: [] };
+): HonoraryTitleData | undefined => {
+    if (!isRecord(data)) {
+        return undefined;
+    }
+    if (data.list === null) {
+        return {
+            list: [],
+        };
+    }
+    if (!Array.isArray(data.list)) {
+        return undefined;
     }
     return {
         list: readArray(data.list).map(normalizeHonoraryTitle),

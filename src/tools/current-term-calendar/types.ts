@@ -1,6 +1,13 @@
 export type CurrentTermCalendarToolStatus = "ok" | "empty" | "upstream_unavailable";
 
 export interface CurrentTermCalendar {
+    calendarId: number | null;
+    beginDay: number | null;
+    endDay: number | null;
+    examWeekEnd: number | null;
+    examWeekStart: number | null;
+    teachingWeekEnd: number | null;
+    teachingWeekStart: number | null;
     year: number | null;
     term: number | null;
     weekNum: number | null;

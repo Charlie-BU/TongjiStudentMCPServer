@@ -85,7 +85,8 @@ export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
     if (isUnauthorizedUpstreamError(error)) {
         return createErrorResult(
             "unauthorized",
-            config.unauthorized ?? config.upstreamUnavailable,
+            config.unauthorized ??
+                "同济账号授权无效或已过期，请重新完成授权后再试。",
         );
     }
     return createErrorResult(

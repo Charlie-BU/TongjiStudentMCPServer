@@ -35,6 +35,9 @@ output/*
 # Trae files
 .trae
 
+# Claude files
+.claude
+
 .DS_Store
 log/
 

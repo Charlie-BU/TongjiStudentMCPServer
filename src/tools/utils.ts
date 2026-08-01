@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ToolStatus } from "./types";
+import type { ToolErrorStatus } from "./types";
 
 // unwrapResponseData 提取上游响应中的业务数据。
 export const unwrapResponseData = (response: unknown): unknown => {
@@ -16,6 +16,16 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 // readArray 读取数组字段。
 export const readArray = (value: unknown): unknown[] =>
     Array.isArray(value) ? value : [];
+
+// readStringArray 读取字符串数组字段。
+export const readStringArray = (value: unknown): string[] => {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+    return value.map((item) =>
+        typeof item === "string" ? item : String(item),
+    );
+};
 
 // readString 读取字符串字段。
 export const readString = (value: unknown): string | null => {
@@ -40,30 +50,47 @@ export const readNumber = (value: unknown): number | null => {
     return null;
 };
 
+// readBoolean 读取布尔字段。
+export const readBoolean = (value: unknown): boolean | null => {
+    if (typeof value === "boolean") {
+        return value;
+    }
+    return null;
+};
+
 // isUnauthorizedUpstreamError 判断上游错误是否表示未授权。
 export const isUnauthorizedUpstreamError = (error: unknown): boolean =>
     axios.isAxiosError(error) &&
     (error.response?.status === 401 || error.response?.status === 403);
 
+// ErrorMessageConfig 表示工具错误消息的配置。
+export interface ErrorMessageConfig {
+    unauthorized?: string;
+    upstreamUnavailable: string;
+}
+
 // createErrorResult 创建 MCP 工具错误结果。
-export const createErrorResult = (status: ToolStatus, message: string) => ({
+export const createErrorResult = (
+    status: ToolErrorStatus,
+    message: string,
+) => ({
     isError: true,
     content: [
         { type: "text" as const, text: JSON.stringify({ status, message }) },
     ],
 });
 
-
 // toErrorResult 将上游错误转换为 MCP 工具错误结果。
-export const toErrorResult = (error: unknown) => {
+export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
     if (isUnauthorizedUpstreamError(error)) {
         return createErrorResult(
             "unauthorized",
-            "同济账号授权无效或已过期，请重新完成授权后再试。",
+            config.unauthorized ??
+                "同济账号授权无效或已过期，请重新完成授权后再试。",
         );
     }
     return createErrorResult(
         "upstream_unavailable",
-        "同济成绩服务暂时不可用，请稍后重试。",
+        config.upstreamUnavailable,
     );
 };

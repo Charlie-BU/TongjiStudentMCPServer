@@ -1,3 +1,50 @@
+## CHANGELOG - 2026-08-01 15:17 - 接入 YourTJ 年级界别列表查询 Tool
+
+### 撰写时间
+
+- 2026-08-01 15:17
+
+### Base Commit
+
+- 87a159154320efc2a61bf69edeaddb03d1d1feb5
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 课程目录 Tool 已经接入 YourTJ 公开课程查询链路，但课程筛选还缺少“年级/界别”维度的结构化入口。前端或 Agent 如果要构造课程筛选菜单，需要先知道指定学期下可用的年级列表，而不是把上游接口原始响应直接暴露给 MCP 调用方。
+- 本次目标是在不改变既有课程目录、课表、成绩等 Tool 行为的前提下，新增 `tongji.course.grade_list`。它只接收 `calendarId`，不读取同济账号 access token，也不把 YourTJ 的 `code`、`msg` 等业务包装字段透传到 `structuredContent`。
+
+### 改动概览
+
+- 新增 `src/tools/grade-list/`，拆分为 `index.ts` 与 `types.ts`，定义 `GRADE_LIST_TOOL_NAME`、输入参数、输出 Schema、YourTJ 调用、字段裁剪、空结果状态和错误归一逻辑。
+- 更新 `src/tools/registry.ts`，把 `registerGradeListTool` 接入 `registerTools`，使 MCP 客户端可通过 `listTools` 发现年级界别列表查询能力。
+- 更新 `test/integration/yourtj.test.ts`，补充 `getGradesByCalendarId` 的 adapter 契约测试，覆盖 POST 地址、请求体、timeout 和不注入 Authorization header 的约束。
+- 更新 `test/server.test.ts`，补充 Tool 可见性以及年级界别列表的正常返回、空列表、业务错误和上游不可用路径。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：`src/integration/yourtj.ts` 的 `getGradesByCalendarId` 封装 CAM 生成客户端 `FindGradeByCalendarIdPOST`，最终请求 `/api/findGradeByCalendarId`，请求体为 `{ calendarId }`。这条链路复用 YourTJ base URL、timeout 和 Axios adapter 注入方式。
+- 当前改动：`registerGradeListTool` 使用 `z.number().int().positive()` 约束必填学期编号，调用 `getGradesByCalendarId({}, calendarId)` 后通过 `unwrapResponseData` 提取业务数据，再由 `normalizeGradeListData` 只保留数值型 `gradeList`。无法识别的业务结构会归一为工具错误，空数组会返回 `status: "empty"`。
+- 下游影响：`createMcpServer -> registerTools` 的入口保持不变，只新增一个公开课程筛选辅助 Tool。既有课程目录、学生课表、成绩、荣誉称号、奖学金、通行记录等 Tool 的注册和输入输出契约没有被改写。
+
+### 改动结果与业务影响
+
+- MCP 客户端现在可以按学期编号查询 YourTJ 可用的年级/界别列表，并得到 `{ status, data: { gradeList }, source, calendarId }` 形式的结构化结果。上游原始业务包装字段不会进入 Tool Result。
+- 本次新增链路不依赖校园 access token。相关测试已经断言 adapter 不设置 Authorization header，避免把个人授权链路混入公开 YourTJ 查询。
+- 年级界别相关定向验证已通过：`node --import tsx --test --test-name-pattern="年级界别|getGradesByCalendarId" test/integration/yourtj.test.ts test/server.test.ts` 共 5 个用例通过。`pnpm test:typecheck`、`pnpm typecheck` 与 `pnpm build` 均通过。
+
+### 风险与待办
+
+- 全量 `pnpm test` 当前仍有 1 个失败用例：`test/server.test.ts` 中“应将荣誉称号业务错误响应归一为工具错误”返回了非 `isError` 结果。该失败点不在本次年级界别 diff 的实现链路中，但提交前仍建议修复或明确拆分提交边界，避免把已知红灯混入新的 Tool 变更。
+- 当前 `calendarId` 只校验为正整数。真实 YourTJ 学期编号的可用范围和历史学期兼容性仍需要在受控联调环境确认；如果上游对不存在的学期返回特殊业务结构，应同步补充 fake 响应和断言。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(grade-list): add YourTJ grade list MCP tool`
+
 ## CHANGELOG - 2026-08-01 14:30 - 接入 YourTJ 课程目录查询 Tool
 
 ### 撰写时间

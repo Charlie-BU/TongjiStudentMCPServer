@@ -12,6 +12,7 @@ import { ANNUAL_BILL_TOOL_NAME } from '../src/tools/annual-bill';
 import { CARD_SPENDING_FLOW_TOOL_NAME } from '../src/tools/card-spending-flow';
 import { COMPETITION_PRIZE_TOOL_NAME } from '../src/tools/competition-prize';
 import { COURSE_CATALOG_TOOL_NAME } from '../src/tools/course-catalog';
+import { GRADE_LIST_TOOL_NAME } from '../src/tools/grade-list';
 import { HONORARY_TITLE_TOOL_NAME } from '../src/tools/honorary-title';
 import { LIBRARY_ACCESS_TOOL_NAME } from '../src/tools/library-access';
 import { SCHOOL_ACCESS_TOOL_NAME } from '../src/tools/school-access';
@@ -79,6 +80,18 @@ describe('createMcpServer', () => {
       assert.match(
         JSON.stringify(courseCatalogTool.outputSchema),
         /开课学期列表/,
+      );
+      const gradeListTool = toolList.tools.find(
+        (tool) => tool.name === GRADE_LIST_TOOL_NAME,
+      );
+      assert.ok(gradeListTool);
+      assert.match(
+        JSON.stringify(gradeListTool.outputSchema),
+        /年级或界别列表/,
+      );
+      assert.match(
+        JSON.stringify(gradeListTool.outputSchema),
+        /筛选下拉菜单/,
       );
       const studentTimetableTool = toolList.tools.find(
         (tool) => tool.name === STUDENT_TIMETABLE_TOOL_NAME,
@@ -705,6 +718,113 @@ describe('createMcpServer', () => {
 
       assert.equal(result.isError, true);
       assert.match(readToolText(result), /YourTJ 课程目录服务暂时不可用/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应传递学期编号并返回裁剪后的年级界别列表', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    let data: unknown;
+    axios.defaults.adapter = async (config) => {
+      data = config.data;
+      return {
+        data: {
+          code: 200,
+          msg: '查询成功',
+          data: {
+            gradeList: [2025, 2024, 2023, 2022, 2021, 2020],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    };
+
+    try {
+      const result = await callGradeListTool(
+        {},
+        {
+          calendarId: 123,
+        },
+      );
+
+      assert.deepEqual(JSON.parse(String(data)), { calendarId: 123 });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, {
+        status: 'ok',
+        data: {
+          gradeList: [2025, 2024, 2023, 2022, 2021, 2020],
+        },
+        source: 'YourTJ',
+        calendarId: 123,
+      });
+      assert.doesNotMatch(
+        JSON.stringify(result.structuredContent),
+        /"code"|"msg"|查询成功/,
+      );
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将空年级界别列表标记为空结果', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { data: { gradeList: [] } },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callGradeListTool({}, { calendarId: 123 });
+
+      assert.deepEqual(result.structuredContent, {
+        status: 'empty',
+        data: { gradeList: [] },
+        source: 'YourTJ',
+        calendarId: 123,
+      });
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将年级界别业务错误响应归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async (config) => ({
+      data: { code: 500, message: 'upstream business error' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+    });
+
+    try {
+      const result = await callGradeListTool({}, { calendarId: 123 });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /YourTJ 年级界别服务返回异常/);
+    } finally {
+      axios.defaults.adapter = previousAdapter;
+    }
+  });
+
+  it('应将年级界别上游不可用错误归一为工具错误', async () => {
+    const previousAdapter = axios.defaults.adapter;
+    axios.defaults.adapter = async () => {
+      throw new Error('upstream unavailable');
+    };
+
+    try {
+      const result = await callGradeListTool({}, { calendarId: 123 });
+
+      assert.equal(result.isError, true);
+      assert.match(readToolText(result), /YourTJ 年级界别服务暂时不可用/);
     } finally {
       axios.defaults.adapter = previousAdapter;
     }
@@ -2455,6 +2575,14 @@ const callCourseCatalogTool = async (
   } = {},
 ) => {
   return callTool(COURSE_CATALOG_TOOL_NAME, invocation, args);
+};
+
+// callGradeListTool 通过内存传输调用年级界别列表查询工具。
+const callGradeListTool = async (
+  invocation: { accessToken?: string },
+  args: { calendarId: number },
+) => {
+  return callTool(GRADE_LIST_TOOL_NAME, invocation, args);
 };
 
 // callStudentTimetableTool 通过内存传输调用学生课表查询工具。

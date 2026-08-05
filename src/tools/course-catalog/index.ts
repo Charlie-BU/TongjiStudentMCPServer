@@ -82,11 +82,15 @@ export const registerCourseCatalogTool = (
                     .optional()
                     .describe("可选的每页条数。"),
                 q: z
-                    .string()
-                    .trim()
-                    .min(1)
+                    .preprocess(
+                        (value) =>
+                            typeof value === "number" ? String(value) : value,
+                        z.string().trim().min(1),
+                    )
                     .optional()
-                    .describe("可选的查询关键词，支持课程名称、课程代码或教师姓名。"),
+                    .describe(
+                        "可选的查询关键词；支持字符串或整数，适用于课程名称、课程代码或教师姓名。",
+                    ),
             },
             outputSchema: COURSE_CATALOG_OUTPUT_SCHEMA,
         },
@@ -118,7 +122,6 @@ export const registerCourseCatalogTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
-                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResult(

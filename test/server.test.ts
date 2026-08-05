@@ -29,80 +29,79 @@ import { COURSE_RELATED_TOOL_NAME } from "../src/tools/course-related";
 import { FIND_MAJOR_BY_GRADE_TOOL_NAME } from "../src/tools/find-major-by-grade";
 import { USER_BASIC_INFO_TOOL_NAME } from "../src/tools/user-basic-info";
 
+// readJsonContent 读取 MCP 工具文本内容中的 JSON 结果。
+const readJsonContent = (result: {
+    content: Array<{ type: string; text?: string }>;
+}): unknown => {
+    assert.equal("structuredContent" in result, false);
+    const text = result.content[0]?.text;
+    assert.ok(text, "工具结果应包含 JSON 文本内容");
+    return JSON.parse(text);
+};
+
 // ToolCallResult 表示工具调用的测试结果。
 interface ToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // TermCalendarToolCallResult 表示学期日历查询工具的测试结果。
 interface TermCalendarToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // CurrentTermCalendarToolCallResult 表示当前学期日历查询工具的测试结果。
 interface CurrentTermCalendarToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // CetScoreToolCallResult 表示四六级成绩查询工具的测试结果。
 interface CetScoreToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // BookLendInfoToolCallResult 表示图书借阅信息查询工具的测试结果。
 interface BookLendInfoToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // CourseRelatedToolCallResult 表示课程关联查询工具的测试结果。
 interface CourseRelatedToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // FindMajorByGradeToolCallResult 表示按学期年级查询专业工具的测试结果。
 interface FindMajorByGradeToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // CourseDetailToolCallResult 表示课程详情查询工具的测试结果。
 interface CourseDetailToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // AccommodationInfoToolCallResult 表示住宿信息查询工具的测试结果。
 interface AccommodationInfoToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // StipendInfoToolCallResult 表示助学金信息查询工具的测试结果。
 interface StipendInfoToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
 // StatisticsInfoToolCallResult 表示个人统计数据查询工具的测试结果。
 interface StatisticsInfoToolCallResult {
     isError?: boolean;
-    structuredContent?: unknown;
     content: Array<{ type: string; text?: string }>;
 }
 
@@ -466,7 +465,7 @@ describe("createMcpServer", () => {
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.deepEqual(params, { year: "2024" });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -496,9 +495,41 @@ describe("createMcpServer", () => {
                 year: "2024",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /canteenSpendingPct|deptCode|earliestExitTime|lastDepartureCount|lateExitPct|latestDepartureTime|libraryAttendancePct|libraryExitPct|maxCumulativeAmt|todayEntryCount|todayLateExitPct|userId|userTypeCode|weeklyExitAvg|1\*\*\*\*\*0/,
             );
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字年份参数并转为字符串传递给年度统计账单接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: [] },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callAnnualBillTool(
+                { accessToken: "access-token-for-test" },
+                { year: 2024 },
+            );
+
+            assert.deepEqual(params, { year: "2024" });
+            assert.deepEqual(readJsonContent(result), {
+                status: "empty",
+                data: { list: [] },
+                source: "Tongji Open Platform",
+                year: "2024",
+            });
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -520,7 +551,7 @@ describe("createMcpServer", () => {
                 { year: "2024" },
             );
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -661,7 +692,7 @@ describe("createMcpServer", () => {
                 tradeEndTime: "2025-05-31 23:59:59",
             });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     userInfos: [
@@ -683,7 +714,7 @@ describe("createMcpServer", () => {
                 tradeEndTime: "2025-05-31 23:59:59",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /"count"|"fromAccount"|"posCode"|"sexCode"|"tradeDate"|"tradeMonth"|"tradeTime"|"tranCode"|"userId"|342668|1\*\*\*\*\*9/,
             );
         } finally {
@@ -706,7 +737,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { userInfos: [] },
                 source: "Tongji Open Platform",
@@ -834,7 +865,7 @@ describe("createMcpServer", () => {
                 includeTotal: undefined,
             });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -860,7 +891,7 @@ describe("createMcpServer", () => {
                 q: "思想道德",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /"is_legacy"|"semester_names"|2025-2026学年第2学期\|\|2025-2026学年第1学期/,
             );
         } finally {
@@ -881,10 +912,44 @@ describe("createMcpServer", () => {
         try {
             const result = await callCourseCatalogTool({});
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "YourTJ",
+            });
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字检索关键词并转为字符串传递给课程目录接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: [] },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callCourseCatalogTool({}, { q: 54011212 });
+
+            assert.deepEqual(params, {
+                page: undefined,
+                limit: undefined,
+                q: "54011212",
+                includeTotal: undefined,
+            });
+            assert.deepEqual(readJsonContent(result), {
+                status: "empty",
+                data: { list: [] },
+                source: "YourTJ",
+                q: "54011212",
             });
         } finally {
             axios.defaults.adapter = previousAdapter;
@@ -954,7 +1019,7 @@ describe("createMcpServer", () => {
             const result = await callCalendarListTool({});
 
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -971,7 +1036,7 @@ describe("createMcpServer", () => {
                 source: "YourTJ",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /"code"|"msg"|查询成功/,
             );
         } finally {
@@ -992,7 +1057,7 @@ describe("createMcpServer", () => {
         try {
             const result = await callCalendarListTool({});
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "YourTJ",
@@ -1068,7 +1133,7 @@ describe("createMcpServer", () => {
 
             assert.deepEqual(JSON.parse(String(data)), { calendarId: 123 });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     gradeList: [2025, 2024, 2023, 2022, 2021, 2020],
@@ -1077,7 +1142,7 @@ describe("createMcpServer", () => {
                 calendarId: 123,
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /"code"|"msg"|查询成功/,
             );
         } finally {
@@ -1098,7 +1163,7 @@ describe("createMcpServer", () => {
         try {
             const result = await callGradeListTool({}, { calendarId: 123 });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { gradeList: [] },
                 source: "YourTJ",
@@ -1240,7 +1305,7 @@ describe("createMcpServer", () => {
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.deepEqual(params, { calendarId: "120" });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -1281,9 +1346,41 @@ describe("createMcpServer", () => {
                 calendarId: "120",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /"teachingClassId"|"campus"|"assessmentMode"|"isExemptionCourse"|"classRoomName"|"compulsory"|"classType"|"roomCategory"|"roomLable"|"courseTakeType"|"teachingWay"|"cloudCourseType"|"nonpubCloudCourseAddr"|"teachMode"|"teachModeI18n"|"roomId"|"teacherCode"|"timeAndRoom"|"timeTab"|"timeId"/,
             );
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字学期编号并转为字符串传递给学生课表接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: [] },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callStudentTimetableTool(
+                { accessToken: "access-token-for-test" },
+                { calendarId: 120 },
+            );
+
+            assert.deepEqual(params, { calendarId: "120" });
+            assert.deepEqual(readJsonContent(result), {
+                status: "empty",
+                data: { list: [] },
+                source: "Tongji Open Platform",
+                calendarId: "120",
+            });
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -1304,7 +1401,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -1519,7 +1616,7 @@ describe("createMcpServer", () => {
                 userId: "internal-user-id",
             });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -1565,7 +1662,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /degreeCode|stationTerminiCode|trainingCategoryCode|trainingMethodsCode|facultyCode|sexCode|userId|internal-user-id|nameSpelling|currentGrade|professionCode|leaveSchoolCode|isIncumbencyCode/,
             );
         } finally {
@@ -1599,7 +1696,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -1776,7 +1873,7 @@ describe("createMcpServer", () => {
 
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     actualCredit: "143.50000",
@@ -1815,6 +1912,44 @@ describe("createMcpServer", () => {
         }
     });
 
+    it("应兼容数字学期编号并转为字符串传递给本科成绩接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: { term: [] } },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callScoreTool(
+                { accessToken: "access-token-for-test" },
+                { calendarId: 118 },
+            );
+
+            assert.deepEqual(params, { calendarId: "118" });
+            assert.deepEqual(readJsonContent(result), {
+                status: "empty",
+                data: {
+                    actualCredit: null,
+                    failingCourseCount: null,
+                    failingCredits: null,
+                    totalGradePoint: null,
+                    term: [],
+                },
+                source: "Tongji Open Platform",
+                calendarId: "118",
+            });
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
     it("应将空成绩数据标记为空结果", async () => {
         const previousAdapter = axios.defaults.adapter;
         axios.defaults.adapter = async (config) => ({
@@ -1830,7 +1965,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: {
                     actualCredit: null,
@@ -1958,7 +2093,7 @@ describe("createMcpServer", () => {
 
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -1977,7 +2112,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /achievementRecognitionType|credit|deptCode|id|userId|count|1\*\*\*\*\*5|10721/,
             );
         } finally {
@@ -2000,7 +2135,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -2025,7 +2160,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -2148,7 +2283,7 @@ describe("createMcpServer", () => {
 
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -2163,7 +2298,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /count|sinceWid|deptCode|ratingTerm|rewardLevel|updateTime|userId|wid|code|msg|000182|2025-04-02T00:00:00|0\*\*\*\*\*1|D8CAE0FC060574DEE040A8C0018420C5|1\*\*\*\*\*\*0|成功/,
             );
         } finally {
@@ -2186,7 +2321,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -2308,7 +2443,7 @@ describe("createMcpServer", () => {
 
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     count: 3,
@@ -2327,7 +2462,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /amount|deptCode|userId|wid|sinceWid|3000|1\*\*\*\*\*4|test-wid-001|0\*\*\*\*\*\*3/,
             );
         } finally {
@@ -2350,7 +2485,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { count: 0, list: [] },
                 source: "Tongji Open Platform",
@@ -2375,7 +2510,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { count: 0, list: [] },
                 source: "Tongji Open Platform",
@@ -2511,7 +2646,7 @@ describe("createMcpServer", () => {
                 dataEndTime: "2026-07-31 23:59:59",
             });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     count: 2,
@@ -2533,7 +2668,7 @@ describe("createMcpServer", () => {
                 dataEndTime: "2026-07-31 23:59:59",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /cardData|codeIndex|equptId|job|multiEvent|personnelId|userId|2\*\*\*\*\*\*6|1\*\*\*\*\*1/,
             );
         } finally {
@@ -2556,7 +2691,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { count: 0, userInfos: [] },
                 source: "Tongji Open Platform",
@@ -2688,7 +2823,7 @@ describe("createMcpServer", () => {
                 visitEndTime: "2026-07-31 23:59:59",
             });
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     userInfos: [
@@ -2709,9 +2844,45 @@ describe("createMcpServer", () => {
                 visitEndTime: "2026-07-31 23:59:59",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /count|gateNo|userId|visitno|2\*\*\*\*\*9|1\*\*\*\*\*9/,
             );
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
+
+    it("应兼容数字进出方向并转为字符串传递给图书馆通行接口", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        let params: unknown;
+        axios.defaults.adapter = async (config) => {
+            params = config.params;
+            return {
+                data: { data: { count: 0, userInfos: [] } },
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config,
+            };
+        };
+
+        try {
+            const result = await callLibraryAccessTool(
+                { accessToken: "access-token-for-test" },
+                { direction: 1 },
+            );
+
+            assert.deepEqual(params, {
+                direction: "1",
+                visitStartTime: undefined,
+                visitEndTime: undefined,
+            });
+            assert.deepEqual(readJsonContent(result), {
+                status: "empty",
+                data: { userInfos: [] },
+                source: "Tongji Open Platform",
+                direction: "1",
+            });
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -2732,7 +2903,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { userInfos: [] },
                 source: "Tongji Open Platform",
@@ -2854,7 +3025,7 @@ describe("createMcpServer", () => {
 
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "ok",
                 data: {
                     list: [
@@ -2869,7 +3040,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(result.structuredContent),
+                JSON.stringify(readJsonContent(result)),
                 /count|sincePid|createTime|deptCode|statusCode|updateTime|userId|userTypeCode|code|000033|2023-11-06 11:33:53|2024-06-26 16:09:48|21\*\*\*\*\*7|1\*\*\*\*\*8/,
             );
         } finally {
@@ -2892,7 +3063,7 @@ describe("createMcpServer", () => {
                 accessToken: "access-token-for-test",
             });
 
-            assert.deepEqual(result.structuredContent, {
+            assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -3020,7 +3191,7 @@ it("应注入 token 并返回学期日历数据", async () => {
 
         assert.equal(authorization, "Bearer access-token-for-test");
         assert.equal(result.isError, undefined);
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "ok",
             data: {
                 terms: [
@@ -3064,7 +3235,7 @@ it("应将空的学期日历数据标记为空结果", async () => {
             accessToken: "access-token-for-test",
         });
 
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "empty",
             data: { terms: [] },
             source: "Tongji Open Platform",
@@ -3184,7 +3355,7 @@ it("应注入 token 并返回当前学期日历数据", async () => {
 
         assert.equal(authorization, "Bearer access-token-for-test");
         assert.equal(result.isError, undefined);
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "ok",
             data: {
                 calendarId: 113,
@@ -3224,7 +3395,7 @@ it("应将空的当前学期日历对象标记为空结果", async () => {
             accessToken: "access-token-for-test",
         });
 
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "empty",
             data: null,
             source: "Tongji Open Platform",
@@ -3249,7 +3420,7 @@ it("应将上游 data:null 响应视为空数据", async () => {
             accessToken: "access-token-for-test",
         });
 
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "empty",
             data: null,
             source: "Tongji Open Platform",
@@ -3407,7 +3578,7 @@ it("应注入 token 并返回四六级成绩数据", async () => {
 
         assert.equal(authorization, "Bearer access-token-for-test");
         assert.equal(result.isError, undefined);
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "ok",
             data: {
                 records: [
@@ -3459,7 +3630,7 @@ it("应将空的四六级成绩数据标记为空结果", async () => {
             accessToken: "access-token-for-test",
         });
 
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "empty",
             data: { records: [] },
             source: "Tongji Open Platform",
@@ -3598,7 +3769,7 @@ it("应注入 token 并返回图书借阅数据", async () => {
 
         assert.equal(authorization, "Bearer access-token-for-test");
         assert.equal(result.isError, undefined);
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "ok",
             data: {
                 records: [
@@ -3656,7 +3827,7 @@ it("应将空的图书借阅数据标记为空结果", async () => {
             accessToken: "access-token-for-test",
         });
 
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "empty",
             data: { records: [] },
             source: "Tongji Open Platform",
@@ -3798,7 +3969,7 @@ it("应注入 token 并返回个人统计数据", async () => {
 
         assert.equal(authorization, "Bearer access-token-for-test");
         assert.equal(result.isError, undefined);
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "ok",
             data: {
                 records: [
@@ -3860,7 +4031,7 @@ it("应将空的个人统计数据标记为空结果", async () => {
             accessToken: "access-token-for-test",
         });
 
-        assert.deepEqual(result.structuredContent, {
+        assert.deepEqual(readJsonContent(result), {
             status: "empty",
             data: { records: [] },
             source: "Tongji Open Platform",
@@ -3980,7 +4151,7 @@ it("应注入 token 并返回助学金数据", async () => {
         const r = await callStipendInfoTool({ accessToken: "t" });
         assert.equal(auth, "Bearer t");
         assert.equal(r.isError, undefined);
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "ok",
             data: {
                 records: [
@@ -4018,7 +4189,7 @@ it("应将空的助学金数据标记为空结果", async () => {
     });
     try {
         const r = await callStipendInfoTool({ accessToken: "t" });
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "empty",
             data: { records: [] },
             source: "Tongji Open Platform",
@@ -4128,7 +4299,7 @@ it("应注入 token 并返回住宿数据", async () => {
         const r = await callAccommodationInfoTool({ accessToken: "t" });
         assert.equal(auth, "Bearer t");
         assert.equal(r.isError, undefined);
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "ok",
             data: {
                 records: [
@@ -4166,7 +4337,7 @@ it("应将空的住宿数据标记为空结果", async () => {
     });
     try {
         const r = await callAccommodationInfoTool({ accessToken: "t" });
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "empty",
             data: { records: [] },
             source: "Tongji Open Platform",
@@ -4278,7 +4449,7 @@ it("应注入课程ID并返回课程详情与裁剪后的评价", async () => {
     try {
         const r = await callCourseDetailTool({}, { id: 12005 });
         assert.equal(r.isError, undefined);
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "ok",
             data: {
                 id: 12005,
@@ -4385,7 +4556,7 @@ it("应注入课程ID并返回关联课程数据", async () => {
     try {
         const r = await callCourseRelatedTool({}, { id: 12005 });
         assert.equal(r.isError, undefined);
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "ok",
             data: {
                 teacherOtherCourses: [
@@ -4427,7 +4598,7 @@ it("应将无关联数据的响应标记为空结果", async () => {
     });
     try {
         const r = await callCourseRelatedTool({}, { id: 12005 });
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "empty",
             data: null,
             source: "YourTJ",
@@ -4472,7 +4643,7 @@ it("应注入参数并返回专业列表", async () => {
             { calendarId: 118, grade: 2024 },
         );
         assert.equal(r.isError, undefined);
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "ok",
             data: {
                 records: [
@@ -4503,7 +4674,7 @@ it("应将空专业列表标记为空结果", async () => {
             {},
             { calendarId: 118, grade: 2024 },
         );
-        assert.deepEqual(r.structuredContent, {
+        assert.deepEqual(readJsonContent(r), {
             status: "empty",
             data: { records: [] },
             source: "YourTJ",
@@ -4552,7 +4723,7 @@ it("应将上游不可用错误归一为专业查询工具错误", async () => {
 });
 const callScoreTool = async (
     invocation: { accessToken?: string },
-    args: { calendarId?: string } = {},
+    args: { calendarId?: string | number } = {},
 ) => {
     return callTool(UNDERGRADUATE_SCORE_TOOL_NAME, invocation, args);
 };
@@ -4560,7 +4731,7 @@ const callScoreTool = async (
 // callAnnualBillTool 通过内存传输调用年度统计账单查询工具。
 const callAnnualBillTool = async (
     invocation: { accessToken?: string },
-    args: { year: string },
+    args: { year: string | number },
 ) => {
     return callTool(ANNUAL_BILL_TOOL_NAME, invocation, args);
 };
@@ -4582,7 +4753,7 @@ const callCourseCatalogTool = async (
     args: {
         page?: number;
         limit?: number;
-        q?: string;
+        q?: string | number;
     } = {},
 ) => {
     return callTool(COURSE_CATALOG_TOOL_NAME, invocation, args);
@@ -4604,7 +4775,7 @@ const callGradeListTool = async (
 // callStudentTimetableTool 通过内存传输调用学生课表查询工具。
 const callStudentTimetableTool = async (
     invocation: { accessToken?: string },
-    args: { calendarId?: string } = {},
+    args: { calendarId?: string | number } = {},
 ) => {
     return callTool(STUDENT_TIMETABLE_TOOL_NAME, invocation, args);
 };
@@ -4651,7 +4822,7 @@ const callSchoolAccessTool = async (
 const callLibraryAccessTool = async (
     invocation: { accessToken?: string },
     args: {
-        direction?: "1" | "2";
+        direction?: "1" | "2" | 1 | 2;
         visitStartTime?: string;
         visitEndTime?: string;
     } = {},

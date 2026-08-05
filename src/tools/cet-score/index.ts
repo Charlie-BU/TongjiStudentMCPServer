@@ -87,7 +87,6 @@ export const registerCetScoreTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
-                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResult(error, { unauthorized: "同济账号授权无效或已过期，请重新完成授权后再试。", upstreamUnavailable: "同济四六级成绩服务暂时不可用，请稍后重试。" });

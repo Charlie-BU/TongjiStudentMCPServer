@@ -84,10 +84,12 @@ export const registerAnnualBillTool = (
             description: "查询当前已授权学生指定年份的校园年度统计账单。",
             inputSchema: {
                 year: z
-                    .string()
-                    .trim()
-                    .min(1)
-                    .describe("必填的统计年份，例如 2024。"),
+                    .preprocess(
+                        (value) =>
+                            typeof value === "number" ? String(value) : value,
+                        z.string().trim().min(1),
+                    )
+                    .describe("必填的统计年份；支持字符串或整数，例如 2024。"),
             },
             outputSchema: ANNUAL_BILL_OUTPUT_SCHEMA,
         },
@@ -122,7 +124,6 @@ export const registerAnnualBillTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
-                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResult(

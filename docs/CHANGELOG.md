@@ -1,3 +1,50 @@
+## CHANGELOG - 2026-08-05 18:34 - 统一 MCP Tool 文本结果返回
+
+### 撰写时间
+
+- 2026-08-05 18:34
+
+### Base Commit
+
+- 5da101aaf69b6f0f6fa280d9113b2d74abeb1d4a
+
+### Compare Scope
+
+- working_tree_only
+
+### 背景与改动目标
+
+- 各 MCP Tool 的成功结果此前同时通过 `content` 中的 JSON 文本和 `structuredContent` 返回同一份业务数据，造成重复传输和两条并行的对外结果读取路径。
+- 本次统一 Tool Call Result：调用方只需读取首个 text content 并解析 JSON；不再返回 `structuredContent`。
+
+### 改动概览
+
+- 移除 24 个已注册 Tool 成功返回中的 `structuredContent: result`，保留既有 `content: [{ type: "text", text: JSON.stringify(result) }]`。
+- 错误结果继续复用 `createErrorResult` / `toErrorResult` 的文本 content 约定，状态、错误码和消息不变。
+- `test/server.test.ts` 改为从 `content[0].text` 解析 JSON 后验证既有业务结果，并断言 Tool Call Result 不含 `structuredContent`。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖不变：各 Tool 仍按既有输入 Schema 校验参数，通过 Tongji Open Platform 或 YourTJ 适配器获取数据，并使用原有 allowlist 规范化响应。
+- 当前改动仅发生在 Tool Handler 最终组装 MCP 结果的边界；`status`、`data`、`source` 及空结果语义均仍序列化为相同 JSON 文本。
+- 下游 MCP 客户端应通过 `content[0].text` 获取并 `JSON.parse` 业务结果；不再依赖或读取 `structuredContent`。Tool 名称、输入 Schema、输出 Schema 与上游请求均未变更。
+
+### 改动结果与业务影响
+
+- 单次调用只传递一份成功业务结果，避免 `content` 与 `structuredContent` 的重复载荷和潜在不一致。
+- 现有基于文本内容的客户端无需改动；曾直接读取 `structuredContent` 的客户端需要切换至解析 text content。
+- 审阅覆盖所有 `src/tools` 的成功返回及测试调用链，确认除测试中的“字段不存在”断言外不存在 `structuredContent` 引用。
+- 已执行 `pnpm test:typecheck`、`pnpm typecheck`、`pnpm test`、`pnpm build` 和 `git diff --check`，均通过。
+
+### 风险与待办
+
+- 本次属于 MCP 输出通道收敛；任何依赖 `structuredContent` 的外部调用方需要完成兼容迁移后再升级。
+- `outputSchema` 继续用于 Tool 目录与结果契约声明，但不再对应额外的 `structuredContent` 载荷；后续新增 Tool 应沿用单一 text content 返回约定。
+
+### 建议 Commit Message（git-cz）
+
+- `refactor(tools): return MCP results as text content only`
+
 ## CHANGELOG - 2026-08-02 01:38 - 兼容数值形式的 Tool 查询参数
 
 ### 撰写时间

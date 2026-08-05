@@ -83,7 +83,6 @@ export const registerCurrentTermCalendarTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
-                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResult(error, {

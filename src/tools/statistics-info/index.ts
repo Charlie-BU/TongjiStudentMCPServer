@@ -109,6 +109,7 @@ export const registerStatisticsInfoTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
+                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResult(error, { unauthorized: "同济账号授权无效或已过期，请重新完成授权后再试。", upstreamUnavailable: "同济个人统计服务暂时不可用，请稍后重试。" });
@@ -171,4 +172,3 @@ const normalizeStatisticsRecord = (item: unknown): StatisticsRecord => {
 // isEmptyData 判断业务数据是否为空。
 const isEmptyData = (data: StatisticsInfoData): boolean =>
     data.records.length === 0;
-

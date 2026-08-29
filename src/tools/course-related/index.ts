@@ -75,6 +75,7 @@ export const registerCourseRelatedTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
+                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResultLocal(error);
@@ -124,4 +125,3 @@ const toErrorResultLocal = (error: unknown) => {
     }
     return createErrorResult("upstream_unavailable", "YourTJ 课程关联服务暂时不可用，请稍后重试。");
 };
-

@@ -126,7 +126,7 @@ describe('readToolInvocationContext', () => {
 
 ### 5.1 配置层：`src/config/`
 
-以 `loadServerConfig` 为例，至少覆盖默认 `HOST`/`PORT`、合法边界端口 `1` 与 `65535`、非整数、超范围端口，以及环境变量恢复。测试不得永久修改 `process.env`，无论成功或失败都要还原。
+以 `loadServerConfig` 为例，至少覆盖默认 `PORT`、合法边界端口 `1` 与 `65535`、非整数、超范围端口，以及环境变量恢复。测试不得永久修改 `process.env`，无论成功或失败都要还原。
 
 ### 5.2 传输与可信上下文：`src/transport/`
 

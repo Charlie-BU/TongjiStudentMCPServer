@@ -1426,7 +1426,7 @@
 
 ### 关键链路解析（含上下游）
 
-- 上游依赖：`src/index.ts` 继续通过 `loadServerConfig` 读取 `HOST` 与 `PORT`；Agent 仍通过 `X-Tongji-Access-Token` 将短期凭据传给 `/mcp`。本次没有改变入口参数、token 传递方式或 CAM 生成客户端。
+- 上游依赖：`src/index.ts` 继续通过 `loadServerConfig` 读取 `PORT`；Agent 仍通过 `X-Tongji-Access-Token` 将短期凭据传给 `/mcp`。本次没有改变入口参数、token 传递方式或 CAM 生成客户端。
 - 当前改动：`test/config/server.test.ts` 在每个场景后恢复 `process.env`；`test/transport/http.test.ts` 在 loopback 临时端口验证 HTTP 边界并在 `finally` 关闭 server；`test/server.test.ts` 通过 SDK 的 `InMemoryTransport` 验证 MCP 身份与当前不声明 `tools` capability 的骨架行为。
 - 下游影响：后续 Tool、领域聚合和手写 OpenAPI adapter 只需遵循 `docs/UTSpec.md` 在 `test/` 增加对应场景。提交前可用 `pnpm check` 一次跑完单测、测试类型检查、生产类型检查和 CommonJS 构建；当前没有 CI 门禁。
 
@@ -1573,7 +1573,7 @@
 
 ### 关键链路解析（含上下游）
 
-- 上游依赖：`src/index.ts` 读取 `HOST`、`PORT` 和 `MCP_AUTH_REQUIRED` 后创建 Node HTTP server；`StreamableHTTPServerTransport` 负责 MCP 协议解析，`McpServer` 负责承载注册后的工具目录。
+- 上游依赖：`src/index.ts` 读取 `PORT` 后创建 Node HTTP server；`StreamableHTTPServerTransport` 负责 MCP 协议解析，`McpServer` 负责承载注册后的工具目录。
 - 当前改动：请求先经过 `authenticateCaller` 的可信调用方边界，再读取受 1 MiB 限制的 JSON body，随后连接无 session ID 的 transport。`registerTools` 目前为空，因此服务没有访问同济开放平台或返回个人数据的路径。
 - 下游影响：`TongjiStudentAgent` 后续可通过 `/mcp` 连接并按 MCP 协议发现工具。真实校园数据能力应在 `tools` 中定义输入输出 Schema，在 `domain` 聚合业务，在 `integration` 调用上游，并在 `privacy` 与 `observability` 层完成脱敏和元数据观测。
 
@@ -1581,7 +1581,7 @@
 
 - 当前骨架能完成 TypeScript 类型检查和 CommonJS 构建；SDK 的 `streamableHttp.js` 子路径已显式使用 `.js` 后缀，避免 CommonJS 运行时的 package exports 解析失败。
 - README 不再要求复制不存在且不会被读取的 `.env.example`，改为列出实际由进程读取的环境变量和认证开关的当前行为。
-- 已执行 `pnpm typecheck`、`pnpm build` 和 `git diff --check HEAD`。沙箱内监听 `127.0.0.1:3000` 被权限策略拒绝；在获批环境中启动命令不再出现 SDK 子路径加载错误，但仍需要在真实本地或部署环境完成 `/health` 与 MCP initialize 冒烟验证。
+- 已执行 `pnpm typecheck`、`pnpm build` 和 `git diff --check HEAD`。沙箱内监听本地 `3000` 端口被权限策略拒绝；在获批环境中启动命令不再出现 SDK 子路径加载错误，但仍需要在真实本地或部署环境完成 `/health` 与 MCP initialize 冒烟验证。
 
 ### 风险与待办
 

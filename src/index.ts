@@ -6,6 +6,6 @@ const config = loadServerConfig();
 // server 保存 MCP 服务的 HTTP 实例。
 const server = createHttpServer();
 
-server.listen(config.port, config.host, () => {
-  console.info(`TongjiStudent MCP Server listening on http://${config.host}:${config.port}/mcp`);
+server.listen(config.port, () => {
+  console.info(`TongjiStudent MCP Server listening on port ${config.port}`);
 });

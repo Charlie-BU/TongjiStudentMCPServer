@@ -59,7 +59,6 @@ pnpm dev
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `HOST` | `127.0.0.1` | HTTP 监听地址。 |
 | `PORT` | `3000` | HTTP 监听端口，必须在 `1` 到 `65535` 之间。 |
 
 例如，修改端口可直接在启动命令前设置：
@@ -71,10 +70,10 @@ PORT=3100 pnpm start
 服务启动后：
 
 ```bash
-curl http://127.0.0.1:3000/health
+curl http://localhost:3000/health
 ```
 
-MCP 客户端连接地址为 `http://127.0.0.1:3000/mcp`。当前提供的工具为 `tongji.student.score`，用于查询本科生指定学期的成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
+MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。当前提供的工具为 `tongji.student.score`，用于查询本科生指定学期的成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
 
 `/health` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
 
@@ -89,7 +88,7 @@ npx @modelcontextprotocol/inspector
 在 Inspector 页面中选择 `Streamable HTTP` 传输方式，并填写 MCP 服务地址：
 
 ```text
-http://127.0.0.1:3000/mcp
+http://localhost:3000/mcp
 ```
 
 通过 Inspector 的 `Tools` 页面执行工具发现，确认可看到

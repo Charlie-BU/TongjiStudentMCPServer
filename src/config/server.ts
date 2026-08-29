@@ -2,7 +2,6 @@ import { env } from 'node:process';
 
 // ServerConfig 表示 MCP 服务的运行配置。
 export interface ServerConfig {
-  host: string;
   port: number;
 }
 
@@ -13,5 +12,5 @@ export const loadServerConfig = (): ServerConfig => {
     throw new Error('PORT must be an integer between 1 and 65535');
   }
 
-  return { host: env.HOST ?? '127.0.0.1', port };
+  return { port };
 };

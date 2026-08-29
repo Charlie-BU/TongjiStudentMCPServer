@@ -12,12 +12,12 @@ const withHttpServer = async (
 
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
-    server.listen(0, '127.0.0.1', resolve);
+    server.listen(0, 'localhost', resolve);
   });
 
   const address = server.address() as AddressInfo;
   try {
-    await operation(`http://127.0.0.1:${address.port}`);
+    await operation(`http://localhost:${address.port}`);
   } finally {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error === undefined ? resolve() : reject(error)));

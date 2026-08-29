@@ -114,6 +114,7 @@ export const registerSchoolAccessTool = (
                 };
                 return {
                     content: [{ type: "text", text: JSON.stringify(result) }],
+                    structuredContent: result,
                 };
             } catch (error) {
                 return toErrorResult(

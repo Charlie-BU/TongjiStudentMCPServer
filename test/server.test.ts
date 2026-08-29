@@ -32,11 +32,13 @@ import { USER_BASIC_INFO_TOOL_NAME } from "../src/tools/user-basic-info";
 // readJsonContent 读取 MCP 工具文本内容中的 JSON 结果。
 const readJsonContent = (result: {
     content: Array<{ type: string; text?: string }>;
+    structuredContent?: unknown;
 }): unknown => {
-    assert.equal("structuredContent" in result, false);
     const text = result.content[0]?.text;
     assert.ok(text, "工具结果应包含 JSON 文本内容");
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+    assert.deepEqual(result.structuredContent, parsed);
+    return parsed;
 };
 
 // ToolCallResult 表示工具调用的测试结果。

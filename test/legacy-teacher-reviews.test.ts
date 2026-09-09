@@ -30,8 +30,23 @@ it("returns all courses and reviews, preserves joint teaching and body-only attr
     assert.ok(searchLegacyTeacherReviews("徐春阳").some(c => c.includes("嘉定体育场 1 号")));
 });
 
-it("does not match partial names, SQL injection or wildcard input", () => {
-    for (const name of ["不存在的老师", "陈", "%", "_", "' OR 1=1 --"]) {
+it("matches name fragments across teachers and returns every item in stable order", () => {
+    const db = new DatabaseSync(LEGACY_TEACHER_REVIEWS_DATABASE, { readOnly: true });
+    try {
+        const rows = db.prepare("SELECT teacher, content FROM teacher_reviews ORDER BY id").all();
+        for (const fragment of ["陈", "晓", "滨"]) {
+            const expected = rows.filter(row => String(row.teacher).includes(fragment));
+            assert.ok(expected.length > 0);
+            assert.deepEqual(searchLegacyTeacherReviews(` ${fragment} `), expected.map(row => row.content));
+        }
+        const chen = searchLegacyTeacherReviews("陈");
+        assert.ok(searchLegacyTeacherReviews("陈滨").every(content => chen.includes(content)));
+        assert.ok(searchLegacyTeacherReviews("陈青文").every(content => chen.includes(content)));
+    } finally { db.close(); }
+});
+
+it("does not interpret SQL injection or wildcard input", () => {
+    for (const name of ["不存在的老师", "%", "_", "' OR 1=1 --"]) {
         assert.deepEqual(searchLegacyTeacherReviews(name), []);
     }
     for (const name of ["", " \n ", "陈".repeat(101)]) {
@@ -48,8 +63,8 @@ it("registers and invokes the legacy tool without credentials", async () => {
         await client.connect(clientTransport);
         const listed = await client.listTools();
         assert.ok(listed.tools.some(t => t.name === LEGACY_TEACHER_REVIEWS_TOOL_NAME));
-        const result = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: "陈滨" } });
-        assert.deepEqual(result.structuredContent, { content: searchLegacyTeacherReviews("陈滨") });
+        const result = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: "陈" } });
+        assert.deepEqual(result.structuredContent, { content: searchLegacyTeacherReviews("陈") });
         const empty = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: "不存在的老师" } });
         assert.deepEqual(empty.structuredContent, { content: [] });
         const invalid = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: " " } });

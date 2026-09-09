@@ -160,7 +160,7 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 ### 本地历史教师评价
 
-- `GET /legacy/teacher-reviews?teacher=陈滨`：完整姓名精确匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
+- `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
 - MCP tool：`tongji.student.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
 - 数据库：`data/legacy-teacher-reviews.sqlite`，唯一表 `teacher_reviews(id, teacher, content)`。部署时将 `data/` 与 `dist/` 一起复制；运行时只读，无需 Python 或外网。
 - 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。

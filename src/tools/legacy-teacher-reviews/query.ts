@@ -9,13 +9,13 @@ export const LEGACY_TEACHER_REVIEWS_DATABASE = resolve(
     __dirname, "../../../data/legacy-teacher-reviews.sqlite",
 );
 
-// Exact name matching prevents mixing different teachers or treating SQL wildcards as names.
+// Match literal name fragments; SQL wildcard characters remain ordinary input.
 export const searchLegacyTeacherReviews = (teacher: string): string[] => {
     const name = legacyTeacherNameSchema.parse(teacher);
     const db = new DatabaseSync(LEGACY_TEACHER_REVIEWS_DATABASE, { readOnly: true });
     try {
         return db.prepare(
-            "SELECT content FROM teacher_reviews WHERE teacher = ? ORDER BY id",
+            "SELECT content FROM teacher_reviews WHERE instr(teacher, ?) > 0 ORDER BY id",
         ).all(name).map((row) => String(row.content));
     } finally {
         db.close();

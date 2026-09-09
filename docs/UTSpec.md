@@ -197,4 +197,4 @@ Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；
 
 ## 历史教师评价数据
 
-新增 `test/legacy-teacher-reviews.test.ts` 和 HTTP 路由用例，覆盖单表结构、精确匹配、跨课程、多教师、正文署名、空结果、输入校验以及无需账号的 MCP 调用。运行时测试已纳入 `pnpm check`。
+新增 `test/legacy-teacher-reviews.test.ts` 和 HTTP 路由用例，覆盖单表结构、姓名片段模糊匹配、跨课程、多教师、正文署名、空结果、输入校验以及无需账号的 MCP 调用。运行时测试已纳入 `pnpm check`。

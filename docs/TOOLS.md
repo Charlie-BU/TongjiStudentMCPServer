@@ -4170,6 +4170,6 @@
 
 ## tongji.student.legacy-teacher-reviews
 
-本地历史教师评价检索，无需身份凭据。输入 `{"teacher":"陈滨"}`，按完整姓名精确匹配（去除首尾空白），返回 `{"content":["来源、课程及原始评价正文"]}`；无匹配时数组为空。MCP 文本 content 为该对象的 JSON，并提供同值 structuredContent。包含历史学生主观评价，不代表当前情况。
+本地历史教师评价检索，无需身份凭据。输入 `{"teacher":"陈滨"}`，按姓名片段连续子串匹配（去除首尾空白），返回 `{"content":["来源、课程及原始评价正文"]}`；无匹配时数组为空。MCP 文本 content 为该对象的 JSON，并提供同值 structuredContent。包含历史学生主观评价，不代表当前情况。
 
 本地 HTTP 入口：`GET /legacy/teacher-reviews?teacher=陈滨`，直接返回 `string[]`。数据来源、过滤规则、SQLite 部署说明见 [历史教师评价](LEGACY_TEACHER_REVIEWS.md)。

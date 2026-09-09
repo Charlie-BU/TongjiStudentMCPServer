@@ -13,7 +13,7 @@ CREATE INDEX teacher_reviews_teacher ON teacher_reviews(teacher);
 
 ## 检索
 
-`GET /legacy/teacher-reviews?teacher=陈滨` 返回完整姓名对应的全部 `content` 数组，按主键排列，不分页、不截断。空结果为 `[]`。参数化 SQL 不解释输入中的通配符；同名老师无法从原始资料进一步区分，结果保留课程名称供判断。
+`GET /legacy/teacher-reviews?teacher=陈滨` 按姓名片段连续子串匹配，返回所有匹配老师的全部 `content` 数组，按主键排列，不分页、不截断。空结果为 `[]`。参数化 SQL 不解释输入中的通配符；同名老师无法从原始资料进一步区分，结果保留课程名称供判断。
 
 MCP tool `tongji.student.legacy-teacher-reviews` 接受 `{ "teacher": "陈滨" }`，返回 `{ "content": ["..."] }`。路由与 tool 共用本地查询函数，不发起回环 HTTP 请求，无需凭据。数据库错误在路由返回 503，在 MCP 返回 `isError: true`。
 

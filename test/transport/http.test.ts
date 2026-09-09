@@ -110,9 +110,9 @@ describe('createHttpServer', () => {
 it('应无需认证通过本地路由返回老师全部评价数组并校验输入', async () => {
   await withHttpServer(async (baseURL) => {
     const { searchLegacyTeacherReviews } = await import('../../src/tools/legacy-teacher-reviews/query');
-    const response = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=${encodeURIComponent(' 陈滨 ')}`);
+    const response = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=${encodeURIComponent(' 陈 ')}`);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), searchLegacyTeacherReviews('陈滨'));
+    assert.deepEqual(await response.json(), searchLegacyTeacherReviews('陈'));
     const empty = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=${encodeURIComponent('不存在的老师')}`);
     assert.deepEqual(await empty.json(), []);
     for (const query of ['', '?teacher=', '?teacher=%20', '?teacher=A&teacher=B', '?teacher=' + 'A'.repeat(101)]) {

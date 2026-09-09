@@ -1,3 +1,10 @@
+## 2026-09-09 — 本地历史教师评价检索
+
+- 新增只读 SQLite 检索路由 `/legacy/teacher-reviews` 和 tool `tongji.student.legacy-teacher-reviews`，按完整姓名返回全部评价。
+- 导入两份历史原文，评价正文保留来源和课程上下文；仅保留运行时 SQLite 数据库，移除一次性导入脚本、清单和报告。
+- 运行环境最低版本升级为 Node.js 22.13，使用内置 SQLite；部署需携带 `data/`。
+- 验证：180 个 Node 测试，TypeScript 类型检查和编译通过。
+
 ## CHANGELOG - 2026-08-05 18:34 - 统一 MCP Tool 文本结果返回
 
 ### 撰写时间

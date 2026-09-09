@@ -15,15 +15,15 @@
 
 ## 2. 基线工具与执行方式
 
-项目当前使用 Node.js 20+、TypeScript、CommonJS，并已依赖 `tsx`。首阶段统一使用 Node 原生测试运行器 `node:test` 与 `node:assert/strict`，由 `tsx` 执行 TypeScript 测试。这样无需为了单测再引入 Jest、Vitest 或额外转译链路。
+项目当前使用 Node.js 22.13+、TypeScript、CommonJS，并已依赖 `tsx`。首阶段统一使用 Node 原生测试运行器 `node:test` 与 `node:assert/strict`，由 `tsx` 执行 TypeScript 测试。这样无需为了单测再引入 Jest、Vitest 或额外转译链路。
 
 首次加入测试时，在 `package.json` 增加以下脚本：
 
 ```json
 {
   "scripts": {
-    "test": "node --import tsx --test test/*.test.ts test/**/*.test.ts",
-    "test:watch": "node --import tsx --test --watch test/*.test.ts test/**/*.test.ts",
+    "test": "node --no-experimental-strip-types --import tsx --test test/*.test.ts test/**/*.test.ts",
+    "test:watch": "node --no-experimental-strip-types --import tsx --test --watch test/*.test.ts test/**/*.test.ts",
     "test:typecheck": "tsc --noEmit -p tsconfig.test.json",
     "check": "pnpm test && pnpm test:typecheck && pnpm typecheck && pnpm build"
   }
@@ -37,10 +37,10 @@
 pnpm test
 
 # 跑一个受影响文件
-node --import tsx --test test/transport/invocation-context.test.ts
+node --no-experimental-strip-types --import tsx --test test/transport/invocation-context.test.ts
 
 # 只跑名称匹配的场景
-node --import tsx --test --test-name-pattern='缺失 token' test/transport/invocation-context.test.ts
+node --no-experimental-strip-types --import tsx --test --test-name-pattern='缺失 token' test/transport/invocation-context.test.ts
 
 # 类型和产物校验（提交前必跑）
 pnpm test:typecheck
@@ -60,7 +60,6 @@ TongjiStudentMCPServer/
 │   ├── config/
 │   ├── transport/
 │   ├── tools/
-│   ├── domain/
 │   └── integration/
 │       ├── tongji-openapi/      # 后续手写适配器
 │       └── openapi/             # CAM 生成代码，不在此直接测试
@@ -69,7 +68,6 @@ TongjiStudentMCPServer/
     ├── transport/invocation-context.test.ts
     ├── transport/http.test.ts
     ├── tools/<domain>.test.ts
-    ├── domain/<domain>.test.ts
     ├── integration/tongji-openapi/<adapter>.test.ts
     ├── fixtures/
     └── helpers/
@@ -152,9 +150,9 @@ HTTP 测试必须在 `finally` 中关闭临时 server，避免端口泄漏和测
 
 Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；必须同时断言调用参数和面向 MCP 客户端的结果／错误。
 
-### 5.4 领域层：`src/domain/`
+### 5.4 业务查询模块：`src/tools/<tool>/`
 
-领域层承载确定性的校园业务聚合。每个公开能力应覆盖正常结果、空数据、排序/筛选/去重、跨系统字段冲突、领域边界与可读的业务错误。领域测试使用最小化的脱敏 fixture，不依赖 HTTP 或 MCP SDK。
+业务查询模块与对应 Tool 放在同一目录，承载确定性的校园业务查询与聚合。每个公开能力应覆盖正常结果、空数据、排序/筛选/去重、跨系统字段冲突、领域边界与可读的业务错误。领域测试使用最小化的脱敏 fixture，不依赖 HTTP 或 MCP SDK。
 
 首个 `campus.schedule.get_term` 闭环至少要验证：调用上下文的 token 仅交给适配器、正常课表/学期数据的归一结果、空数据、超时、上游未授权和异常响应的统一映射，以及输出字段白名单。
 
@@ -195,3 +193,8 @@ Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；
 ## 9. 演进原则
 
 当后续需要浏览器、数据库、真实服务联调或多进程协议验证时，应另建明确标识的集成测试，而不是稀释本规范的离线单测。只有当 Node 原生断言或 mock 已经无法清晰表达需求时，才评估引入额外测试库；引入前须说明解决的具体问题，并保持本文的目录、边界、隐私和本地提交前流程不变。
+
+
+## 历史教师评价数据
+
+新增 `test/legacy-teacher-reviews.test.ts` 和 HTTP 路由用例，覆盖单表结构、精确匹配、跨课程、多教师、正文署名、空结果、输入校验以及无需账号的 MCP 调用。运行时测试已纳入 `pnpm check`。

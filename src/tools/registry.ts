@@ -1,3 +1,4 @@
+import { registerLegacyTeacherReviewsTool } from "./legacy-teacher-reviews";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerAnnualBillTool } from "./annual-bill";
@@ -33,6 +34,7 @@ export const registerTools = (
     server: McpServer,
     context: ToolRegistrationContext,
 ): void => {
+    registerLegacyTeacherReviewsTool(server);
     // TongjiOpenAPI
     registerAnnualBillTool(server, context);
     registerCardSpendingFlowTool(server, context);

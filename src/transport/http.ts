@@ -1,3 +1,4 @@
+import { LEGACY_TEACHER_REVIEWS_PATH, legacyTeacherNameSchema, searchLegacyTeacherReviews } from "../tools/legacy-teacher-reviews/query";
 import {
     createServer,
     type IncomingMessage,
@@ -17,6 +18,32 @@ export const createHttpServer = () => {
     return createServer(async (request, response) => {
         if (request.url === HEALTH_PATH && request.method === "GET") {
             sendJSON(response, 200, { status: "ok" });
+            return;
+        }
+        let url: URL;
+        try {
+            url = new URL(request.url ?? "/", "http://localhost");
+        } catch {
+            sendJSON(response, 400, { error: "invalid request URL" });
+            return;
+        }
+        if (url.pathname === LEGACY_TEACHER_REVIEWS_PATH) {
+            if (request.method !== "GET") {
+                response.setHeader("allow", "GET");
+                sendJSON(response, 405, { error: "method not allowed" });
+                return;
+            }
+            const names = url.searchParams.getAll("teacher");
+            const parsed = legacyTeacherNameSchema.safeParse(names.length === 1 ? names[0] : undefined);
+            if (!parsed.success) {
+                sendJSON(response, 400, { error: "teacher must be a single non-empty name of at most 100 characters" });
+                return;
+            }
+            try {
+                sendJSON(response, 200, searchLegacyTeacherReviews(parsed.data));
+            } catch {
+                sendJSON(response, 503, { error: "legacy teacher reviews database unavailable" });
+            }
             return;
         }
         if (request.url !== MCP_PATH) {

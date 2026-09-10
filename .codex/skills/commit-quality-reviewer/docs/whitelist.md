@@ -61,6 +61,23 @@
   expires_at: "eternal"
 ```
 
+## 本次 YourTJ 开放数组豁免
+
+```yaml
+- id: WL-20260910-001
+  enabled: true
+  severity: HIGH
+  type: response_field_allowlist
+  match:
+    file: src/integration/yourtj-contract.ts
+    contains: "z.array(z.unknown())"
+  reason: "用户明确豁免本次审阅问题 2：允许 sameCourseOtherTeachers、lineage 和 representativeReviews 保留开放元素结构。已知风险是嵌套的未声明字段可能原样进入 Tool Result；本豁免仅覆盖这三个数组，不扩展到其他字段或实际凭据泄露。"
+  owner: "TongjiStudentMCPServer"
+  created_at: "2026-09-10"
+```
+
+有效范围：本次 YourTJ 课程接口迁移；三个数组契约变更时重新审阅。
+
 ## 条目模板
 
 ```yaml

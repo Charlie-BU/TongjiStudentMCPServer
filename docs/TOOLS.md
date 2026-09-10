@@ -1,47 +1,96 @@
 # Tongji Student MCP Tool Catalog
 
-> 本文档由服务内存实例执行 MCP `tools/list` 导出。服务：`tongji-student-mcp-server`，版本：`0.1.0`。
->
-> 本目录共包含 **24** 个当前注册 Tool。下列 JSON Schema 是 MCP 对客户端公开的原始契约：每个字段的 `description` 均保留中文说明；`required`、`enum`、`const`、`additionalProperties` 与可空类型均为实际约束。
+> 由服务内存实例执行 MCP `tools/list` 导出。服务：`tongji-student-mcp-server`，版本：`0.1.0`。
+> 当前注册 **27** 个 Tool；以下 Schema 为客户端实际可见契约。
 
-## 通用调用与响应约定
+## 通用约定
 
-- MCP 端点：`POST /mcp`（Streamable HTTP）；健康检查：`GET /health`。
-- Tongji Open Platform 的个人数据 Tool 需要调用请求的 `X-Tongji-Access-Token`；YourTJ 公开课程 Tool 不需要该 header。令牌不得写入日志或响应。
-- 正常结果的 `status` 是 `ok` 或 `empty`；`empty` 表示调用成功但没有业务数据。
-- 业务错误通过 `isError: true` 返回，文本内容为 `{\"status\": \"unauthorized | upstream_unavailable\", \"message\": string}`。
-- 输出 schema 中 `string | null`、`number | null` 表示字段存在但上游无可用值时为 `null`；数组字段返回数组。
+- MCP 端点：`POST /mcp`；健康检查：`GET /health`。
+- 个人数据工具使用调用上下文的 `X-Tongji-Access-Token`；YourTJ 公开课程和本地历史评价不需要账号凭据。
+- 成功结果包含相同内容的 JSON 文本和 `structuredContent`。错误通过 `isError: true` 返回脱敏消息。
+- 新 YourTJ 课程工具保留 `status/data/source` 包装，`data` 使用新的 camelCase 字段；可选字段缺失时不补 null。详情不再内嵌评价。
+- 新 YourTJ 搜索使用 `keyword/page/size`，详情和关联使用 `courseId`；旧 `q/limit/id` 参数已移除。
+- 课程迁移和 CAM 总结生成缺口说明见 [YourTJ 接入](YOURTJ.md)。
 
 ## 工具目录
 
 | # | Tool | 标题 | 数据源 |
 | ---: | --- | --- | --- |
-| 1 | `tongji.student.annual_bill` | 查询学生年度统计账单 | Tongji Open Platform |
-| 2 | `tongji.student.card_spending_flow` | 查询一卡通消费流水 | Tongji Open Platform |
-| 3 | `tongji.student.timetable` | 查询学生课表 | Tongji Open Platform |
-| 4 | `tongji.student.detailed_info` | 查询学生详细学籍信息 | Tongji Open Platform |
-| 5 | `tongji.student.score` | 查询本科生成绩 | Tongji Open Platform |
-| 6 | `tongji.student.term-calendar` | 查询学期日历 | Tongji Open Platform |
-| 7 | `tongji.student.current-term-calendar` | 查询当前学期日历 | Tongji Open Platform |
-| 8 | `tongji.student.cet-score` | 查询四六级成绩 | Tongji Open Platform |
-| 9 | `tongji.student.book-lend-info` | 查询图书借阅信息 | Tongji Open Platform |
-| 10 | `tongji.student.statistics-info` | 查询个人统计数据 | Tongji Open Platform |
-| 11 | `tongji.student.stipend-info` | 查询助学金信息 | Tongji Open Platform |
-| 12 | `tongji.student.accommodation-info` | 查询住宿信息 | Tongji Open Platform |
-| 13 | `tongji.student.competition_prize` | 查询本科生竞赛奖励记录 | Tongji Open Platform |
-| 14 | `tongji.student.honorary_title` | 查询学生荣誉称号记录 | Tongji Open Platform |
-| 15 | `tongji.student.scholarship_info` | 查询学生奖学金记录 | Tongji Open Platform |
-| 16 | `tongji.student.school_access` | 查询校门通行记录 | Tongji Open Platform |
-| 17 | `tongji.student.library_access` | 查询图书馆通行记录 | Tongji Open Platform |
-| 18 | `tongji.user.basic_info` | 查询人员基础信息 | Tongji Open Platform |
-| 19 | `tongji.student.course-detail` | 查询课程详情 | YourTJ |
-| 20 | `tongji.student.course-related` | 查询课程关联 | YourTJ |
-| 21 | `tongji.student.find-major-by-grade` | 按学期年级查询专业 | YourTJ |
-| 22 | `tongji.course.catalog` | 查询课程目录 | YourTJ |
-| 23 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
-| 24 | `tongji.course.grade_list` | 查询年级界别列表 | YourTJ |
+| 1 | `tongji.student.legacy-teacher-reviews` | 检索老师历史评价 | Local SQLite |
+| 2 | `tongji.student.annual_bill` | 查询学生年度统计账单 | Tongji Open Platform |
+| 3 | `tongji.student.card_spending_flow` | 查询一卡通消费流水 | Tongji Open Platform |
+| 4 | `tongji.student.timetable` | 查询学生课表 | Tongji Open Platform |
+| 5 | `tongji.student.detailed_info` | 查询学生详细学籍信息 | Tongji Open Platform |
+| 6 | `tongji.student.score` | 查询本科生成绩 | Tongji Open Platform |
+| 7 | `tongji.student.term-calendar` | 查询学期日历 | Tongji Open Platform |
+| 8 | `tongji.student.current-term-calendar` | 查询当前学期日历 | Tongji Open Platform |
+| 9 | `tongji.student.cet-score` | 查询四六级成绩 | Tongji Open Platform |
+| 10 | `tongji.student.book-lend-info` | 查询图书借阅信息 | Tongji Open Platform |
+| 11 | `tongji.student.statistics-info` | 查询个人统计数据 | Tongji Open Platform |
+| 12 | `tongji.student.stipend-info` | 查询助学金信息 | Tongji Open Platform |
+| 13 | `tongji.student.accommodation-info` | 查询住宿信息 | Tongji Open Platform |
+| 14 | `tongji.student.competition_prize` | 查询本科生竞赛奖励记录 | Tongji Open Platform |
+| 15 | `tongji.student.honorary_title` | 查询学生荣誉称号记录 | Tongji Open Platform |
+| 16 | `tongji.student.scholarship_info` | 查询学生奖学金记录 | Tongji Open Platform |
+| 17 | `tongji.student.school_access` | 查询校门通行记录 | Tongji Open Platform |
+| 18 | `tongji.student.library_access` | 查询图书馆通行记录 | Tongji Open Platform |
+| 19 | `tongji.user.basic_info` | 查询人员基础信息 | Tongji Open Platform |
+| 20 | `tongji.student.course-detail` | 查询课程详情 | YourTJ |
+| 21 | `tongji.student.course-related` | 查询课程关联 | YourTJ |
+| 22 | `tongji.course.reviews` | 查询课程评价 | YourTJ |
+| 23 | `tongji.course.summary` | 查询课程 AI 总结 | YourTJ |
+| 24 | `tongji.student.find-major-by-grade` | 按学期年级查询专业 | YourTJ |
+| 25 | `tongji.course.catalog` | 查询课程目录 | YourTJ |
+| 26 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
+| 27 | `tongji.course.grade_list` | 查询年级界别列表 | YourTJ |
 
-## 1. `tongji.student.annual_bill` — 查询学生年度统计账单
+## 1. `tongji.student.legacy-teacher-reviews` — 检索老师历史评价
+
+按老师姓名或姓名片段模糊检索评价，返回所有匹配老师的全部评价。保留课程和原始学期；属于历史学生主观评价，不一定代表当前情况。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "teacher": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "老师姓名或姓名片段（如“陈”），按连续子串匹配，自动去除首尾空白。"
+      }
+    },
+    "required": [
+      "teacher"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "content": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "content"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+  }
+}
+```
+
+## 2. `tongji.student.annual_bill` — 查询学生年度统计账单
 
 查询当前已授权学生指定年份的校园年度统计账单。
 
@@ -163,7 +212,7 @@
                     "string",
                     "null"
                   ],
-                  "description": "年度 单笔最高消费地点。"
+                  "description": "年度单笔最高消费地点。"
                 },
                 "maxTransactionTime": {
                   "type": [
@@ -259,7 +308,7 @@
 }
 ```
 
-## 2. `tongji.student.card_spending_flow` — 查询一卡通消费流水
+## 3. `tongji.student.card_spending_flow` — 查询一卡通消费流水
 
 查询当前已授权用户在指定时间范围内的一卡通历史消费流水信息。
 
@@ -410,7 +459,7 @@
 }
 ```
 
-## 3. `tongji.student.timetable` — 查询学生课表
+## 4. `tongji.student.timetable` — 查询学生课表
 
 查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。
 
@@ -677,7 +726,7 @@
 }
 ```
 
-## 4. `tongji.student.detailed_info` — 查询学生详细学籍信息
+## 5. `tongji.student.detailed_info` — 查询学生详细学籍信息
 
 查询当前已授权学生的教务系统详细学籍信息。
 
@@ -1017,7 +1066,7 @@
 }
 ```
 
-## 5. `tongji.student.score` — 查询本科生成绩
+## 6. `tongji.student.score` — 查询本科生成绩
 
 查询当前已授权本科生在指定学期的成绩；不传 calendarId 时查询当前学期。
 
@@ -1252,7 +1301,7 @@
 }
 ```
 
-## 6. `tongji.student.term-calendar` — 查询学期日历
+## 7. `tongji.student.term-calendar` — 查询学期日历
 
 查询同济大学所有学期的日历信息，返回学期ID、年份、学期编号、起止日期、周数、学年分段名称、学期完整名称及当前/下一学期标识。学期编号可用于查询课表、成绩等其他接口。
 
@@ -1424,7 +1473,7 @@
 }
 ```
 
-## 7. `tongji.student.current-term-calendar` — 查询当前学期日历
+## 8. `tongji.student.current-term-calendar` — 查询当前学期日历
 
 查询同济大学当前学期的日历摘要，包含学年、学期、周数、当前所处教学周及学期描述。
 
@@ -1591,7 +1640,7 @@
 }
 ```
 
-## 8. `tongji.student.cet-score` — 查询四六级成绩
+## 9. `tongji.student.cet-score` — 查询四六级成绩
 
 查询当前已授权学生的全国大学英语四六级考试成绩（CET-4 / CET-6），返回考试科目、准考证号、笔试成绩、口语成绩和考试时间。
 
@@ -1731,7 +1780,7 @@
 }
 ```
 
-## 9. `tongji.student.book-lend-info` — 查询图书借阅信息
+## 10. `tongji.student.book-lend-info` — 查询图书借阅信息
 
 查询当前已授权学生的图书借阅记录，返回书名、作者、ISBN、借出日期、应还日期、馆藏地等信息。
 
@@ -2015,7 +2064,7 @@
 }
 ```
 
-## 10. `tongji.student.statistics-info` — 查询个人统计数据
+## 11. `tongji.student.statistics-info` — 查询个人统计数据
 
 查询当前已授权学生的校园生活统计数据，包括图书馆使用、食堂消费、校车乘坐、超市购物、奖学金及校园卡使用等维度。
 
@@ -2331,7 +2380,7 @@
 }
 ```
 
-## 11. `tongji.student.stipend-info` — 查询助学金信息
+## 12. `tongji.student.stipend-info` — 查询助学金信息
 
 查询当前已授权学生获得的助学金记录，返回助学金名称、金额、等级、评定学年及学期等信息。
 
@@ -2487,7 +2536,7 @@
 }
 ```
 
-## 12. `tongji.student.accommodation-info` — 查询住宿信息
+## 13. `tongji.student.accommodation-info` — 查询住宿信息
 
 查询当前已授权学生的住宿信息，返回宿舍楼、宿舍区、楼层、房间号及所属学院等信息。
 
@@ -2643,7 +2692,7 @@
 }
 ```
 
-## 13. `tongji.student.competition_prize` — 查询本科生竞赛奖励记录
+## 14. `tongji.student.competition_prize` — 查询本科生竞赛奖励记录
 
 查询当前已授权本科生的竞赛获奖与奖励记录。
 
@@ -2767,7 +2816,7 @@
 }
 ```
 
-## 14. `tongji.student.honorary_title` — 查询学生荣誉称号记录
+## 15. `tongji.student.honorary_title` — 查询学生荣誉称号记录
 
 查询当前已授权学生获得荣誉称号的情况信息。
 
@@ -2859,7 +2908,7 @@
 }
 ```
 
-## 15. `tongji.student.scholarship_info` — 查询学生奖学金记录
+## 16. `tongji.student.scholarship_info` — 查询学生奖学金记录
 
 查询当前已授权学生获得奖学金的情况信息。
 
@@ -2983,7 +3032,7 @@
 }
 ```
 
-## 16. `tongji.student.school_access` — 查询校门通行记录
+## 17. `tongji.student.school_access` — 查询校门通行记录
 
 查询当前已授权学生在指定时间范围内的校门进出通行记录。
 
@@ -3138,7 +3187,7 @@
 }
 ```
 
-## 17. `tongji.student.library_access` — 查询图书馆通行记录
+## 18. `tongji.student.library_access` — 查询图书馆通行记录
 
 查询当前已授权学生在指定时间范围内的图书馆闸机进出记录。
 
@@ -3285,7 +3334,7 @@
 }
 ```
 
-## 18. `tongji.user.basic_info` — 查询人员基础信息
+## 19. `tongji.user.basic_info` — 查询人员基础信息
 
 查询当前已授权用户可见的人员基础信息。
 
@@ -3377,9 +3426,9 @@
 }
 ```
 
-## 19. `tongji.student.course-detail` — 查询课程详情
+## 20. `tongji.student.course-detail` — 查询课程详情
 
-查询指定课程ID的详细信息，包含课程编码、名称、学分、开课院系、授课教师、综合评分、开设学期列表及学生评价。
+查询课程基础信息、学分乘以 10 的 creditX10、开课记录和评分统计。此工具不含评价正文，需使用 tongji.course.reviews 查询评价。
 
 ### Schema
 
@@ -3388,14 +3437,14 @@
   "inputSchema": {
     "type": "object",
     "properties": {
-      "id": {
+      "courseId": {
         "type": "integer",
         "exclusiveMinimum": 0,
-        "description": "课程ID，必填。"
+        "description": "课程记录 ID，来自课程搜索结果的 id。"
       }
     },
     "required": [
-      "id"
+      "courseId"
     ]
   },
   "outputSchema": {
@@ -3407,220 +3456,121 @@
           "ok",
           "empty"
         ],
-        "description": "查询状态，empty 表示未找到课程或课程数据为空。"
+        "description": "查询状态；empty 表示成功但当前没有可展示数据。"
       },
       "data": {
-        "anyOf": [
-          {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": [
-                  "number",
-                  "null"
-                ],
-                "description": "课程ID。"
-              },
-              "code": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "课程编码。"
-              },
-              "name": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "课程名称。"
-              },
-              "credit": {
-                "type": [
-                  "number",
-                  "null"
-                ],
-                "description": "学分值。"
-              },
-              "department": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "开课院系或部门名称。"
-              },
-              "teacher_id": {
-                "type": [
-                  "number",
-                  "null"
-                ],
-                "description": "授课教师ID。"
-              },
-              "review_count": {
-                "type": [
-                  "number",
-                  "null"
-                ],
-                "description": "评价总数。"
-              },
-              "review_avg": {
-                "type": [
-                  "number",
-                  "null"
-                ],
-                "description": "综合评分。"
-              },
-              "search_keywords": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "用于搜索的关联关键词，包含课程编码、名称、院系及教师姓名。"
-              },
-              "teacher_name": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "授课教师姓名。"
-              },
-              "semesters": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "该课程开设的学期列表。"
-              },
-              "reviews": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "评价记录ID。"
-                    },
-                    "course_id": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "关联的课程ID。"
-                    },
-                    "semester": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "评价对应的上课学期。"
-                    },
-                    "rating": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "学生给出的评分，范围为 1 至 5 分。"
-                    },
-                    "comment": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "评价正文，通常包含考核方式与授课质量等信息。"
-                    },
-                    "score": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "学生最终成绩。"
-                    },
-                    "created_at": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "评价创建时间（Unix 时间戳）。"
-                    },
-                    "approve_count": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "赞同数。"
-                    },
-                    "disapprove_count": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "反对数。"
-                    },
-                    "is_hidden": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "是否被隐藏，0 表示否，1 表示是。"
-                    },
-                    "reviewer_name": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "评价人姓名，不可用于身份验证或在公开输出中直接引用。"
-                    },
-                    "like_count": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "点赞总数。"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "course_id",
-                    "semester",
-                    "rating",
-                    "comment",
-                    "score",
-                    "created_at",
-                    "approve_count",
-                    "disapprove_count",
-                    "is_hidden",
-                    "reviewer_name",
-                    "like_count"
-                  ],
-                  "additionalProperties": false
-                },
-                "description": "学生评价列表。"
-              }
-            },
-            "required": [
-              "id",
-              "code",
-              "name",
-              "credit",
-              "department",
-              "teacher_id",
-              "review_count",
-              "review_avg",
-              "search_keywords",
-              "teacher_name",
-              "semesters",
-              "reviews"
-            ],
-            "additionalProperties": false
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "课程记录 ID。"
           },
-          {
-            "type": "null"
+          "primaryCode": {
+            "type": "string",
+            "description": "主课程代码，保留前导零。"
+          },
+          "name": {
+            "type": "string",
+            "description": "课程名称。"
+          },
+          "department": {
+            "type": "string",
+            "description": "开课院系，可能为空字符串。"
+          },
+          "ratingAvg": {
+            "type": "number",
+            "description": "课程平均评分，无评分时可能省略。"
+          },
+          "reviewCount": {
+            "type": "integer",
+            "description": "评价数量，无评价时可能省略。"
+          },
+          "teacherName": {
+            "type": "string",
+            "description": "关联教师姓名，不代表全部开课教师。"
+          },
+          "creditX10": {
+            "type": "integer",
+            "description": "学分乘以 10，例如 50 表示 5 学分。"
+          },
+          "teacherId": {
+            "type": "integer",
+            "description": "关联教师 ID。"
+          },
+          "offerings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "开课记录 ID，可作为评价查询的 offeringId。"
+                },
+                "termCode": {
+                  "type": "string",
+                  "description": "学期代码。"
+                },
+                "termName": {
+                  "type": "string",
+                  "description": "学期名称。"
+                },
+                "campus": {
+                  "type": "string",
+                  "description": "校区。"
+                },
+                "faculty": {
+                  "type": "string",
+                  "description": "开课院系。"
+                },
+                "classCode": {
+                  "type": "string",
+                  "description": "开课代码。"
+                },
+                "className": {
+                  "type": "string",
+                  "description": "班级名称。"
+                },
+                "instructors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "该次开课的教师列表。"
+                },
+                "ratingAvg": {
+                  "type": "number",
+                  "description": "该次开课的平均评分。"
+                },
+                "reviewCount": {
+                  "type": "integer",
+                  "description": "该次开课的评价数。"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            },
+            "description": "开课记录列表。"
+          },
+          "ratingDistribution": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "评分分布，当前上游为 1 至 5 星对应数量。"
+          },
+          "reviewScope": {
+            "type": "string",
+            "description": "评价聚合范围，例如 teacher；保留开放枚举。"
           }
+        },
+        "required": [
+          "id",
+          "primaryCode",
+          "name"
         ],
-        "description": "课程详情数据，未找到时返回 null。"
+        "additionalProperties": false
       },
       "source": {
         "type": "string",
@@ -3634,13 +3584,19 @@
       "source"
     ],
     "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
   }
 }
 ```
 
-## 20. `tongji.student.course-related` — 查询课程关联
+## 21. `tongji.student.course-related` — 查询课程关联
 
-查询指定课程的关联信息，包括该教师教授的其他课程，以及同一门课程由其他教师授课的列表。
+查询教师的其他课程、同课程其他教师记录及课程关联信息。返回的新课程 id 可用于详情、评价和总结查询。
 
 ### Schema
 
@@ -3649,14 +3605,14 @@
   "inputSchema": {
     "type": "object",
     "properties": {
-      "id": {
+      "courseId": {
         "type": "integer",
         "exclusiveMinimum": 0,
-        "description": "课程ID，必填。"
+        "description": "课程记录 ID，来自课程搜索结果的 id。"
       }
     },
     "required": [
-      "id"
+      "courseId"
     ]
   },
   "outputSchema": {
@@ -3668,92 +3624,80 @@
           "ok",
           "empty"
         ],
-        "description": "查询状态，empty 表示没有关联课程数据。"
+        "description": "查询状态；empty 表示成功但当前没有可展示数据。"
       },
       "data": {
-        "anyOf": [
-          {
-            "type": "object",
-            "properties": {
-              "teacherOtherCourses": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "课程标识ID。"
-                    },
-                    "code": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "课程编码。"
-                    },
-                    "name": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "课程名称。"
-                    },
-                    "teacher_name": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "授课教师姓名。"
-                    },
-                    "review_avg": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "该课程的综合评分。"
-                    },
-                    "review_count": {
-                      "type": [
-                        "number",
-                        "null"
-                      ],
-                      "description": "该课程的评价总数。"
-                    }
+        "type": "object",
+        "properties": {
+          "teacherOtherCourses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "课程记录 ID。"
+                },
+                "primaryCode": {
+                  "type": "string",
+                  "description": "主课程代码，保留前导零。"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "课程名称。"
+                },
+                "department": {
+                  "type": "string",
+                  "description": "开课院系，可能为空字符串。"
+                },
+                "ratingAvg": {
+                  "type": "number",
+                  "description": "课程平均评分，无评分时可能省略。"
+                },
+                "reviewCount": {
+                  "type": "integer",
+                  "description": "评价数量，无评价时可能省略。"
+                },
+                "teacherName": {
+                  "type": "string",
+                  "description": "关联教师姓名，不代表全部开课教师。"
+                },
+                "instructors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
                   },
-                  "required": [
-                    "id",
-                    "code",
-                    "name",
-                    "teacher_name",
-                    "review_avg",
-                    "review_count"
-                  ],
-                  "additionalProperties": false
+                  "description": "开课教师列表。"
                 },
-                "description": "该教师教授的其他课程列表。"
+                "ratingCount": {
+                  "type": "integer",
+                  "description": "评分数量，与评价数量独立保留。"
+                }
               },
-              "sameCourseOtherTeachers": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/properties/data/anyOf/0/properties/teacherOtherCourses/items"
-                },
-                "description": "同一门课程由其他教师授课的列表。"
-              }
+              "required": [
+                "id",
+                "primaryCode",
+                "name"
+              ],
+              "additionalProperties": false
             },
-            "required": [
-              "teacherOtherCourses",
-              "sameCourseOtherTeachers"
-            ],
-            "additionalProperties": false
+            "description": "相关教师的其他课程。"
           },
-          {
-            "type": "null"
+          "sameCourseOtherTeachers": {
+            "type": "array",
+            "items": {},
+            "description": "同课程的其他教师记录，上游尚未声明元素结构。"
+          },
+          "lineage": {
+            "type": "array",
+            "items": {},
+            "description": "课程关联信息，上游尚未声明元素结构。"
           }
+        },
+        "required": [
+          "teacherOtherCourses"
         ],
-        "description": "课程关联数据，无数据时返回 null。"
+        "additionalProperties": false
       },
       "source": {
         "type": "string",
@@ -3767,11 +3711,321 @@
       "source"
     ],
     "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
   }
 }
 ```
 
-## 21. `tongji.student.find-major-by-grade` — 按学期年级查询专业
+## 22. `tongji.course.reviews` — 查询课程评价
+
+查询课程评价正文、评分和开课记录，可按 offeringId 筛选。使用 pageSize 和 cursor 分页，nextCursor 缺失或为空时结束；翻页时保持筛选条件不变。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "courseId": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "description": "课程记录 ID，来自课程搜索结果的 id。"
+      },
+      "offeringId": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "description": "开课记录 ID，来自课程详情 offerings；省略时查询课程全部评价。"
+      },
+      "cursor": {
+        "type": "string",
+        "description": "上一页的 nextCursor，原样传回；首页省略。"
+      },
+      "pageSize": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "default": 20,
+        "description": "每页评价数，默认 20。"
+      }
+    },
+    "required": [
+      "courseId"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "empty"
+        ],
+        "description": "查询状态；empty 表示成功但当前没有可展示数据。"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "评价 ID，可用于去重。"
+                },
+                "offeringId": {
+                  "type": "integer",
+                  "description": "关联开课记录 ID。"
+                },
+                "rating": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5,
+                  "description": "评价星级，1 至 5。"
+                },
+                "content": {
+                  "type": "string",
+                  "description": "评价原文，可能包含换行和 Markdown。"
+                },
+                "contentHtml": {
+                  "type": "string",
+                  "description": "评价 HTML 正文，展示时按不可信 HTML 处理。"
+                },
+                "author": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "description": "作者类型，例如 legacy；保留开放枚举。"
+                    },
+                    "label": {
+                      "type": "string",
+                      "description": "作者公开展示标签。"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "作者展示信息，仅返回已声明字段。"
+                },
+                "viewer": {
+                  "type": "object",
+                  "properties": {
+                    "canEdit": {
+                      "type": "boolean",
+                      "description": "是否可编辑。"
+                    },
+                    "canDelete": {
+                      "type": "boolean",
+                      "description": "是否可删除。"
+                    },
+                    "isHelpful": {
+                      "type": "boolean",
+                      "description": "是否已标记有帮助。"
+                    },
+                    "isDisliked": {
+                      "type": "boolean",
+                      "description": "是否已点踩。"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "当前访问者的权限和交互状态。"
+                },
+                "helpfulCount": {
+                  "type": "integer",
+                  "description": "有帮助数量。"
+                },
+                "dislikeCount": {
+                  "type": "integer",
+                  "description": "点踩数量。"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "创建时间，ISO 8601 字符串。"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "description": "更新时间，ISO 8601 字符串。"
+                }
+              },
+              "required": [
+                "id",
+                "rating",
+                "content"
+              ],
+              "additionalProperties": false
+            },
+            "description": "当前批次评价列表。"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "评价总数。"
+          },
+          "nextCursor": {
+            "type": "string",
+            "description": "下一页游标，缺失或为空表示结束。"
+          }
+        },
+        "required": [
+          "list",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "string",
+        "const": "YourTJ",
+        "description": "课程数据来源。"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 23. `tongji.course.summary` — 查询课程 AI 总结
+
+查询已有 AI 课程总结、关键词、优缺点和生成时间。check 固定为 true；不触发生成或刷新。data.status 保留上游状态，总结缺失时请参考原始课评。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "courseId": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "description": "课程记录 ID，来自课程搜索结果的 id。"
+      },
+      "check": {
+        "type": "boolean",
+        "const": true,
+        "default": true,
+        "description": "固定为 true，仅查询已有总结，不触发刷新生成。"
+      }
+    },
+    "required": [
+      "courseId"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "empty"
+        ],
+        "description": "查询状态；empty 表示成功但当前没有可展示数据。"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "总结状态，例如 cached；其他上游状态原样保留。"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "consensus": {
+                    "type": "string",
+                    "description": "推荐倾向，例如 recommend；保留开放枚举。"
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "评价关键词。"
+                  },
+                  "pros": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "总结出的优点。"
+                  },
+                  "cons": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "总结出的缺点或注意事项。"
+                  },
+                  "representativeReviews": {
+                    "type": "array",
+                    "items": {},
+                    "description": "代表性评价；上游尚未声明元素结构。"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "已有总结；不可用时可能缺失或为 null。"
+          },
+          "generatedAt": {
+            "type": "string",
+            "description": "生成时间，ISO 8601 字符串。"
+          },
+          "model": {
+            "type": "string",
+            "description": "生成模型标识。"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "string",
+        "const": "YourTJ",
+        "description": "课程数据来源。"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 24. `tongji.student.find-major-by-grade` — 按学期年级查询专业
 
 根据学期编号和年级查询 YourTJ 上的专业列表，返回专业编码和名称。
 
@@ -3862,9 +4116,9 @@
 }
 ```
 
-## 22. `tongji.course.catalog` — 查询课程目录
+## 25. `tongji.course.catalog` — 查询课程目录
 
-查询 YourTJ 课程目录，支持按课程名称、课程代码或教师关键词检索。
+查询 YourTJ 课程，支持关键词、教师、院系、学期和校区筛选。使用 page/size 分页，hasNext 为 true 时继续下一页。结果中的 id 可用于详情、评价和总结查询。
 
 ### Schema
 
@@ -3873,20 +4127,59 @@
   "inputSchema": {
     "type": "object",
     "properties": {
+      "keyword": {
+        "type": "string",
+        "description": "课程名称、代码或教师搜索关键词。"
+      },
+      "instructor": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "教师筛选，支持多个名称。"
+      },
+      "department": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "院系筛选，支持多个院系。"
+      },
+      "term": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "学期筛选，例如 2026-2027-1。"
+      },
+      "campus": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "校区筛选，支持多个校区。"
+      },
+      "onlyWithReviews": {
+        "type": "number",
+        "const": 1,
+        "description": "传 1 仅查询有评价的课程，不筛选时省略。"
+      },
+      "sortBy": {
+        "type": "string",
+        "const": "rating",
+        "description": "按评分排序；省略时采用上游默认排序。"
+      },
       "page": {
         "type": "integer",
         "exclusiveMinimum": 0,
-        "description": "可选的页码，从 1 开始。"
+        "default": 1,
+        "description": "页码，从 1 开始。"
       },
-      "limit": {
+      "size": {
         "type": "integer",
         "exclusiveMinimum": 0,
-        "description": "可选的每页条数。"
-      },
-      "q": {
-        "type": "string",
-        "minLength": 1,
-        "description": "可选的查询关键词；支持字符串或整数，适用于课程名称、课程代码或教师姓名。"
+        "default": 20,
+        "description": "每页条数，默认 20。"
       }
     }
   },
@@ -3899,7 +4192,7 @@
           "ok",
           "empty"
         ],
-        "description": "查询状态，empty 表示没有可返回的课程目录记录。"
+        "description": "查询状态；empty 表示成功但当前没有可展示数据。"
       },
       "data": {
         "type": "object",
@@ -3910,106 +4203,105 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": [
-                    "number",
-                    "null"
-                  ],
-                  "description": "课程 ID。"
+                  "type": "integer",
+                  "description": "课程记录 ID。"
                 },
-                "code": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "课程代码，例如 54011212。"
+                "primaryCode": {
+                  "type": "string",
+                  "description": "主课程代码，保留前导零。"
                 },
                 "name": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
+                  "type": "string",
                   "description": "课程名称。"
                 },
-                "rating": {
-                  "type": [
-                    "number",
-                    "null"
-                  ],
-                  "description": "课程评分或评教得分，可按前端需要格式化展示。"
-                },
-                "review_count": {
-                  "type": [
-                    "number",
-                    "null"
-                  ],
-                  "description": "课程评价人数或点评条数。"
-                },
-                "teacher_name": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "授课教师姓名。"
-                },
                 "department": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "开课院系或开设学院名称。"
+                  "type": "string",
+                  "description": "开课院系，可能为空字符串。"
                 },
-                "credit": {
-                  "type": [
-                    "number",
-                    "null"
-                  ],
-                  "description": "课程学分。"
+                "ratingAvg": {
+                  "type": "number",
+                  "description": "课程平均评分，无评分时可能省略。"
                 },
-                "semesters": {
+                "reviewCount": {
+                  "type": "integer",
+                  "description": "评价数量，无评价时可能省略。"
+                },
+                "teacherName": {
+                  "type": "string",
+                  "description": "关联教师姓名，不代表全部开课教师。"
+                },
+                "creditX10": {
+                  "type": "integer",
+                  "description": "学分乘以 10，例如 50 表示 5 学分。"
+                },
+                "teacherId": {
+                  "type": "integer",
+                  "description": "关联教师 ID。"
+                },
+                "aliases": {
                   "type": "array",
                   "items": {
                     "type": "string"
                   },
-                  "description": "开课学期列表，适合用于筛选下拉框或标签展示。"
+                  "description": "其他课程代码或别名。"
+                },
+                "instructors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "关联开课教师列表。"
+                },
+                "recentTerms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "最近开课学期列表。"
                 }
               },
               "required": [
                 "id",
-                "code",
-                "name",
-                "rating",
-                "review_count",
-                "teacher_name",
-                "department",
-                "credit",
-                "semesters"
+                "primaryCode",
+                "name"
               ],
               "additionalProperties": false
             },
-            "description": "符合查询条件的课程目录列表。"
+            "description": "当前页课程列表。"
+          },
+          "page": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "当前页码。"
+          },
+          "size": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "当前每页条数。"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "符合筛选条件的课程总数。"
+          },
+          "hasNext": {
+            "type": "boolean",
+            "description": "是否存在下一页；为 true 时保持筛选条件并将 page 加一。"
           }
         },
         "required": [
-          "list"
+          "list",
+          "page",
+          "size",
+          "total",
+          "hasNext"
         ],
         "additionalProperties": false
       },
       "source": {
         "type": "string",
         "const": "YourTJ",
-        "description": "课程目录数据来源。"
-      },
-      "page": {
-        "type": "number",
-        "description": "本次查询指定的页码。"
-      },
-      "limit": {
-        "type": "number",
-        "description": "本次查询指定的每页条数。"
-      },
-      "q": {
-        "type": "string",
-        "description": "本次查询指定的课程检索关键词。"
+        "description": "课程数据来源。"
       }
     },
     "required": [
@@ -4018,11 +4310,17 @@
       "source"
     ],
     "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
   }
 }
 ```
 
-## 23. `tongji.course.calendar_list` — 查询学期列表
+## 26. `tongji.course.calendar_list` — 查询学期列表
 
 查询 YourTJ 可用学期列表，用于课程、年级等筛选项。
 
@@ -4098,7 +4396,7 @@
 }
 ```
 
-## 24. `tongji.course.grade_list` — 查询年级界别列表
+## 27. `tongji.course.grade_list` — 查询年级界别列表
 
 根据 YourTJ 学期编号查询该学期可用的年级/界别筛选列表。
 
@@ -4167,9 +4465,4 @@
 }
 ```
 
-
-## tongji.student.legacy-teacher-reviews
-
-本地历史教师评价检索，无需身份凭据。输入 `{"teacher":"陈滨"}`，按姓名片段连续子串匹配（去除首尾空白），返回 `{"content":["来源、课程及原始评价正文"]}`；无匹配时数组为空。MCP 文本 content 为该对象的 JSON，并提供同值 structuredContent。包含历史学生主观评价，不代表当前情况。
-
-本地 HTTP 入口：`GET /legacy/teacher-reviews?teacher=陈滨`，直接返回 `string[]`。数据来源、过滤规则、SQLite 部署说明见 [历史教师评价](LEGACY_TEACHER_REVIEWS.md)。
+本地历史教师评价的数据来源和 HTTP 接口见 [历史教师评价](LEGACY_TEACHER_REVIEWS.md)。

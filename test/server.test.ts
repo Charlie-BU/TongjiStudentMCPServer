@@ -156,7 +156,7 @@ describe("createMcpServer", () => {
             assert.ok(courseCatalogTool);
             assert.match(
                 JSON.stringify(courseCatalogTool.outputSchema),
-                /课程评分或评教得分/,
+                /课程平均评分/,
             );
             assert.match(
                 JSON.stringify(courseCatalogTool.outputSchema),
@@ -308,10 +308,10 @@ describe("createMcpServer", () => {
                 (t) => t.name === COURSE_DETAIL_TOOL_NAME,
             );
             assert.ok(courseTool);
-            assert.match(JSON.stringify(courseTool.inputSchema), /课程ID/);
+            assert.match(JSON.stringify(courseTool.inputSchema), /courseId/);
             assert.match(
                 JSON.stringify(courseTool.outputSchema),
-                /授课教师姓名/,
+                /关联教师姓名/,
             );
             const relatedTool = toolList.tools.find(
                 (t) => t.name === COURSE_RELATED_TOOL_NAME,
@@ -319,7 +319,7 @@ describe("createMcpServer", () => {
             assert.ok(relatedTool);
             assert.match(
                 JSON.stringify(relatedTool.outputSchema),
-                /该教师教授的其他课程列表/,
+                /相关教师的其他课程/,
             );
             const competitionPrizeTool = toolList.tools.find(
                 (tool) => tool.name === COMPETITION_PRIZE_TOOL_NAME,
@@ -811,184 +811,6 @@ describe("createMcpServer", () => {
 
             assert.equal(result.isError, true);
             assert.match(readToolText(result), /一卡通消费流水服务暂时不可用/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应传递检索参数并返回裁剪后的课程目录", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        let params: unknown;
-        axios.defaults.adapter = async (config) => {
-            params = config.params;
-            return {
-                data: {
-                    data: [
-                        {
-                            id: 11154,
-                            code: "54011212",
-                            name: "思想道德与法治",
-                            rating: 4.0789,
-                            review_count: 38,
-                            is_legacy: 0,
-                            teacher_name: "王少",
-                            department: "马克思主义学院",
-                            credit: 3,
-                            semester_names:
-                                "2025-2026学年第2学期||2025-2026学年第1学期",
-                            semesters: [
-                                "2025-2026学年第2学期",
-                                "2025-2026学年第1学期",
-                            ],
-                        },
-                    ],
-                },
-                status: 200,
-                statusText: "OK",
-                headers: {},
-                config,
-            };
-        };
-
-        try {
-            const result = await callCourseCatalogTool(
-                {},
-                {
-                    page: 1,
-                    limit: 20,
-                    q: "思想道德",
-                },
-            );
-
-            assert.deepEqual(params, {
-                page: 1,
-                limit: 20,
-                q: "思想道德",
-                includeTotal: undefined,
-            });
-            assert.equal(result.isError, undefined);
-            assert.deepEqual(readJsonContent(result), {
-                status: "ok",
-                data: {
-                    list: [
-                        {
-                            id: 11154,
-                            code: "54011212",
-                            name: "思想道德与法治",
-                            rating: 4.0789,
-                            review_count: 38,
-                            teacher_name: "王少",
-                            department: "马克思主义学院",
-                            credit: 3,
-                            semesters: [
-                                "2025-2026学年第2学期",
-                                "2025-2026学年第1学期",
-                            ],
-                        },
-                    ],
-                },
-                source: "YourTJ",
-                page: 1,
-                limit: 20,
-                q: "思想道德",
-            });
-            assert.doesNotMatch(
-                JSON.stringify(readJsonContent(result)),
-                /"is_legacy"|"semester_names"|2025-2026学年第2学期\|\|2025-2026学年第1学期/,
-            );
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将空课程目录标记为空结果", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { data: [] },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callCourseCatalogTool({});
-
-            assert.deepEqual(readJsonContent(result), {
-                status: "empty",
-                data: { list: [] },
-                source: "YourTJ",
-            });
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应兼容数字检索关键词并转为字符串传递给课程目录接口", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        let params: unknown;
-        axios.defaults.adapter = async (config) => {
-            params = config.params;
-            return {
-                data: { data: [] },
-                status: 200,
-                statusText: "OK",
-                headers: {},
-                config,
-            };
-        };
-
-        try {
-            const result = await callCourseCatalogTool({}, { q: 54011212 });
-
-            assert.deepEqual(params, {
-                page: undefined,
-                limit: undefined,
-                q: "54011212",
-                includeTotal: undefined,
-            });
-            assert.deepEqual(readJsonContent(result), {
-                status: "empty",
-                data: { list: [] },
-                source: "YourTJ",
-                q: "54011212",
-            });
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将课程目录业务错误响应归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { code: 500, message: "upstream business error" },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callCourseCatalogTool({});
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /YourTJ 课程目录服务返回异常/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将课程目录上游不可用错误归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async () => {
-            throw new Error("upstream unavailable");
-        };
-
-        try {
-            const result = await callCourseCatalogTool({});
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /YourTJ 课程目录服务暂时不可用/);
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -4403,229 +4225,6 @@ it("应将上游不可用错误归一为住宿工具错误", async () => {
 
 // --- 课程详情工具测试 ---
 
-it("应注入课程ID并返回课程详情与裁剪后的评价", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => ({
-        data: {
-            id: 12005,
-            code: "36002907",
-            name: "军事理论",
-            credit: 2,
-            department: "武装部",
-            teacher_id: 2808,
-            review_count: 58,
-            review_avg: 5,
-            search_keywords: "36002907 军事理论",
-            is_legacy: 0,
-            is_icu: 1,
-            teacher_name: "郑义炜",
-            semesters: ["2025-2026学年第2学期"],
-            reviews: [
-                {
-                    sqid: "ckJ9",
-                    id: 18232,
-                    course_id: 12005,
-                    semester: "2025-2026学年第1学期",
-                    rating: 5,
-                    comment: "## 考核方式：\n期末开卷考",
-                    score: null,
-                    created_at: 1784192109,
-                    approve_count: 0,
-                    disapprove_count: 0,
-                    is_hidden: 0,
-                    is_legacy: 0,
-                    is_icu: 0,
-                    reviewer_name: "",
-                    reviewer_avatar: "",
-                    like_count: 0,
-                    liked: false,
-                    can_edit: false,
-                },
-            ],
-        },
-        status: 200,
-        statusText: "OK",
-        headers: {},
-        config: c,
-    });
-    try {
-        const r = await callCourseDetailTool({}, { id: 12005 });
-        assert.equal(r.isError, undefined);
-        assert.deepEqual(readJsonContent(r), {
-            status: "ok",
-            data: {
-                id: 12005,
-                code: "36002907",
-                name: "军事理论",
-                credit: 2,
-                department: "武装部",
-                teacher_id: 2808,
-                review_count: 58,
-                review_avg: 5,
-                search_keywords: "36002907 军事理论",
-                teacher_name: "郑义炜",
-                semesters: ["2025-2026学年第2学期"],
-                reviews: [
-                    {
-                        id: 18232,
-                        course_id: 12005,
-                        semester: "2025-2026学年第1学期",
-                        rating: 5,
-                        comment: "## 考核方式：\n期末开卷考",
-                        score: null,
-                        created_at: 1784192109,
-                        approve_count: 0,
-                        disapprove_count: 0,
-                        is_hidden: 0,
-                        reviewer_name: "",
-                        like_count: 0,
-                    },
-                ],
-            },
-            source: "YourTJ",
-        });
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将无课程数据的响应标记为空结果", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => {
-        throw new axios.AxiosError("Not Found", undefined, c, undefined, {
-            data: {},
-            status: 404,
-            statusText: "Not Found",
-            headers: {},
-            config: c,
-        });
-    };
-    try {
-        const r = await callCourseDetailTool({}, { id: 99999 });
-        assert.equal(r.isError, true);
-        assert.match(readToolText(r), /未找到指定课程/);
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将上游不可用错误归一为课程详情工具错误", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async () => {
-        throw new Error("unavailable");
-    };
-    try {
-        const r = await callCourseDetailTool({}, { id: 12005 });
-        assert.equal(r.isError, true);
-        assert.match(readToolText(r), /课程详情服务暂时不可用/);
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-// --- 课程关联工具测试 ---
-
-it("应注入课程ID并返回关联课程数据", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => ({
-        data: {
-            teacher_other_courses: [
-                {
-                    id: 2846,
-                    code: "360007",
-                    name: "世界大战与局部战争",
-                    teacher_name: "郑义炜",
-                    review_avg: 5,
-                    review_count: 43,
-                },
-            ],
-            same_course_other_teachers: [
-                {
-                    id: 9258,
-                    code: "36002907",
-                    name: "军事理论",
-                    teacher_name: "袁品仕",
-                    review_avg: 0,
-                    review_count: 0,
-                },
-            ],
-        },
-        status: 200,
-        statusText: "OK",
-        headers: {},
-        config: c,
-    });
-    try {
-        const r = await callCourseRelatedTool({}, { id: 12005 });
-        assert.equal(r.isError, undefined);
-        assert.deepEqual(readJsonContent(r), {
-            status: "ok",
-            data: {
-                teacherOtherCourses: [
-                    {
-                        id: 2846,
-                        code: "360007",
-                        name: "世界大战与局部战争",
-                        teacher_name: "郑义炜",
-                        review_avg: 5,
-                        review_count: 43,
-                    },
-                ],
-                sameCourseOtherTeachers: [
-                    {
-                        id: 9258,
-                        code: "36002907",
-                        name: "军事理论",
-                        teacher_name: "袁品仕",
-                        review_avg: 0,
-                        review_count: 0,
-                    },
-                ],
-            },
-            source: "YourTJ",
-        });
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将无关联数据的响应标记为空结果", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => ({
-        data: { teacher_other_courses: [], same_course_other_teachers: [] },
-        status: 200,
-        statusText: "OK",
-        headers: {},
-        config: c,
-    });
-    try {
-        const r = await callCourseRelatedTool({}, { id: 12005 });
-        assert.deepEqual(readJsonContent(r), {
-            status: "empty",
-            data: null,
-            source: "YourTJ",
-        });
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将上游不可用错误归一为课程关联工具错误", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async () => {
-        throw new Error("unavailable");
-    };
-    try {
-        const r = await callCourseRelatedTool({}, { id: 12005 });
-        assert.equal(r.isError, true);
-        assert.match(readToolText(r), /课程关联服务暂时不可用/);
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-// --- 按学期年级查询专业工具测试 ---
-
 it("应注入参数并返回专业列表", async () => {
     const prev = axios.defaults.adapter;
     axios.defaults.adapter = async (c) => ({
@@ -4747,18 +4346,6 @@ const callCardSpendingFlowTool = async (
     } = {},
 ) => {
     return callTool(CARD_SPENDING_FLOW_TOOL_NAME, invocation, args);
-};
-
-// callCourseCatalogTool 通过内存传输调用课程目录查询工具。
-const callCourseCatalogTool = async (
-    invocation: { accessToken?: string },
-    args: {
-        page?: number;
-        limit?: number;
-        q?: string | number;
-    } = {},
-) => {
-    return callTool(COURSE_CATALOG_TOOL_NAME, invocation, args);
 };
 
 // callCalendarListTool 通过内存传输调用学期列表查询工具。
@@ -5012,46 +4599,6 @@ const callAccommodationInfoTool = async (
             name: ACCOMMODATION_INFO_TOOL_NAME,
             arguments: args,
         })) as AccommodationInfoToolCallResult;
-    } finally {
-        await server.close();
-    }
-};
-
-// callCourseDetailTool 通过内存传输调用课程详情查询工具。
-const callCourseDetailTool = async (
-    invocation: { accessToken?: string },
-    args: { id: number },
-) => {
-    const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
-    const client = new Client({ name: "t", version: "1" });
-    try {
-        await server.connect(st);
-        await client.connect(ct);
-        return (await client.callTool({
-            name: COURSE_DETAIL_TOOL_NAME,
-            arguments: args,
-        })) as CourseDetailToolCallResult;
-    } finally {
-        await server.close();
-    }
-};
-
-// callCourseRelatedTool 通过内存传输调用课程关联查询工具。
-const callCourseRelatedTool = async (
-    invocation: { accessToken?: string },
-    args: { id: number },
-) => {
-    const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
-    const client = new Client({ name: "t", version: "1" });
-    try {
-        await server.connect(st);
-        await client.connect(ct);
-        return (await client.callTool({
-            name: COURSE_RELATED_TOOL_NAME,
-            arguments: args,
-        })) as CourseRelatedToolCallResult;
     } finally {
         await server.close();
     }

@@ -3,55 +3,222 @@
 /* tslint:disable */
 // @ts-nocheck
 
-export interface CoursesQueryRequest {
-  /** 页码 */
-  page?: number;
-  /** 每页条数 */
-  limit?: number;
-  /** 查询关键字，支持课程名、代码、教师 */
-  q?: string;
-  /** 返回值是否带 total、totalPages */
-  includeTotal?: boolean;
+export interface CourseReviewListQueryRequest {
+  /** 按指定开课记录筛选，取自详情的 offerings[].id；不筛选时省略 */
+  offeringId?: number;
+  /** 上一页返回的 nextCursor；首页省略，后续原样传回 */
+  cursor?: string;
+  /** 每次请求条数；20 为前端默认，最大允许值未确认 */
+  pageSize?: number;
 }
 
-export interface Courses200ResponseDataItem {
-  /** 课程代码 */
-  code: string;
-  /** 学分 */
-  credit: number;
-  /** 开课学院 */
-  department: string;
+export interface CourseReviewListPathRequest {
+  /** 正整数课程记录 ID */
+  courseId: number;
+}
+
+export interface CourseReviewList200Response {
+  /** 0 为成功；参数错误也可能在 HTTP 200 下返回非零值 */
+  code: number;
+  /** 成功时为评价分页对象，失败时可能为 null */
+  result: CourseReviewList200ResponseResult | null;
+  /** 业务错误消息标识 */
+  messageCode?: string;
+}
+
+export interface CourseReviewList200ResponseResult {
+  /** 当前批次评价列表 */
+  list: CourseReviewList200ResponseResultListItem[];
+  /** 当前响应对应的评价总数 */
+  total: number;
+  /** 下一页游标；已实测末页省略此字段 */
+  nextCursor?: string;
+}
+
+export interface CourseReviewList200ResponseResultListItem {
+  /** 评价 ID，可用于去重 */
   id: number;
-  is_legacy: number;
-  name: string;
-  /** 平均评价得分（满分 5.0） */
+  /** 关联开课记录 ID */
+  offeringId?: number;
+  /** 星级评分，页面采用 1～5 星 */
   rating: number;
-  /** 评价数 */
-  review_count: number;
-  semester_names: string;
-  /** 开课学期 */
-  semesters: string[];
-  teacher_name: string;
+  /** 原始正文，可能包含换行及 Markdown 内容 */
+  content: string;
+  /** 服务端提供的 HTML 正文 */
+  contentHtml?: string;
+  /** 作者展示信息 */
+  author?: CourseReviewList200ResponseResultListItemAuthor;
+  /** 当前访问者权限和交互状态 */
+  viewer?: CourseReviewList200ResponseResultListItemViewer;
+  /** 有帮助/点赞数量 */
+  helpfulCount?: number;
+  /** 点踩数量 */
+  dislikeCount?: number;
+  /** 创建时间，ISO 8601 格式 */
+  createdAt?: string;
+  /** 更新时间，ISO 8601 格式 */
+  updatedAt?: string;
 }
 
-export interface Courses200Response {
-  /** 本页最大条数 */
-  limit: number;
-  /** 当前页，从 1 开始 */
+export interface CourseReviewList200ResponseResultListItemAuthor {
+  /** 作者类型，已观察到 legacy；完整枚举未确认 */
+  kind?: string;
+  /** 作者展示名称，例如“历史匿名评价” */
+  label?: string;
+}
+
+export interface CourseReviewList200ResponseResultListItemViewer {
+  /** 当前访问者是否可以编辑该评价 */
+  canEdit?: boolean;
+  /** 当前访问者是否可以删除该评价 */
+  canDelete?: boolean;
+  /** 当前访问者是否已标记有帮助 */
+  isHelpful?: boolean;
+  /** 当前访问者是否已点踩 */
+  isDisliked?: boolean;
+}
+
+export interface CourseDetailGetPathRequest {
+  /** 正整数课程记录 ID，来自 CourseSearch 的 result.list[].id */
+  courseId: number;
+}
+
+export interface CourseDetailGet200Response {
+  /** 0 表示成功 */
+  code: number;
+  /** 成功时为课程详情；失败时可能为 null */
+  result: CourseDetailGet200ResponseResult | null;
+  /** 业务错误消息标识 */
+  messageCode?: string;
+}
+
+export interface CourseDetailGet200ResponseResult {
+  /** 课程记录 ID */
+  id: number;
+  /** 评分分布；当前样本为五项，按 1～5 星理解与样本统计一致 */
+  ratingDistribution?: number[];
+  /** 评价聚合范围标识；已观察到 teacher，完整枚举未确认 */
+  reviewScope?: string;
+  /** 主课程代码 */
+  primaryCode: string;
+  /** 课程名称 */
+  name: string;
+  /** 所属院系 */
+  department?: string;
+  /** 学分乘以 10 */
+  creditX10?: number;
+  /** 关联教师 ID */
+  teacherId?: number;
+  /** 关联教师名称 */
+  teacherName?: string;
+  /** 课程开课记录 */
+  offerings?: CourseDetailGet200ResponseResultOfferingsItem[];
+  /** 平均评分 */
+  ratingAvg?: number;
+  /** 评价总数 */
+  reviewCount?: number;
+}
+
+export interface CourseDetailGet200ResponseResultOfferingsItem {
+  /** 开课记录 ID，可作为评价接口的 offeringId */
+  id: number;
+  /** 学期代码，例如 2025-2026-1 或 其他 */
+  termCode?: string;
+  /** 学期名称 */
+  termName?: string;
+  /** 校区；历史记录可能省略 */
+  campus?: string;
+  /** 开课院系 */
+  faculty?: string;
+  /** 开课代码 */
+  classCode?: string;
+  /** 班级名称，例如“18班” */
+  className?: string;
+  /** 该次开课的教师列表 */
+  instructors?: string[];
+  /** 该开课记录平均评分 */
+  ratingAvg?: number;
+  /** 该开课记录评价数量 */
+  reviewCount?: number;
+}
+
+export interface CourseDetailGet400Response {
+  /** 参数错误时为 null */
+  result: any | null;
+  /** 本次参数错误为 1 */
+  code: number;
+  /** 本次为 common.request.invalidParams */
+  messageCode: string;
+}
+
+export interface CourseSearchQueryRequest {
+  /** 搜索关键词，例如“兰辉”“高等数学”；不传则不按关键词筛选 */
+  keyword?: string;
+  /** 教师筛选；多个值通过重复同名参数传递 */
+  instructor?: string[];
+  /** 院系筛选，例如“数学科学学院” */
+  department?: string[];
+  /** 学期筛选，例如 2026-2027-1；使用站点实际学期值 */
+  term?: string[];
+  /** 校区筛选，例如“四平路校区”“嘉定校区” */
+  campus?: string[];
+  /** 传 1 表示仅返回有评价的课程；不筛选时省略 */
+  onlyWithReviews?: number;
+  /** 已确认支持 rating，表示按评分排序；其他枚举未确认 */
+  sortBy?: string;
+  /** 页码，从 1 开始 */
+  page?: number;
+  /** 每页条数；最大允许值尚未确认 */
+  size?: number;
+}
+
+export interface CourseSearch200Response {
+  /** 业务状态码；0 表示成功 */
+  code: number;
+  /** 成功时为搜索结果对象；业务失败时可能为 null */
+  result: CourseSearch200ResponseResult | null;
+  /** 业务错误的消息标识 */
+  messageCode?: string;
+}
+
+export interface CourseSearch200ResponseResult {
+  /** 当前页码 */
   page: number;
-  /** 当前搜索条件总共条目数 */
-  total?: number;
-  /** 当前搜索条件总共页数 */
-  totalPages?: number;
-  /** 是否还有剩余页 */
-  hasMore: boolean;
-  /** course 数据 */
-  data: Courses200ResponseDataItem[];
+  /** 当前分页大小 */
+  size: number;
+  /** 符合查询条件的课程总数 */
+  total: number;
+  /** 是否存在下一页 */
+  hasNext: boolean;
+  /** 当前页课程列表 */
+  list: CourseSearch200ResponseResultListItem[];
 }
 
-export interface GetAllCalendar200ResponseDataItem {
-  calendarId: number;
-  calendarName: string;
+export interface CourseSearch200ResponseResultListItem {
+  /** 关联教师 ID */
+  teacherId?: number;
+  /** 其他课程代码或别名 */
+  aliases?: string[];
+  /** 关联教师名称，不代表所有开课教师 */
+  teacherName?: string;
+  /** 关联开课教师名称列表 */
+  instructors?: string[];
+  /** 最近开课学期列表 */
+  recentTerms?: string[];
+  /** 平均评分；无评价时可能省略 */
+  ratingAvg?: number;
+  /** 评价数量；无评价时可能省略 */
+  reviewCount?: number;
+  /** 课程记录 ID，用于详情等接口 */
+  id: number;
+  /** 主课程代码；必须保留字符串类型 */
+  primaryCode: string;
+  /** 课程名称 */
+  name: string;
+  /** 所属院系；可能为空字符串 */
+  department?: string;
+  /** 学分乘以 10；例如 50 表示 5 学分 */
+  creditX10?: number;
 }
 
 export interface GetAllCalendar200Response {
@@ -60,12 +227,13 @@ export interface GetAllCalendar200Response {
   data: GetAllCalendar200ResponseDataItem[];
 }
 
-export interface FindGradeByCalendarIdBodyRequest {
+export interface GetAllCalendar200ResponseDataItem {
   calendarId: number;
+  calendarName: string;
 }
 
-export interface FindGradeByCalendarId200ResponseData {
-  gradeList: number[];
+export interface FindGradeByCalendarIdBodyRequest {
+  calendarId: number;
 }
 
 export interface FindGradeByCalendarId200Response {
@@ -74,52 +242,8 @@ export interface FindGradeByCalendarId200Response {
   data: FindGradeByCalendarId200ResponseData;
 }
 
-export interface CourseDetailPathRequest {
-  /** 课程ID */
-  id: number;
-}
-
-export interface CourseDetail200ResponseReviewsItem {
-  approve_count: number;
-  can_edit: boolean;
-  comment: string;
-  id: number;
-  reviewer_name: string;
-  score: string;
-  semester: string;
-  sqid: string;
-  course_id: number;
-  created_at: number;
-  disapprove_count: number;
-  is_hidden: number;
-  is_icu: number;
-  is_legacy: number;
-  like_count: number;
-  liked: boolean;
-  rating: number;
-  reviewer_avatar: string;
-}
-
-export interface CourseDetail200Response {
-  code: string;
-  credit: number;
-  department: string;
-  id: number;
-  is_icu: number;
-  is_legacy: number;
-  name: string;
-  review_avg: number;
-  review_count: number;
-  reviews: CourseDetail200ResponseReviewsItem[];
-  search_keywords: string;
-  semesters: string[];
-  teacher_id: number;
-  teacher_name: string;
-}
-
-export interface CourseidRelatedPathRequest {
-  /** 课程ID */
-  id: number;
+export interface FindGradeByCalendarId200ResponseData {
+  gradeList: number[];
 }
 
 export interface FindMajorByGradeBodyRequest {
@@ -129,6 +253,12 @@ export interface FindMajorByGradeBodyRequest {
   grade: number;
 }
 
+export interface FindMajorByGrade200Response {
+  code: number;
+  msg: string;
+  data: FindMajorByGrade200ResponseDataItem[];
+}
+
 export interface FindMajorByGrade200ResponseDataItem {
   /** 专业代码 */
   code: string;
@@ -136,8 +266,55 @@ export interface FindMajorByGrade200ResponseDataItem {
   name: string;
 }
 
-export interface FindMajorByGrade200Response {
+export interface CourseRelatedListPathRequest {
+  /** 正整数课程记录 ID */
+  courseId: number;
+}
+
+export interface CourseRelatedList200Response {
+  /** 0 表示成功 */
   code: number;
-  msg: string;
-  data: FindMajorByGrade200ResponseDataItem[];
+  /** 成功时为关联课程分组；失败时可能为 null */
+  result: CourseRelatedList200ResponseResult | null;
+  /** 业务错误消息标识 */
+  messageCode?: string;
+}
+
+export interface CourseRelatedList200ResponseResult {
+  /** 相关教师的其他课程 */
+  teacherOtherCourses: CourseRelatedList200ResponseResultTeacherOtherCoursesItem[];
+  /** 同课程的其他教师记录；当前样本为空，子字段未确认 */
+  sameCourseOtherTeachers?: any[];
+  /** 课程关联信息；当前样本为空，具体语义和子字段未确认 */
+  lineage?: any[];
+}
+
+export interface CourseRelatedList200ResponseResultTeacherOtherCoursesItem {
+  /** 关联课程 ID */
+  id: number;
+  /** 主课程代码 */
+  primaryCode: string;
+  /** 课程名称 */
+  name: string;
+  /** 院系，可能为空字符串 */
+  department?: string;
+  /** 关联教师名称 */
+  teacherName?: string;
+  /** 开课教师列表 */
+  instructors?: string[];
+  /** 平均评分 */
+  ratingAvg?: number;
+  /** 评分数量 */
+  ratingCount?: number;
+  /** 评价数量；与 ratingCount 分开保留，不假定永远相等 */
+  reviewCount?: number;
+}
+
+export interface CourseRelatedList400Response {
+  /** 参数错误时为 null */
+  result: any | null;
+  /** 本次参数错误为 1 */
+  code: number;
+  /** 本次为 common.request.invalidParams */
+  messageCode: string;
 }

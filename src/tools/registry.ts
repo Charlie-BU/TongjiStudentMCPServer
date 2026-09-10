@@ -26,6 +26,9 @@ import { registerCourseDetailTool } from "./course-detail";
 import { registerCourseRelatedTool } from "./course-related";
 import { registerFindMajorByGradeTool } from "./find-major-by-grade";
 
+import { registerCourseReviewsTool } from "./course-reviews";
+import { registerCourseSummaryTool } from "./course-summary";
+
 export interface ToolRegistrationContext {
     invocation: ToolInvocationContext;
 }
@@ -57,6 +60,8 @@ export const registerTools = (
     // YourTJ
     registerCourseDetailTool(server, context);
     registerCourseRelatedTool(server, context);
+    registerCourseReviewsTool(server, context);
+    registerCourseSummaryTool(server, context);
     registerFindMajorByGradeTool(server, context);
     registerCourseCatalogTool(server, context);
     registerCalendarListTool(server, context);

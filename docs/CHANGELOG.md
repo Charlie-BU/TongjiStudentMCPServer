@@ -1,3 +1,53 @@
+## CHANGELOG - 2026-09-10 15:15 - 迁移 YourTJ 课程契约并新增评价与总结工具
+
+### 撰写时间
+
+- 2026-09-10 15:15
+
+### Base Commit
+
+- `001f42676d91fe8433c17a4c5a4f57f7efbdbb0d`（按规范记录 `HEAD~1`，仅作元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：当前暂存及未暂存改动，相对 `HEAD`（`40a26a685b2ccc280d9825a0826800e20228316d`）比较，不包含已提交变更。
+
+### 背景与改动目标
+
+YourTJ 课程服务切换到新的论坛接口，搜索、详情和关联数据的参数、响应包装及字段名均已变化。课程详情不再内嵌评价，因此需要独立的评价查询能力，并让客户端能够分页读取评价和查询已有 AI 总结。
+
+### 改动概览
+
+- 更新 CAM 生成的 YourTJ 客户端与类型，手写适配器将课程请求路由到 `https://f.yourtj.de/api/forum/courses`；学期、年级和专业接口继续使用原教务服务。
+- 新增 `yourtj-contract.ts`，使用 Zod 校验输入及 `code/result/messageCode` 响应包装，裁剪已知对象的额外字段。HTTP 200 下的业务失败、空 result 和契约异常均返回工具错误。
+- 现有课程搜索、详情、关联工具保留名称并切换到新契约；新增 `tongji.course.reviews` 和 `tongji.course.summary`，统一通过 `runYourtjQuery` 返回文本与结构化结果及公开错误信息。
+- 搜索支持教师、院系、学期、校区多值筛选，数组通过重复查询键编码。搜索采用 `page/size` 分页，评价采用 `cursor/pageSize` 分页，并可按 `offeringId` 筛选。
+- 总结只允许 `check=true`，不开放刷新生成。CAM 总结定义暂缺 Path/Query 信息，由手写适配器通过请求 options 补齐 URL 与参数。
+- 更新工具目录、迁移说明、人工调用示例和离线 fixture；将旧课程测试替换为新契约测试。新增审阅豁免 `WL-20260910-001`，限定于三个开放数组。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：课程接口使用新的论坛响应，公开请求不携带校园 access token；原教务查询仍走原域名与方法。
+- 当前改动：MCP 输入校验 → 手写适配器 → CAM 方法 → Axios → 业务状态和字段校验 → MCP 文本及 `structuredContent`。空列表保留分页信息，总结缺失时保留上游状态并返回 `empty`。
+- 下游影响：Agent 需要把新增评价、总结工具加入 allowlist，否则从详情中拆出的评价无法继续读取。配套 Agent 工作区已完成开白；部署时应先提供 MCP 新工具，再更新 Agent。
+
+### 改动结果与业务影响
+
+- 搜索输入由 `q/limit` 改为 `keyword/size`，移除 `includeTotal`；详情和关联输入由 `id` 改为 `courseId`。不提供旧参数别名，现有客户端需要同步迁移。
+- 输出使用 `primaryCode`、`teacherName`、`ratingAvg`、`reviewCount` 等新字段；`creditX10` 除以 10 才是学分。详情用于基础信息与开课记录，评价正文需要额外调用评价工具。
+- 搜索结果返回 `list/page/size/total/hasNext`；评价下一页需原样传递 `nextCursor`，保持筛选条件不变。总结仅读取已有结果，避免查询行为触发生成成本。
+
+### 风险与待办
+
+- 已验证：本轮审阅执行 `pnpm check`，196 项离线测试、测试类型检查、生产类型检查和构建均通过。覆盖正常与空结果、分页、参数拒绝、业务错误、HTTP 错误及已知对象字段裁剪；未进行真实 YourTJ 联调。
+- 用户已豁免 `sameCourseOtherTeachers`、`lineage`、`representativeReviews` 的开放元素结构。嵌套的未声明字段仍可能进入 Tool Result；豁免不是修复，不扩展到其他字段或实际凭据泄露，三个数组契约变化时重新审阅。
+- CAM 总结请求和响应定义仍需补全；重新生成客户端后再移除 options 补齐逻辑，并保留路径和只读参数回归验证。
+- 新旧输入与输出不兼容，发布前需核对全部消费方；真实响应可选字段、分页末页和不同总结状态仍需联调确认。本次生成 changelog 未重新执行测试。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(yourtj): migrate course APIs and add reviews and summaries`
+
 ## 2026-09-09 — 本地历史教师评价检索
 
 - 新增只读 SQLite 检索路由 `/legacy/teacher-reviews` 和 tool `tongji.student.legacy-teacher-reviews`，按完整姓名返回全部评价。

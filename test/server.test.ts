@@ -9,7 +9,6 @@ import { CALENDAR_LIST_TOOL_NAME } from "../src/tools/calendar-list";
 import { CARD_SPENDING_FLOW_TOOL_NAME } from "../src/tools/card-spending-flow";
 import { COMPETITION_PRIZE_TOOL_NAME } from "../src/tools/competition-prize";
 import { COURSE_CATALOG_TOOL_NAME } from "../src/tools/course-catalog";
-import { GRADE_LIST_TOOL_NAME } from "../src/tools/grade-list";
 import { HONORARY_TITLE_TOOL_NAME } from "../src/tools/honorary-title";
 import { LIBRARY_ACCESS_TOOL_NAME } from "../src/tools/library-access";
 import { SCHOOL_ACCESS_TOOL_NAME } from "../src/tools/school-access";
@@ -26,7 +25,6 @@ import { STIPEND_INFO_TOOL_NAME } from "../src/tools/stipend-info";
 import { ACCOMMODATION_INFO_TOOL_NAME } from "../src/tools/accommodation-info";
 import { COURSE_DETAIL_TOOL_NAME } from "../src/tools/course-detail";
 import { COURSE_RELATED_TOOL_NAME } from "../src/tools/course-related";
-import { FIND_MAJOR_BY_GRADE_TOOL_NAME } from "../src/tools/find-major-by-grade";
 import { USER_BASIC_INFO_TOOL_NAME } from "../src/tools/user-basic-info";
 
 // readJsonContent 读取 MCP 工具文本内容中的 JSON 结果。
@@ -73,12 +71,6 @@ interface BookLendInfoToolCallResult {
 
 // CourseRelatedToolCallResult 表示课程关联查询工具的测试结果。
 interface CourseRelatedToolCallResult {
-    isError?: boolean;
-    content: Array<{ type: string; text?: string }>;
-}
-
-// FindMajorByGradeToolCallResult 表示按学期年级查询专业工具的测试结果。
-interface FindMajorByGradeToolCallResult {
     isError?: boolean;
     content: Array<{ type: string; text?: string }>;
 }
@@ -173,18 +165,6 @@ describe("createMcpServer", () => {
             assert.match(
                 JSON.stringify(calendarListTool.outputSchema),
                 /下拉菜单展示/,
-            );
-            const gradeListTool = toolList.tools.find(
-                (tool) => tool.name === GRADE_LIST_TOOL_NAME,
-            );
-            assert.ok(gradeListTool);
-            assert.match(
-                JSON.stringify(gradeListTool.outputSchema),
-                /年级或界别列表/,
-            );
-            assert.match(
-                JSON.stringify(gradeListTool.outputSchema),
-                /筛选下拉菜单/,
             );
             const studentTimetableTool = toolList.tools.find(
                 (tool) => tool.name === STUDENT_TIMETABLE_TOOL_NAME,
@@ -922,113 +902,6 @@ describe("createMcpServer", () => {
 
             assert.equal(result.isError, true);
             assert.match(readToolText(result), /YourTJ 学期列表服务暂时不可用/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应传递学期编号并返回裁剪后的年级界别列表", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        let data: unknown;
-        axios.defaults.adapter = async (config) => {
-            data = config.data;
-            return {
-                data: {
-                    code: 200,
-                    msg: "查询成功",
-                    data: {
-                        gradeList: [2025, 2024, 2023, 2022, 2021, 2020],
-                    },
-                },
-                status: 200,
-                statusText: "OK",
-                headers: {},
-                config,
-            };
-        };
-
-        try {
-            const result = await callGradeListTool(
-                {},
-                {
-                    calendarId: 123,
-                },
-            );
-
-            assert.deepEqual(JSON.parse(String(data)), { calendarId: 123 });
-            assert.equal(result.isError, undefined);
-            assert.deepEqual(readJsonContent(result), {
-                status: "ok",
-                data: {
-                    gradeList: [2025, 2024, 2023, 2022, 2021, 2020],
-                },
-                source: "YourTJ",
-                calendarId: 123,
-            });
-            assert.doesNotMatch(
-                JSON.stringify(readJsonContent(result)),
-                /"code"|"msg"|查询成功/,
-            );
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将空年级界别列表标记为空结果", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { data: { gradeList: [] } },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callGradeListTool({}, { calendarId: 123 });
-
-            assert.deepEqual(readJsonContent(result), {
-                status: "empty",
-                data: { gradeList: [] },
-                source: "YourTJ",
-                calendarId: 123,
-            });
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将年级界别业务错误响应归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { code: 500, message: "upstream business error" },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callGradeListTool({}, { calendarId: 123 });
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /YourTJ 年级界别服务返回异常/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将年级界别上游不可用错误归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async () => {
-            throw new Error("upstream unavailable");
-        };
-
-        try {
-            const result = await callGradeListTool({}, { calendarId: 123 });
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /YourTJ 年级界别服务暂时不可用/);
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -4225,103 +4098,6 @@ it("应将上游不可用错误归一为住宿工具错误", async () => {
 
 // --- 课程详情工具测试 ---
 
-it("应注入参数并返回专业列表", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => ({
-        data: {
-            data: [
-                { code: "00304", name: "2024(00304 基础学科拔尖基地(数学))" },
-            ],
-        },
-        status: 200,
-        statusText: "OK",
-        headers: {},
-        config: c,
-    });
-    try {
-        const r = await callFindMajorByGradeTool(
-            {},
-            { calendarId: 118, grade: 2024 },
-        );
-        assert.equal(r.isError, undefined);
-        assert.deepEqual(readJsonContent(r), {
-            status: "ok",
-            data: {
-                records: [
-                    {
-                        code: "00304",
-                        name: "2024(00304 基础学科拔尖基地(数学))",
-                    },
-                ],
-            },
-            source: "YourTJ",
-        });
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将空专业列表标记为空结果", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => ({
-        data: { data: [] },
-        status: 200,
-        statusText: "OK",
-        headers: {},
-        config: c,
-    });
-    try {
-        const r = await callFindMajorByGradeTool(
-            {},
-            { calendarId: 118, grade: 2024 },
-        );
-        assert.deepEqual(readJsonContent(r), {
-            status: "empty",
-            data: { records: [] },
-            source: "YourTJ",
-        });
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将上游业务错误响应归一为专业查询工具错误", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async (c) => ({
-        data: "not json",
-        status: 200,
-        statusText: "OK",
-        headers: {},
-        config: c,
-    });
-    try {
-        const r = await callFindMajorByGradeTool(
-            {},
-            { calendarId: 118, grade: 2024 },
-        );
-        assert.equal(r.isError, true);
-        assert.match(readToolText(r), /专业查询服务返回异常/);
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
-
-it("应将上游不可用错误归一为专业查询工具错误", async () => {
-    const prev = axios.defaults.adapter;
-    axios.defaults.adapter = async () => {
-        throw new Error("unavailable");
-    };
-    try {
-        const r = await callFindMajorByGradeTool(
-            {},
-            { calendarId: 118, grade: 2024 },
-        );
-        assert.equal(r.isError, true);
-        assert.match(readToolText(r), /专业查询服务暂时不可用/);
-    } finally {
-        axios.defaults.adapter = prev;
-    }
-});
 const callScoreTool = async (
     invocation: { accessToken?: string },
     args: { calendarId?: string | number } = {},
@@ -4351,14 +4127,6 @@ const callCardSpendingFlowTool = async (
 // callCalendarListTool 通过内存传输调用学期列表查询工具。
 const callCalendarListTool = async (invocation: { accessToken?: string }) => {
     return callTool(CALENDAR_LIST_TOOL_NAME, invocation);
-};
-
-// callGradeListTool 通过内存传输调用年级界别列表查询工具。
-const callGradeListTool = async (
-    invocation: { accessToken?: string },
-    args: { calendarId: number },
-) => {
-    return callTool(GRADE_LIST_TOOL_NAME, invocation, args);
 };
 
 // callStudentTimetableTool 通过内存传输调用学生课表查询工具。
@@ -4599,26 +4367,6 @@ const callAccommodationInfoTool = async (
             name: ACCOMMODATION_INFO_TOOL_NAME,
             arguments: args,
         })) as AccommodationInfoToolCallResult;
-    } finally {
-        await server.close();
-    }
-};
-
-// callFindMajorByGradeTool 通过内存传输调用按学期年级查询专业工具。
-const callFindMajorByGradeTool = async (
-    invocation: { accessToken?: string },
-    args: { calendarId: number; grade: number },
-) => {
-    const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
-    const client = new Client({ name: "t", version: "1" });
-    try {
-        await server.connect(st);
-        await client.connect(ct);
-        return (await client.callTool({
-            name: FIND_MAJOR_BY_GRADE_TOOL_NAME,
-            arguments: args,
-        })) as FindMajorByGradeToolCallResult;
     } finally {
         await server.close();
     }

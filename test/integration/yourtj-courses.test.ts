@@ -108,8 +108,6 @@ describe("YourTJ 课程适配器", () => {
             // 只检查域名差异和路径；所有 HTTP 均由 Fake 隔离。
             assert.notEqual(new URL(requests[0].url!).host, new URL(requests[1].url!).host);
             assert.equal(new URL(requests[1].url!).pathname, "/api/getAllCalendar");
-            await createYourtjAdapter(config).FindGradeByCalendarIdPOST({ calendarId: 1 });
-            assert.equal(requests[2].url, "https://forum.example.test/api/findGradeByCalendarId");
         });
     });
 });

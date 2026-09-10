@@ -21,10 +21,8 @@ import { registerAccommodationInfoTool } from "./accommodation-info";
 import { registerUserBasicInfoTool } from "./user-basic-info";
 import { registerCalendarListTool } from "./calendar-list";
 import { registerCourseCatalogTool } from "./course-catalog";
-import { registerGradeListTool } from "./grade-list";
 import { registerCourseDetailTool } from "./course-detail";
 import { registerCourseRelatedTool } from "./course-related";
-import { registerFindMajorByGradeTool } from "./find-major-by-grade";
 
 import { registerCourseReviewsTool } from "./course-reviews";
 import { registerCourseSummaryTool } from "./course-summary";
@@ -62,8 +60,6 @@ export const registerTools = (
     registerCourseRelatedTool(server, context);
     registerCourseReviewsTool(server, context);
     registerCourseSummaryTool(server, context);
-    registerFindMajorByGradeTool(server, context);
     registerCourseCatalogTool(server, context);
     registerCalendarListTool(server, context);
-    registerGradeListTool(server, context);
 };

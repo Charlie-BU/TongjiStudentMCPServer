@@ -34,22 +34,19 @@ it("matches name fragments across teachers and returns every item in stable orde
     const db = new DatabaseSync(LEGACY_TEACHER_REVIEWS_DATABASE, { readOnly: true });
     try {
         const rows = db.prepare("SELECT teacher, content FROM teacher_reviews ORDER BY id").all();
-        for (const fragment of ["陈", "晓", "滨"]) {
+        for (const fragment of ["陈滨", "晓龙", "青文"]) {
             const expected = rows.filter(row => String(row.teacher).includes(fragment));
             assert.ok(expected.length > 0);
             assert.deepEqual(searchLegacyTeacherReviews(` ${fragment} `), expected.map(row => row.content));
         }
-        const chen = searchLegacyTeacherReviews("陈");
-        assert.ok(searchLegacyTeacherReviews("陈滨").every(content => chen.includes(content)));
-        assert.ok(searchLegacyTeacherReviews("陈青文").every(content => chen.includes(content)));
     } finally { db.close(); }
 });
 
 it("does not interpret SQL injection or wildcard input", () => {
-    for (const name of ["不存在的老师", "%", "_", "' OR 1=1 --"]) {
+    for (const name of ["不存在的老师", "%%", "__", "' OR 1=1 --"]) {
         assert.deepEqual(searchLegacyTeacherReviews(name), []);
     }
-    for (const name of ["", " \n ", "陈".repeat(101)]) {
+    for (const name of ["", " \n ", "陈", " 陈 ", "𠮷", "陈".repeat(101)]) {
         assert.throws(() => searchLegacyTeacherReviews(name));
     }
 });
@@ -63,10 +60,14 @@ it("registers and invokes the legacy tool without credentials", async () => {
         await client.connect(clientTransport);
         const listed = await client.listTools();
         assert.ok(listed.tools.some(t => t.name === LEGACY_TEACHER_REVIEWS_TOOL_NAME));
-        const result = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: "陈" } });
-        assert.deepEqual(result.structuredContent, { content: searchLegacyTeacherReviews("陈") });
+        const result = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: "陈滨" } });
+        assert.deepEqual(result.structuredContent, { content: searchLegacyTeacherReviews("陈滨") });
         const empty = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: "不存在的老师" } });
         assert.deepEqual(empty.structuredContent, { content: [] });
+        for (const teacher of ["陈", " 陈 ", "𠮷"]) {
+            const rejected = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher } });
+            assert.equal(rejected.isError, true);
+        }
         const invalid = await client.callTool({ name: LEGACY_TEACHER_REVIEWS_TOOL_NAME, arguments: { teacher: " " } });
         assert.equal(invalid.isError, true);
     } finally { await client.close(); await server.close(); }

@@ -5,7 +5,7 @@ import type { ToolRegistrationContext } from "../registry";
 import { createYourtjOutputSchema, runYourtjQuery } from "../yourtj-result";
 
 // COURSE_DETAIL_TOOL_NAME 表示查询课程详情工具名称。
-export const COURSE_DETAIL_TOOL_NAME = "tongji.student.course-detail";
+export const COURSE_DETAIL_TOOL_NAME = "tongji.course.course-detail";
 
 // COURSE_DETAIL_OUTPUT_SCHEMA 定义查询课程详情的 MCP 输出契约。
 export const COURSE_DETAIL_OUTPUT_SCHEMA = createYourtjOutputSchema(COURSE_DETAIL_DATA_SCHEMA);

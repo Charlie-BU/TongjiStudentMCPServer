@@ -13,8 +13,6 @@ import type {
   CourseSearchQueryRequest,
   CourseSearch200Response,
   GetAllCalendar200Response,
-  FindGradeByCalendarIdBodyRequest,
-  FindGradeByCalendarId200Response,
   FindMajorByGradeBodyRequest,
   FindMajorByGrade200Response,
   CourseRelatedListPathRequest,
@@ -138,20 +136,6 @@ export default class YourtjService<T> {
     let url = this.genBaseURL('/api/getAllCalendar');
     const method = 'GET';
     const data = undefined;
-    const params = undefined;
-    const headers = undefined;
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取当前学期所有年级 */
-  FindGradeByCalendarIdPOST(
-    req: FindGradeByCalendarIdBodyRequest,
-    options?: T,
-  ): Promise<FindGradeByCalendarId200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL('/api/findGradeByCalendarId');
-    const method = 'POST';
-    const data = { calendarId: _req['calendarId'] };
     const params = undefined;
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);

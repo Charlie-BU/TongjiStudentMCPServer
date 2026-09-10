@@ -1,7 +1,7 @@
 # Tongji Student MCP Tool Catalog
 
 > 由服务内存实例执行 MCP `tools/list` 导出。服务：`tongji-student-mcp-server`，版本：`0.1.0`。
-> 当前注册 **27** 个 Tool；以下 Schema 为客户端实际可见契约。
+> 当前注册 **25** 个 Tool；以下 Schema 为客户端实际可见契约。
 
 ## 通用约定
 
@@ -16,7 +16,7 @@
 
 | # | Tool | 标题 | 数据源 |
 | ---: | --- | --- | --- |
-| 1 | `tongji.student.legacy-teacher-reviews` | 检索老师历史评价 | Local SQLite |
+| 1 | `tongji.course.legacy-teacher-reviews` | 检索老师历史评价 | Local SQLite |
 | 2 | `tongji.student.annual_bill` | 查询学生年度统计账单 | Tongji Open Platform |
 | 3 | `tongji.student.card_spending_flow` | 查询一卡通消费流水 | Tongji Open Platform |
 | 4 | `tongji.student.timetable` | 查询学生课表 | Tongji Open Platform |
@@ -35,18 +35,16 @@
 | 17 | `tongji.student.school_access` | 查询校门通行记录 | Tongji Open Platform |
 | 18 | `tongji.student.library_access` | 查询图书馆通行记录 | Tongji Open Platform |
 | 19 | `tongji.user.basic_info` | 查询人员基础信息 | Tongji Open Platform |
-| 20 | `tongji.student.course-detail` | 查询课程详情 | YourTJ |
-| 21 | `tongji.student.course-related` | 查询课程关联 | YourTJ |
+| 20 | `tongji.course.course-detail` | 查询课程详情 | YourTJ |
+| 21 | `tongji.course.course-related` | 查询课程关联 | YourTJ |
 | 22 | `tongji.course.reviews` | 查询课程评价 | YourTJ |
 | 23 | `tongji.course.summary` | 查询课程 AI 总结 | YourTJ |
-| 24 | `tongji.student.find-major-by-grade` | 按学期年级查询专业 | YourTJ |
-| 25 | `tongji.course.catalog` | 查询课程目录 | YourTJ |
-| 26 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
-| 27 | `tongji.course.grade_list` | 查询年级界别列表 | YourTJ |
+| 24 | `tongji.course.search` | 查询课程目录 | YourTJ |
+| 25 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
 
-## 1. `tongji.student.legacy-teacher-reviews` — 检索老师历史评价
+## 1. `tongji.course.legacy-teacher-reviews` — 检索老师历史评价
 
-按老师姓名或姓名片段模糊检索评价，返回所有匹配老师的全部评价。保留课程和原始学期；属于历史学生主观评价，不一定代表当前情况。
+按至少两个字的老师姓名或姓名片段模糊检索评价，返回所有匹配老师的全部评价。保留课程和原始学期；属于历史学生主观评价，不一定代表当前情况。
 
 ### Schema
 
@@ -57,9 +55,9 @@
     "properties": {
       "teacher": {
         "type": "string",
-        "minLength": 1,
+        "minLength": 2,
         "maxLength": 100,
-        "description": "老师姓名或姓名片段（如“陈”），按连续子串匹配，自动去除首尾空白。"
+        "description": "至少两个字的老师姓名或姓名片段（如“陈滨”），按连续子串匹配，自动去除首尾空白。"
       }
     },
     "required": [
@@ -3426,7 +3424,7 @@
 }
 ```
 
-## 20. `tongji.student.course-detail` — 查询课程详情
+## 20. `tongji.course.course-detail` — 查询课程详情
 
 查询课程基础信息、学分乘以 10 的 creditX10、开课记录和评分统计。此工具不含评价正文，需使用 tongji.course.reviews 查询评价。
 
@@ -3594,7 +3592,7 @@
 }
 ```
 
-## 21. `tongji.student.course-related` — 查询课程关联
+## 21. `tongji.course.course-related` — 查询课程关联
 
 查询教师的其他课程、同课程其他教师记录及课程关联信息。返回的新课程 id 可用于详情、评价和总结查询。
 
@@ -4025,98 +4023,7 @@
 }
 ```
 
-## 24. `tongji.student.find-major-by-grade` — 按学期年级查询专业
-
-根据学期编号和年级查询 YourTJ 上的专业列表，返回专业编码和名称。
-
-### Schema
-
-```json
-{
-  "inputSchema": {
-    "type": "object",
-    "properties": {
-      "calendarId": {
-        "type": "integer",
-        "exclusiveMinimum": 0,
-        "description": "学期编号，必填。"
-      },
-      "grade": {
-        "type": "integer",
-        "exclusiveMinimum": 0,
-        "description": "年级，必填。"
-      }
-    },
-    "required": [
-      "calendarId",
-      "grade"
-    ]
-  },
-  "outputSchema": {
-    "type": "object",
-    "properties": {
-      "status": {
-        "type": "string",
-        "enum": [
-          "ok",
-          "empty"
-        ],
-        "description": "查询状态，empty 表示没有可返回的专业数据。"
-      },
-      "data": {
-        "type": "object",
-        "properties": {
-          "records": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "code": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "专业编码。"
-                },
-                "name": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "专业名称。"
-                }
-              },
-              "required": [
-                "code",
-                "name"
-              ],
-              "additionalProperties": false
-            },
-            "description": "专业信息列表。"
-          }
-        },
-        "required": [
-          "records"
-        ],
-        "additionalProperties": false
-      },
-      "source": {
-        "type": "string",
-        "const": "YourTJ",
-        "description": "专业数据来源。"
-      }
-    },
-    "required": [
-      "status",
-      "data",
-      "source"
-    ],
-    "additionalProperties": false
-  }
-}
-```
-
-## 25. `tongji.course.catalog` — 查询课程目录
+## 24. `tongji.course.search` — 查询课程目录
 
 查询 YourTJ 课程，支持关键词、教师、院系、学期和校区筛选。使用 page/size 分页，hasNext 为 true 时继续下一页。结果中的 id 可用于详情、评价和总结查询。
 
@@ -4320,7 +4227,7 @@
 }
 ```
 
-## 26. `tongji.course.calendar_list` — 查询学期列表
+## 25. `tongji.course.calendar_list` — 查询学期列表
 
 查询 YourTJ 可用学期列表，用于课程、年级等筛选项。
 
@@ -4390,75 +4297,6 @@
       "status",
       "data",
       "source"
-    ],
-    "additionalProperties": false
-  }
-}
-```
-
-## 27. `tongji.course.grade_list` — 查询年级界别列表
-
-根据 YourTJ 学期编号查询该学期可用的年级/界别筛选列表。
-
-### Schema
-
-```json
-{
-  "inputSchema": {
-    "type": "object",
-    "properties": {
-      "calendarId": {
-        "type": "integer",
-        "exclusiveMinimum": 0,
-        "description": "必填的学期编号。"
-      }
-    },
-    "required": [
-      "calendarId"
-    ]
-  },
-  "outputSchema": {
-    "type": "object",
-    "properties": {
-      "status": {
-        "type": "string",
-        "enum": [
-          "ok",
-          "empty"
-        ],
-        "description": "查询状态，empty 表示没有可返回的年级/界别列表。"
-      },
-      "data": {
-        "type": "object",
-        "properties": {
-          "gradeList": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            },
-            "description": "年级或界别列表，例如 2025、2024，常用于筛选下拉菜单。"
-          }
-        },
-        "required": [
-          "gradeList"
-        ],
-        "additionalProperties": false
-      },
-      "source": {
-        "type": "string",
-        "const": "YourTJ",
-        "description": "年级/界别列表数据来源。"
-      },
-      "calendarId": {
-        "type": "number",
-        "description": "本次查询指定的学期编号。"
-      }
-    },
-    "required": [
-      "status",
-      "data",
-      "source",
-      "calendarId"
     ],
     "additionalProperties": false
   }

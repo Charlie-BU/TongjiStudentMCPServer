@@ -1,3 +1,59 @@
+## CHANGELOG - 2026-09-10 15:51 - 统一课程工具命名并移除专业和年级查询
+
+### 撰写时间
+
+- 2026-09-10 15:51
+
+### Base Commit
+
+- `40a26a685b2ccc280d9825a0826800e20228316d`（按规范取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`61a24c3cd361dff689109209a8851383a2efe0e3`）比较，不混入已提交变更。
+
+### 背景与改动目标
+
+课程搜索、详情、关联和历史评价原先混用 `student` 与 `course` 命名空间，客户端难以从名称判断能力归属。本次将这些公开课程能力统一到 `tongji.course`，并按要求移除专业和年级查询工具，清理对应注册、测试和文档。
+
+### 改动概览
+
+| 原工具名 | 新工具名或处理结果 |
+| --- | --- |
+| `tongji.student.legacy-teacher-reviews` | `tongji.course.legacy-teacher-reviews` |
+| `tongji.student.course-detail` | `tongji.course.course-detail` |
+| `tongji.student.course-related` | `tongji.course.course-related` |
+| `tongji.course.catalog` | `tongji.course.search` |
+| `tongji.student.find-major-by-grade` | 删除 |
+| `tongji.course.grade_list` | 删除 |
+
+- 更新工具名称常量和 Registry，删除 `find-major-by-grade`、`grade-list` 工具实现及类型文件。工具目录由 27 项减为 25 项，不保留旧名称别名。
+- 当前工作区同时移除 CAM 年级查询方法、请求响应类型及手写 `getGradesByCalendarId`，同步删除失效调用测试。专业查询底层适配器仍保留，但不再注册为 MCP 工具。
+- 更新课程工具契约测试，检查新名称可发现、旧名称和已删除工具不可调用；删除两项已下线工具的旧成功与错误分支测试。
+- 同步 README、工具目录、YourTJ 迁移说明和历史教师评价文档；课程搜索说明改为面向“同济大学课程”。生成类型中其他字段顺序调整不改变响应字段语义。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：保留的课程工具继续调用现有 YourTJ 适配器，历史评价继续读取本地 SQLite；名称调整不改变它们的业务参数和数据来源。
+- 当前改动：Registry 使用新名称发布 MCP `tools/list`，`tools/call` 按新名称查找处理器；专业和年级工具从注册入口及实现中移除。
+- 下游影响：Agent 工作区已同步详情、关联、搜索工具名称，并移除两个已删除工具的白名单项。外部客户端或缓存工具目录的调用方需要重新发现工具并更新名称。
+
+### 改动结果与业务影响
+
+- 课程能力统一使用 `tongji.course` 前缀，搜索使用 `search` 命名。详情与关联保留用户指定的 `course-detail`、`course-related` 后缀。
+- 原名称调用将失败，专业和年级查询不再对外提供；学期列表 `tongji.course.calendar_list` 继续保留。
+- 历史评价 HTTP 路由 `/legacy/teacher-reviews` 不随 MCP 工具名称变化。
+
+### 风险与待办
+
+- 已验证：删除年级工具后，`pnpm check` 全部通过，包含 187 项离线测试、测试类型检查、生产类型检查及构建。此前因年级适配器被移除而残留的工具引用和失败测试已清理。
+- 配套 Agent 的 MCP 与聊天服务回归通过；未进行部署环境或真实上游联调。本次仅生成文档，未重新运行测试。
+- 这是工具名称的破坏性变更，不提供旧名兼容窗口。MCP 与 Agent 应协调发布，避免一端使用旧工具目录而另一端已切换名称；其他客户端也需同步迁移。
+
+### 建议 Commit Message（git-cz）
+
+- `refactor(tools): rename course tools and remove major and grade queries`
+
 ## CHANGELOG - 2026-09-10 15:15 - 迁移 YourTJ 课程契约并新增评价与总结工具
 
 ### 撰写时间

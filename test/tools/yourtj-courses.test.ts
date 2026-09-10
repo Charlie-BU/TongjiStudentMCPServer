@@ -36,10 +36,10 @@ const withClient = async (
 
 // cases 定义五个课程工具的公开契约样本。
 const cases = [
-    { name: "tongji.course.catalog", args: { keyword: "测试课程", campus: ["测试校区"] }, fixture: searchFixture,
+    { name: "tongji.course.search", args: { keyword: "测试课程", campus: ["测试校区"] }, fixture: searchFixture,
         empty: { list: [], page: 1, size: 20, total: 0, hasNext: false } },
-    { name: "tongji.student.course-detail", args: { courseId: 101 }, fixture: courseFixture, empty: undefined },
-    { name: "tongji.student.course-related", args: { courseId: 101 }, fixture: relatedFixture,
+    { name: "tongji.course.course-detail", args: { courseId: 101 }, fixture: courseFixture, empty: undefined },
+    { name: "tongji.course.course-related", args: { courseId: 101 }, fixture: relatedFixture,
         empty: { teacherOtherCourses: [], sameCourseOtherTeachers: [], lineage: [] } },
     { name: "tongji.course.reviews", args: { courseId: 101, offeringId: 301, cursor: "test-cursor", pageSize: 7 },
         fixture: reviewsFixture, empty: { list: [], total: 0 } },
@@ -57,13 +57,13 @@ describe("YourTJ 课程 MCP 契约", () => {
                 assert.ok(tool.outputSchema);
                 assert.equal(tool.annotations?.readOnlyHint, true);
             }
-            const search = tools.find((t) => t.name === "tongji.course.catalog")!;
+            const search = tools.find((t) => t.name === "tongji.course.search")!;
             assert.deepEqual(Object.keys(search.inputSchema.properties!).sort(),
                 ["keyword", "instructor", "department", "term", "campus", "onlyWithReviews", "sortBy", "page", "size"].sort());
             assert.match(JSON.stringify(search.outputSchema), /hasNext/);
             assert.match(JSON.stringify(search.outputSchema), /creditX10/);
             assert.doesNotMatch(JSON.stringify(search.outputSchema), /review_count|teacher_name|semesters/);
-            const detail = tools.find((t) => t.name === "tongji.student.course-detail")!;
+            const detail = tools.find((t) => t.name === "tongji.course.course-detail")!;
             assert.deepEqual(detail.inputSchema.required, ["courseId"]);
             assert.match(JSON.stringify(detail.outputSchema), /offerings/);
             assert.doesNotMatch(JSON.stringify(detail.outputSchema), /reviewer_name|search_keywords|"reviews"/);
@@ -121,11 +121,11 @@ describe("YourTJ 课程 MCP 契约", () => {
     it("应拒绝旧参数、非法标识和刷新请求而不调用上游", async () => {
         await withClient(undefined, async (client, requests) => {
             for (const [name, args] of [
-                ["tongji.course.catalog", { q: "旧搜索", limit: 10 }],
-                ["tongji.course.catalog", { page: 0 }],
-                ["tongji.course.catalog", { instructor: "应为数组" }],
-                ["tongji.student.course-detail", { id: 101 }],
-                ["tongji.student.course-related", { courseId: "101" }],
+                ["tongji.course.search", { q: "旧搜索", limit: 10 }],
+                ["tongji.course.search", { page: 0 }],
+                ["tongji.course.search", { instructor: "应为数组" }],
+                ["tongji.course.course-detail", { id: 101 }],
+                ["tongji.course.course-related", { courseId: "101" }],
                 ["tongji.course.reviews", { courseId: 101, offeringId: 0 }],
                 ["tongji.course.reviews", { courseId: 101, pageSize: -1 }],
                 ["tongji.course.summary", { courseId: 101, check: false }],
@@ -150,7 +150,7 @@ describe("YourTJ 课程 MCP 契约", () => {
         const related = { teacherOtherCourses: [], sameCourseOtherTeachers: [{ id: 102, extraPublicField: "test" }],
             lineage: [{ kind: "test-relation" }] };
         await withClient({ code: 0, result: related }, async (client) => {
-            const result = await client.callTool({ name: "tongji.student.course-related", arguments: { courseId: 101 } });
+            const result = await client.callTool({ name: "tongji.course.course-related", arguments: { courseId: 101 } });
             assert.deepEqual(result.structuredContent, { status: "ok", data: related, source: "YourTJ" });
         });
     });

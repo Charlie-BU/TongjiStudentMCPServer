@@ -123,11 +123,3 @@ export const getAllCalendars = async (
     return service.GetAllCalendarGET();
 };
 
-// getGradesByCalendarId 获取当前学期所有年级。
-export const getGradesByCalendarId = async (
-    config: YourtjAdapterConfig = {},
-    calendarId: number,
-): Promise<unknown> => {
-    const service = createYourtjAdapter(config);
-    return service.FindGradeByCalendarIdPOST({ calendarId });
-};

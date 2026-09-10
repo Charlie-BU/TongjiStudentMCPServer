@@ -2,7 +2,10 @@ import { resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { z } from "zod";
 
-export const legacyTeacherNameSchema = z.string().trim().min(1).max(100);
+export const legacyTeacherNameSchema = z.string().trim().min(2).max(100).refine(
+    (name) => Array.from(name).length >= 2,
+    "老师姓名或姓名片段至少需要两个字符。",
+);
 export const LEGACY_TEACHER_REVIEWS_PATH = "/legacy/teacher-reviews";
 // Resolve relative to src/tools/legacy-teacher-reviews or dist/tools/legacy-teacher-reviews, independently of process.cwd().
 export const LEGACY_TEACHER_REVIEWS_DATABASE = resolve(

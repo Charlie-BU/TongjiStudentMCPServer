@@ -29,10 +29,10 @@ export interface CourseReviewList200Response {
 export interface CourseReviewList200ResponseResult {
   /** 当前批次评价列表 */
   list: CourseReviewList200ResponseResultListItem[];
-  /** 当前响应对应的评价总数 */
-  total: number;
   /** 下一页游标；已实测末页省略此字段 */
   nextCursor?: string;
+  /** 当前响应对应的评价总数 */
+  total: number;
 }
 
 export interface CourseReviewList200ResponseResultListItem {
@@ -93,6 +93,16 @@ export interface CourseDetailGet200Response {
 }
 
 export interface CourseDetailGet200ResponseResult {
+  /** 关联教师 ID */
+  teacherId?: number;
+  /** 关联教师名称 */
+  teacherName?: string;
+  /** 课程开课记录 */
+  offerings?: CourseDetailGet200ResponseResultOfferingsItem[];
+  /** 平均评分 */
+  ratingAvg?: number;
+  /** 评价总数 */
+  reviewCount?: number;
   /** 课程记录 ID */
   id: number;
   /** 评分分布；当前样本为五项，按 1～5 星理解与样本统计一致 */
@@ -107,16 +117,6 @@ export interface CourseDetailGet200ResponseResult {
   department?: string;
   /** 学分乘以 10 */
   creditX10?: number;
-  /** 关联教师 ID */
-  teacherId?: number;
-  /** 关联教师名称 */
-  teacherName?: string;
-  /** 课程开课记录 */
-  offerings?: CourseDetailGet200ResponseResultOfferingsItem[];
-  /** 平均评分 */
-  ratingAvg?: number;
-  /** 评价总数 */
-  reviewCount?: number;
 }
 
 export interface CourseDetailGet200ResponseResultOfferingsItem {
@@ -195,16 +195,6 @@ export interface CourseSearch200ResponseResult {
 }
 
 export interface CourseSearch200ResponseResultListItem {
-  /** 关联教师 ID */
-  teacherId?: number;
-  /** 其他课程代码或别名 */
-  aliases?: string[];
-  /** 关联教师名称，不代表所有开课教师 */
-  teacherName?: string;
-  /** 关联开课教师名称列表 */
-  instructors?: string[];
-  /** 最近开课学期列表 */
-  recentTerms?: string[];
   /** 平均评分；无评价时可能省略 */
   ratingAvg?: number;
   /** 评价数量；无评价时可能省略 */
@@ -219,6 +209,16 @@ export interface CourseSearch200ResponseResultListItem {
   department?: string;
   /** 学分乘以 10；例如 50 表示 5 学分 */
   creditX10?: number;
+  /** 关联教师 ID */
+  teacherId?: number;
+  /** 其他课程代码或别名 */
+  aliases?: string[];
+  /** 关联教师名称，不代表所有开课教师 */
+  teacherName?: string;
+  /** 关联开课教师名称列表 */
+  instructors?: string[];
+  /** 最近开课学期列表 */
+  recentTerms?: string[];
 }
 
 export interface GetAllCalendar200Response {
@@ -230,20 +230,6 @@ export interface GetAllCalendar200Response {
 export interface GetAllCalendar200ResponseDataItem {
   calendarId: number;
   calendarName: string;
-}
-
-export interface FindGradeByCalendarIdBodyRequest {
-  calendarId: number;
-}
-
-export interface FindGradeByCalendarId200Response {
-  code: number;
-  msg: string;
-  data: FindGradeByCalendarId200ResponseData;
-}
-
-export interface FindGradeByCalendarId200ResponseData {
-  gradeList: number[];
 }
 
 export interface FindMajorByGradeBodyRequest {

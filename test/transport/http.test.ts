@@ -106,3 +106,21 @@ describe('createHttpServer', () => {
     });
   });
 });
+
+it('应无需认证通过本地路由返回老师全部评价数组并校验输入', async () => {
+  await withHttpServer(async (baseURL) => {
+    const { searchLegacyTeacherReviews } = await import('../../src/tools/legacy-teacher-reviews/query');
+    const response = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=${encodeURIComponent(' 陈滨 ')}`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), searchLegacyTeacherReviews('陈滨'));
+    const empty = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=${encodeURIComponent('不存在的老师')}`);
+    assert.deepEqual(await empty.json(), []);
+    for (const query of ['', '?teacher=' + encodeURIComponent(' 陈 '), '?teacher=', '?teacher=%20', '?teacher=A&teacher=B', '?teacher=' + 'A'.repeat(101)]) {
+      const invalid = await fetch(`${baseURL}/legacy/teacher-reviews${query}`);
+      assert.equal(invalid.status, 400);
+    }
+    const post = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=A`, { method: 'POST' });
+    assert.equal(post.status, 405);
+    assert.equal(post.headers.get('allow'), 'GET');
+  });
+});

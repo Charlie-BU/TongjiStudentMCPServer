@@ -1,37 +1,17 @@
 // 包含有权限的 API demo
 import axios, { type AxiosRequestConfig } from "axios";
-import YourtjService from "./openapi/yourtj";
 import TongjiService from "./openapi/tongji_openapi";
+import { searchCourses, getCourseDetail, getCourseRelated, getCourseReviews, getCourseSummary } from "./yourtj";
 
-// runRequestDemo 执行 YourTJ 服务的请求示例。
+// YourtjServiceDemo 演示公开课程搜索及详情查询。
 const YourtjServiceDemo = async (): Promise<void> => {
-    const BASE_URL = "https://jcourse.yourtj.de";
-    const demoServiceForAxios = new YourtjService<AxiosRequestConfig>({
-        baseURL: BASE_URL,
-        request: (config, _options) =>
-            axios.request({ ...config }).then((res) => res.data),
-    });
-    // const coursesRes = await demoServiceForAxios.CoursesGET({
-    //     limit: 50,
-    //     page: 1,
-    //     q: "高等数学",
-    //     includeTotal: true,
-    // });
-    // const courseDetailRes = await demoServiceForAxios.CourseDetailGET({
-    //     id: 11388,
-    // });
-    // const relatedRes = await demoServiceForAxios.CourseidRelatedGET({
-    //     id: 11388,
-    // });
-    // const calendars = await demoServiceForAxios.GetAllCalendarGET();
-    // const grades = await demoServiceForAxios.FindGradeByCalendarIdPOST({
-    //     calendarId: 118,
-    // });
-    const majors = await demoServiceForAxios.FindMajorByGradePOST({
-        grade: 2020,
-        calendarId: 118,
-    });
-    console.log(majors);
+    const courses = await searchCourses({ keyword: "高等数学", page: 1, size: 20 });
+    const courseId = courses.list[0]?.id;
+    if (!courseId) return;
+    console.log(await getCourseDetail(courseId));
+    console.log(await getCourseRelated(courseId));
+    console.log(await getCourseReviews({ courseId, pageSize: 20 }));
+    console.log(await getCourseSummary({ courseId, check: true }));
 };
 
 const TongjiServiceDemo = async (token: string): Promise<void> => {

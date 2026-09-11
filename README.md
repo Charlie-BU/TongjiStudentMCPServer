@@ -9,6 +9,8 @@ Agent 的工具选择或回答内容。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
+YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
+
 ## 架构边界
 
 ```text
@@ -33,7 +35,6 @@ src/
 ├── tools/                     # Tool 注册与输入/输出 Schema
 │   ├── registry.ts            # Tool Catalog 注册入口
 │   └── undergraduate-score/   # 本科生成绩查询工具
-├── domain/                    # 后续确定性校园业务聚合
 ├── integration/
 │   ├── openapi/               # CAM 自动生成的上游 API 客户端
 │   ├── tongji_openapi.ts      # 同济开放平台手写适配器
@@ -48,7 +49,7 @@ src/
 
 ## 本地运行
 
-要求：Node.js 20+。
+要求：Node.js 22.13+（使用内置 SQLite）。
 
 ```bash
 pnpm install
@@ -82,7 +83,7 @@ MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。当前提
 保持 `pnpm dev` 运行，并在另一个终端启动 MCP Inspector：
 
 ```bash
-npx @modelcontextprotocol/inspector
+pnpx @modelcontextprotocol/inspector
 ```
 
 在 Inspector 页面中选择 `Streamable HTTP` 传输方式，并填写 MCP 服务地址：
@@ -157,3 +158,11 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 服务，而 stdio 适用于本地子进程；SDK v2 仍处于 pre-alpha，因此不作为当前生产基线。
 参考 [MCP TypeScript SDK v1 文档](https://ts.sdk.modelcontextprotocol.io/) 和
 [官方服务器指南](https://ts.sdk.modelcontextprotocol.io/server)。
+
+
+### 本地历史教师评价
+
+- `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
+- MCP tool：`tongji.course.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
+- 数据库：`data/legacy-teacher-reviews.sqlite`，唯一表 `teacher_reviews(id, teacher, content)`。部署时将 `data/` 与 `dist/` 一起复制；运行时只读，无需 Python 或外网。
+- 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。

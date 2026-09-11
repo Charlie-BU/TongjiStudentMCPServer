@@ -1,3 +1,4 @@
+import { registerLegacyTeacherReviewsTool } from "./legacy-teacher-reviews";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolInvocationContext } from "../transport/invocation-context";
 import { registerAnnualBillTool } from "./annual-bill";
@@ -20,10 +21,11 @@ import { registerAccommodationInfoTool } from "./accommodation-info";
 import { registerUserBasicInfoTool } from "./user-basic-info";
 import { registerCalendarListTool } from "./calendar-list";
 import { registerCourseCatalogTool } from "./course-catalog";
-import { registerGradeListTool } from "./grade-list";
 import { registerCourseDetailTool } from "./course-detail";
 import { registerCourseRelatedTool } from "./course-related";
-import { registerFindMajorByGradeTool } from "./find-major-by-grade";
+
+import { registerCourseReviewsTool } from "./course-reviews";
+import { registerCourseSummaryTool } from "./course-summary";
 
 export interface ToolRegistrationContext {
     invocation: ToolInvocationContext;
@@ -33,6 +35,7 @@ export const registerTools = (
     server: McpServer,
     context: ToolRegistrationContext,
 ): void => {
+    registerLegacyTeacherReviewsTool(server);
     // TongjiOpenAPI
     registerAnnualBillTool(server, context);
     registerCardSpendingFlowTool(server, context);
@@ -55,8 +58,8 @@ export const registerTools = (
     // YourTJ
     registerCourseDetailTool(server, context);
     registerCourseRelatedTool(server, context);
-    registerFindMajorByGradeTool(server, context);
+    registerCourseReviewsTool(server, context);
+    registerCourseSummaryTool(server, context);
     registerCourseCatalogTool(server, context);
     registerCalendarListTool(server, context);
-    registerGradeListTool(server, context);
 };

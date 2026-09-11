@@ -4,16 +4,20 @@
 // @ts-nocheck
 
 import type {
-  CoursesQueryRequest,
-  Courses200Response,
+  CourseReviewListQueryRequest,
+  CourseReviewListPathRequest,
+  CourseReviewList200Response,
+  CourseDetailGetPathRequest,
+  CourseDetailGet200Response,
+  CourseDetailGet400Response,
+  CourseSearchQueryRequest,
+  CourseSearch200Response,
   GetAllCalendar200Response,
-  FindGradeByCalendarIdBodyRequest,
-  FindGradeByCalendarId200Response,
-  CourseDetailPathRequest,
-  CourseDetail200Response,
-  CourseidRelatedPathRequest,
   FindMajorByGradeBodyRequest,
   FindMajorByGrade200Response,
+  CourseRelatedListPathRequest,
+  CourseRelatedList200Response,
+  CourseRelatedList400Response,
 } from './namespaces';
 
 export default class YourtjService<T> {
@@ -50,21 +54,75 @@ export default class YourtjService<T> {
 
   /* API Services */
 
-  /** 获取课程列表 */
-  CoursesGET(
-    req: CoursesQueryRequest,
+  /** 获取指定课程的评价列表，包含评价正文、HTML、评分、作者展示信息、赞踩数量和时间。支持按开课记录筛选，并通过不透明游标分页；返回下一页游标和评价总数。 */
+  CourseReviewListGET(
+    req: CourseReviewListQueryRequest & CourseReviewListPathRequest,
     options?: T,
-  ): Promise<Courses200Response> {
+  ): Promise<CourseReviewList200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/api/courses');
+    let url = this.genBaseURL('/api/forum/courses/{courseId}/reviews');
+    if (_req['courseId'] !== undefined && _req['courseId'] !== null) {
+      url = url.replace('{courseId}', String(_req['courseId']));
+    }
     const method = 'GET';
     const data = undefined;
     const params = {
-      page: _req['page'],
-      limit: _req['limit'],
-      q: _req['q'],
-      includeTotal: _req['includeTotal'],
+      offeringId: _req['offeringId'],
+      cursor: _req['cursor'],
+      pageSize: _req['pageSize'],
     };
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取指定课程的名称、代码、教师、院系、学分、开课记录及评分统计；不包含评价正文 */
+  CourseDetailGetGET(
+    req: CourseDetailGetPathRequest,
+    options?: T,
+  ): Promise<CourseDetailGet200Response & CourseDetailGet400Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/api/forum/courses/{courseId}');
+    if (_req['courseId'] !== undefined && _req['courseId'] !== null) {
+      url = url.replace('{courseId}', String(_req['courseId']));
+    }
+    const method = 'GET';
+    const data = undefined;
+    const params = undefined;
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 按关键词、教师、院系、学期和校区查询课程，支持仅查看有评价的课程及按评分排序 */
+  CourseSearchGET(
+    req: CourseSearchQueryRequest,
+    options?: T,
+  ): Promise<CourseSearch200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/api/forum/courses');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      keyword: _req['keyword'],
+      instructor: _req['instructor'],
+      department: _req['department'],
+      term: _req['term'],
+      campus: _req['campus'],
+      onlyWithReviews: _req['onlyWithReviews'],
+      sortBy: _req['sortBy'],
+      page: _req['page'],
+      size: _req['size'],
+    };
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 查询课程评价的 AI 总结状态及已有总结，包含推荐倾向、关键词、优点、缺点、生成时间和模型 */
+  CourseSummaryGetGET(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    let url = this.genBaseURL('/api/forum/courses/{courseId}/summary');
+    const method = 'GET';
+    const data = undefined;
+    const params = undefined;
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);
   }
@@ -83,54 +141,6 @@ export default class YourtjService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 获取当前学期所有年级 */
-  FindGradeByCalendarIdPOST(
-    req: FindGradeByCalendarIdBodyRequest,
-    options?: T,
-  ): Promise<FindGradeByCalendarId200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL('/api/findGradeByCalendarId');
-    const method = 'POST';
-    const data = { calendarId: _req['calendarId'] };
-    const params = undefined;
-    const headers = undefined;
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取课程详情 */
-  CourseDetailGET(
-    req: CourseDetailPathRequest,
-    options?: T,
-  ): Promise<CourseDetail200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL('/api/course/{id}');
-    if (_req['id'] !== undefined && _req['id'] !== null) {
-      url = url.replace('{id}', String(_req['id']));
-    }
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = undefined;
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取关联课程 */
-  CourseidRelatedGET(
-    req: CourseidRelatedPathRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/api/course/{id}/related');
-    if (_req['id'] !== undefined && _req['id'] !== null) {
-      url = url.replace('{id}', String(_req['id']));
-    }
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = undefined;
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
   /** 根据学期和年级获取当年份全部专业 */
   FindMajorByGradePOST(
     req: FindMajorByGradeBodyRequest,
@@ -140,6 +150,23 @@ export default class YourtjService<T> {
     let url = this.genBaseURL('/api/findMajorByGrade');
     const method = 'POST';
     const data = { calendarId: _req['calendarId'], grade: _req['grade'] };
+    const params = undefined;
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取指定课程的关联课程分组，包括相关教师的其他课程、同课程的其他教师记录，以及课程关联信息。关联课程 ID 可继续用于获取课程详情和评价。 */
+  CourseRelatedListGET(
+    req: CourseRelatedListPathRequest,
+    options?: T,
+  ): Promise<CourseRelatedList200Response & CourseRelatedList400Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/api/forum/courses/{courseId}/related');
+    if (_req['courseId'] !== undefined && _req['courseId'] !== null) {
+      url = url.replace('{courseId}', String(_req['courseId']));
+    }
+    const method = 'GET';
+    const data = undefined;
     const params = undefined;
     const headers = undefined;
     return this.request({ url, method, data, params, headers }, options);

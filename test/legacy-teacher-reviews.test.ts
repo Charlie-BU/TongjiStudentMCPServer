@@ -3,8 +3,8 @@ import { it } from "node:test";
 import { DatabaseSync } from "node:sqlite";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { LEGACY_TEACHER_REVIEWS_DATABASE, searchLegacyTeacherReviews } from "../src/tools/legacy-teacher-reviews/query";
-import { LEGACY_TEACHER_REVIEWS_TOOL_NAME } from "../src/tools/legacy-teacher-reviews";
+import { LEGACY_TEACHER_REVIEWS_DATABASE, searchLegacyTeacherReviews } from "../src/tools/tongji/course/legacy-teacher-reviews/query";
+import { LEGACY_TEACHER_REVIEWS_TOOL_NAME } from "../src/tools/tongji/course/legacy-teacher-reviews";
 import { createMcpServer } from "../src/server";
 
 it("SQLite snapshot has exactly the requested table and columns", () => {

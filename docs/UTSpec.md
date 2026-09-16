@@ -150,7 +150,7 @@ HTTP 测试必须在 `finally` 中关闭临时 server，避免端口泄漏和测
 
 Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；必须同时断言调用参数和面向 MCP 客户端的结果／错误。
 
-### 5.4 业务查询模块：`src/tools/<tool>/`
+### 5.4 业务查询模块：`src/tools/<namespace>/<domain>/<tool>/`
 
 业务查询模块与对应 Tool 放在同一目录，承载确定性的校园业务查询与聚合。每个公开能力应覆盖正常结果、空数据、排序/筛选/去重、跨系统字段冲突、领域边界与可读的业务错误。领域测试使用最小化的脱敏 fixture，不依赖 HTTP 或 MCP SDK。
 

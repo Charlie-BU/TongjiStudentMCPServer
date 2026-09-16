@@ -32,9 +32,12 @@ Gateway
 src/
 ├── config/                    # 监听与开关配置
 ├── transport/                 # /mcp、认证边界与 HTTP 适配
-├── tools/                     # Tool 注册与输入/输出 Schema
+├── tools/                     # Tool 注册与输入/输出 Schema，按工具名分层（如 tongji/student/cet-score/）
 │   ├── registry.ts            # Tool Catalog 注册入口
-│   └── undergraduate-score/   # 本科生成绩查询工具
+│   └── tongji/                # tongji.* 工具命名空间
+│       ├── student/           # tongji.student.*（如 score/、cet-score/）
+│       ├── course/            # tongji.course.*
+│       └── user/              # tongji.user.*
 ├── integration/
 │   ├── openapi/               # CAM 自动生成的上游 API 客户端
 │   ├── tongji_openapi.ts      # 同济开放平台手写适配器

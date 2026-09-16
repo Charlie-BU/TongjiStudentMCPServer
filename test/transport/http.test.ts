@@ -109,7 +109,7 @@ describe('createHttpServer', () => {
 
 it('应无需认证通过本地路由返回老师全部评价数组并校验输入', async () => {
   await withHttpServer(async (baseURL) => {
-    const { searchLegacyTeacherReviews } = await import('../../src/tools/legacy-teacher-reviews/query');
+    const { searchLegacyTeacherReviews } = await import('../../src/tools/tongji/course/legacy-teacher-reviews/query');
     const response = await fetch(`${baseURL}/legacy/teacher-reviews?teacher=${encodeURIComponent(' 陈滨 ')}`);
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), searchLegacyTeacherReviews('陈滨'));

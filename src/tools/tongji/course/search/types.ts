@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { COURSE_SEARCH_DATA_SCHEMA } from "../../../../integration/yourtj-contract";
+import type { COURSE_SEARCH_DATA_SCHEMA } from "../../../../integration/yourtj/contract";
 import type { COURSE_CATALOG_OUTPUT_SCHEMA } from "./index";
 
 // CourseCatalogData 表示查询课程目录数据。

@@ -1,5 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
-import TongjiOpenapiService from "./openapi/tongji_openapi";
+import TongjiOpenapiService from "../cam_auto_generated/tongji_openapi";
 
 // DEFAULT_TONGJI_OPENAPI_BASE_URL 表示同济开放平台的默认地址。
 const DEFAULT_TONGJI_OPENAPI_BASE_URL = "https://api.tongji.edu.cn";

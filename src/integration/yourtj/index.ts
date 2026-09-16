@@ -1,12 +1,12 @@
 import axios, { type AxiosRequestConfig } from "axios";
 import { z } from "zod";
-import YourtjService from "./openapi/yourtj";
+import YourtjService from "../cam_auto_generated/yourtj";
 import {
     COURSE_ID_INPUT_SCHEMA, COURSE_SEARCH_INPUT_SCHEMA, COURSE_REVIEW_INPUT_SCHEMA,
     COURSE_SUMMARY_INPUT_SCHEMA, COURSE_SEARCH_DATA_SCHEMA, COURSE_DETAIL_DATA_SCHEMA,
     COURSE_REVIEW_DATA_SCHEMA, COURSE_SUMMARY_DATA_SCHEMA, COURSE_RELATED_DATA_SCHEMA,
     type CourseSearchInput, type CourseReviewInput, type CourseSummaryInput,
-} from "./yourtj-contract";
+} from "./contract";
 
 // DEFAULT_YOURTJ_BASE_URL 表示公开课程论坛地址。
 const DEFAULT_YOURTJ_BASE_URL = "https://f.yourtj.de";

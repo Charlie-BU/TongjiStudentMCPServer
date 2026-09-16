@@ -5,11 +5,14 @@
 Agent 的工具选择或回答内容。
 
 当前仓库是**可启动且已接入首个业务工具的 MCP 服务**。当前已注册
-`tongji.student.score`，用于查询本科生指定学期的成绩。进程入口不会直接调用同济开放平台；手写适配器位于 `src/integration/*.ts`，CAM 自动生成的客户端位于 `src/integration/openapi/`，不能直接作为生产适配器使用。
+`tongji.student.score`，用于查询本科生指定学期的成绩。进程入口不会直接调用同济开放平台；手写适配器位于 `src/integration/<来源>/index.ts`，CAM 自动生成的客户端位于 `src/integration/cam_auto_generated/`，不能直接作为生产适配器使用。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
+
+瑞幸登录提供 `luckin.auth.send_sms_code` 和 `luckin.auth.login` 两个工具，后者合并登录与获取 Token；
+CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界
 
@@ -39,11 +42,11 @@ src/
 │       ├── course/            # tongji.course.*
 │       └── user/              # tongji.user.*
 ├── integration/
-│   ├── openapi/               # CAM 自动生成的上游 API 客户端
-│   ├── tongji_openapi.ts      # 同济开放平台手写适配器
-│   ├── tongji_poby.ts         # 济星云手写适配器边界
-│   ├── yourtj.ts              # YourTJ 手写适配器边界
-│   └── test.ts                # 受控人工验证示例
+│   ├── cam_auto_generated/    # CAM 自动生成的上游 API 客户端
+│   ├── luckin_coffee/         # 瑞幸适配器 index.ts 与 contract.ts
+│   ├── tongji_openapi/        # 同济开放平台适配器 index.ts
+│   ├── tongji_poby/           # 济星云适配器
+│   └── yourtj/                # YourTJ 适配器 index.ts 与 contract.ts
 ├── privacy/                   # 后续字段白名单与脱敏策略
 ├── observability/             # 后续日志、Trace、指标
 ├── server.ts                  # MCP Server 创建
@@ -139,14 +142,14 @@ pnpm start
 ## CAM 客户端生成
 
 CAM 配置位于仓库根目录的 `cam.config.json`，生成代码统一写入
-`src/integration/openapi/`。登录完成并需要同步已配置服务时，执行：
+`src/integration/cam_auto_generated/`。登录完成并需要同步已配置服务时，执行：
 
 ```bash
 pnpm cam update
 ```
 
 生成目录中的文件由 CAM 管理，不应手工编辑。业务层应在手写的
-`src/integration/*.ts` 适配器中封装、校验和脱敏这些客户端调用。
+`src/integration/<来源>/index.ts` 适配器中封装、校验和脱敏这些客户端调用。
 
 ## 下一步
 

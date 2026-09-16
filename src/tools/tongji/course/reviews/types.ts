@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { COURSE_REVIEW_DATA_SCHEMA } from "../../../../integration/yourtj-contract";
+import type { COURSE_REVIEW_DATA_SCHEMA } from "../../../../integration/yourtj/contract";
 import type { COURSE_REVIEWS_OUTPUT_SCHEMA } from "./index";
 
 // CourseReviewsData 表示查询课程评价数据。

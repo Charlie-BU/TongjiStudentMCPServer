@@ -1,5 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
-import TongjiPobyService from "./openapi/tongji_poby";
+import TongjiPobyService from "../cam_auto_generated/tongji_poby";
 
 // DEFAULT_TONGJI_POBY_BASE_URL 表示同济 Poby 服务的默认地址。
 const DEFAULT_TONGJI_POBY_BASE_URL = "https://app.tongji.edu.cn/wallbreakerApi";

@@ -1,7 +1,7 @@
 # Tongji Student MCP Tool Catalog
 
 > 由服务内存实例执行 MCP `tools/list` 导出。服务：`tongji-student-mcp-server`，版本：`0.1.0`。
-> 当前注册 **25** 个 Tool；以下 Schema 为客户端实际可见契约。
+> 当前注册 **27** 个 Tool；以下 Schema 为客户端实际可见契约。
 
 ## 通用约定
 
@@ -11,6 +11,8 @@
 - 新 YourTJ 课程工具保留 `status/data/source` 包装，`data` 使用新的 camelCase 字段；可选字段缺失时不补 null。详情不再内嵌评价。
 - 新 YourTJ 搜索使用 `keyword/page/size`，详情和关联使用 `courseId`；旧 `q/limit/id` 参数已移除。
 - 课程迁移和 CAM 总结生成缺口说明见 [YourTJ 接入](YOURTJ.md)。
+
+- 瑞幸工具不需要同济凭据；登录 Token 为敏感输出，调用方必须在进入模型或历史前处理，见 [瑞幸登录](LUCKIN.md)。
 
 ## 工具目录
 
@@ -41,6 +43,8 @@
 | 23 | `tongji.course.summary` | 查询课程 AI 总结 | YourTJ |
 | 24 | `tongji.course.search` | 查询课程目录 | YourTJ |
 | 25 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
+| 26 | `luckin.auth.send_sms_code` | 发送瑞幸登录验证码 | Luckin Coffee |
+| 27 | `luckin.auth.login` | 登录瑞幸并获取 Token | Luckin Coffee |
 
 ## 1. `tongji.course.legacy-teacher-reviews` — 检索老师历史评价
 
@@ -4304,3 +4308,172 @@
 ```
 
 本地历史教师评价的数据来源和 HTTP 接口见 [历史教师评价](LEGACY_TEACHER_REVIEWS.md)。
+
+## 26. `luckin.auth.send_sms_code` — 发送瑞幸登录验证码
+
+向用户指定手机号发送瑞幸登录短信。仅在用户要求登录并同意发送验证码时调用，不能自动重试。不需要同济凭据或瑞幸登录 Cookie；CSRF 由服务端管理。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "mobile": {
+        "type": "string",
+        "pattern": "^\\d{5,15}$",
+        "description": "接收瑞幸登录验证码的手机号，不含国家区号。"
+      },
+      "countryCode": {
+        "type": "string",
+        "pattern": "^[1-9]\\d{0,3}$",
+        "default": "86",
+        "description": "国家或地区电话区号，不含 +，默认 86；发送与登录时保持一致。"
+      }
+    },
+    "required": [
+      "mobile"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string",
+            "description": "验证码发送结果。"
+          },
+          "remain": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "上游 remain 原值；时间单位尚未确认。"
+          },
+          "validate": {
+            "type": "boolean",
+            "description": "上游校验标志，不作为发送成功的判断条件。"
+          }
+        },
+        "required": [
+          "msg",
+          "remain",
+          "validate"
+        ],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```
+
+## 27. `luckin.auth.login` — 登录瑞幸并获取 Token
+
+使用用户提供的手机号及短信验证码登录瑞幸，然后自动携带登录 Cookie 获取 MCP Token。无需传入 Cookie、CSRF 或同济凭据。返回 Token 为敏感数据，调用方必须安全保存，不得写入日志、聊天历史或向用户复述；失败不自动重试。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "mobile": {
+        "type": "string",
+        "pattern": "^\\d{5,15}$",
+        "description": "接收瑞幸登录验证码的手机号，不含国家区号。"
+      },
+      "countryCode": {
+        "type": "string",
+        "pattern": "^[1-9]\\d{0,3}$",
+        "default": "86",
+        "description": "国家或地区电话区号，不含 +，默认 86；发送与登录时保持一致。"
+      },
+      "validateCode": {
+        "type": "string",
+        "pattern": "^\\d{1,16}$",
+        "description": "用户收到的短信验证码，使用字符串保留前导零。"
+      }
+    },
+    "required": [
+      "mobile",
+      "validateCode"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "luckyMcpToken": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\S+$",
+            "description": "瑞幸 MCP Bearer Token；敏感凭据，不得写入日志或聊天历史。"
+          },
+          "luckyMcpTokenDate": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "上游 Token 日期字段原值，具体时间单位和语义待确认。"
+          },
+          "luckyMcpTokenTimeout": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "上游 Token 超时字段原值，不与 Cookie 有效期混用。"
+          }
+        },
+        "required": [
+          "luckyMcpToken",
+          "luckyMcpTokenDate",
+          "luckyMcpTokenTimeout"
+        ],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```

@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getCourseSummary } from "../../../../integration/yourtj";
-import { COURSE_SUMMARY_INPUT_SCHEMA, COURSE_SUMMARY_DATA_SCHEMA } from "../../../../integration/yourtj-contract";
+import { COURSE_SUMMARY_INPUT_SCHEMA, COURSE_SUMMARY_DATA_SCHEMA } from "../../../../integration/yourtj/contract";
 import type { ToolRegistrationContext } from "../../../registry";
 import { createYourtjOutputSchema, runYourtjQuery } from "../../../yourtj-result";
 

@@ -45,7 +45,8 @@ export const createLuckinMcpAdapter = (token: string, config: LuckinMcpConfig = 
             } catch (error) {
                 if (error instanceof LuckinMcpError) throw error;
                 if (axios.isAxiosError(error)) {
-                    if (error.response?.status === 401 || error.response?.status === 403) throw new LuckinMcpError("unauthorized");
+                    if (error.response?.status === 401) throw new LuckinMcpError("unauthorized");
+                    if (error.response?.status === 403) throw new LuckinMcpError("forbidden");
                     if (error.response?.status === 429) throw new LuckinMcpError("rate_limited");
                     if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") throw new LuckinMcpError("timeout");
                 }

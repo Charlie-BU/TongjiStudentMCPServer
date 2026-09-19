@@ -24,7 +24,7 @@ after(() => {
 it("SQLite snapshot has exactly the requested table and columns", () => {
     const db = new DatabaseSync(LEGACY_TEACHER_REVIEWS_DATABASE, { readOnly: true });
     try {
-        assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(r => r.name), ["teacher_reviews", "user_luckin_credentials"]);
+        assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(r => r.name), ["teacher_reviews"]);
         assert.deepEqual(db.prepare("PRAGMA table_info(teacher_reviews)").all().map(r => r.name), ["id", "teacher", "content"]);
         assert.equal(db.prepare("PRAGMA integrity_check").get()?.integrity_check, "ok");
     } finally { db.close(); }

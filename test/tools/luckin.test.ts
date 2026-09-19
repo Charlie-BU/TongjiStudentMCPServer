@@ -1,24 +1,22 @@
+import { AxiosError } from "axios";
 import assert from "node:assert/strict";
 import { after, it } from "node:test";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { withLuckinFake, success, smsData, tokenData, loginCookies } from "../fixtures/luckin";
 
-const directory = mkdtempSync(join(tmpdir(), "luckin-tools-"));
-const database = require("../../src/storage/database") as typeof import("../../src/storage/database");
-const originalOpenDatabase = database.openDatabase;
-// 仅在此测试进程替换模块依赖，生产数据库路径始终固定。
-const databaseModule = require.cache[require.resolve("../../src/storage/database")]!;
-databaseModule.exports = { ...database, openDatabase: () => originalOpenDatabase(join(directory, "mcp.sqlite")) };
+import { createTestPostgres } from "../fixtures/postgres";
+const pool = createTestPostgres();
+const postgres = require("../../src/storage/postgres") as typeof import("../../src/storage/postgres");
+let failCredentialStorage = false;
+const postgresModule = require.cache[require.resolve("../../src/storage/postgres")]!;
+postgresModule.exports = { ...postgres, getPostgresPool: () => {
+    if (failCredentialStorage) throw new Error("private-storage-error");
+    return pool;
+} };
 const { createMcpServer } = require("../../src/server") as typeof import("../../src/server");
 const { readLuckinCredential, saveLuckinCredential } = require("../../src/storage/luckin-credentials") as typeof import("../../src/storage/luckin-credentials");
-after(() => {
-    databaseModule.exports = database;
-    rmSync(directory, { recursive: true, force: true });
-});
+after(async () => { postgresModule.exports = postgres; await pool.end(); });
 const input = { mobile: "13800000000", validateCode: "012345" };
 const withClient = async (run: (client: Client) => Promise<void>, accessToken: string | undefined = "campus-test-token") => {
     const [ct, st] = InMemoryTransport.createLinkedPair();
@@ -30,13 +28,13 @@ const withClient = async (run: (client: Client) => Promise<void>, accessToken: s
 const identity = { data: { list: [{ userId: "student-1" }] } };
 const isIdentity = (url?: string) => !url?.includes("lkcoffee.com");
 
-it("注册瑞幸工具：check 无参数且只有 valid 输出，login 不返回 Token", async () => withClient(async client => {
+it("注册瑞幸工具：check 无参数且输出 valid/message，login 不返回 Token", async () => withClient(async client => {
     const { tools } = await client.listTools();
     const luckin = tools.filter(t => t.name.startsWith("luckin.auth."));
     assert.deepEqual(luckin.map(t => t.name).sort(), ["luckin.auth.check", "luckin.auth.login", "luckin.auth.send_sms_code"]);
     const check = luckin.find(t => t.name.endsWith("check"))!;
     assert.deepEqual(check.inputSchema.properties, {});
-    assert.deepEqual(Object.keys(check.outputSchema!.properties!), ["valid"]);
+    assert.deepEqual(Object.keys(check.outputSchema!.properties!), ["valid", "message"]);
     assert.doesNotMatch(JSON.stringify(luckin.find(t => t.name.endsWith("login"))!.outputSchema), /luckyMcpToken/);
 }));
 
@@ -56,7 +54,7 @@ it("登录通过同济身份绑定并持久化五字段凭据，结果不暴露 
         const result = await client.callTool({ name: "luckin.auth.login", arguments: input });
         assert.deepEqual(result.structuredContent, { status: "ok", data: { authenticated: true }, source: "Luckin Coffee" });
         assert.doesNotMatch(JSON.stringify(result), /fake-luckin-token|012345|13800000000/);
-        assert.deepEqual({ ...readLuckinCredential("student-1") }, {
+        assert.deepEqual({ ...(await readLuckinCredential("student-1")) }, {
             user_id: "student-1", luckin_token: tokenData.luckyMcpToken, token_date: tokenData.luckyMcpTokenDate,
             token_timeout: tokenData.luckyMcpTokenTimeout, last_verified_at: null,
         });
@@ -64,7 +62,7 @@ it("登录通过同济身份绑定并持久化五字段凭据，结果不暴露 
 });
 
 it("check 使用数据库 Token ping，更新成功验证时间，不泄露凭据", async () => {
-    saveLuckinCredential("student-1", tokenData);
+    await saveLuckinCredential("student-1", tokenData);
     await withLuckinFake(async request => {
         if (isIdentity(request.url)) return { data: identity };
         assert.equal(request.headers.Authorization, `Bearer ${tokenData.luckyMcpToken}`);
@@ -72,36 +70,51 @@ it("check 使用数据库 Token ping，更新成功验证时间，不泄露凭�
         return { data: { jsonrpc: "2.0", id: 1, result: {} } };
     }, async () => withClient(async client => {
         const result = await client.callTool({ name: "luckin.auth.check", arguments: {} });
-        assert.deepEqual(result.structuredContent, { valid: true });
-        assert.deepEqual(JSON.parse((result.content as { text: string }[])[0].text), { valid: true });
-        assert.ok(readLuckinCredential("student-1")!.last_verified_at);
+        assert.deepEqual(result.structuredContent, { valid: true, message: "瑞幸登录有效，可以继续操作。" });
+        assert.deepEqual(JSON.parse((result.content as { text: string }[])[0].text), { valid: true, message: "瑞幸登录有效，可以继续操作。" });
+        assert.ok((await readLuckinCredential("student-1"))!.last_verified_at);
     }));
 });
 
-it("缺失凭据、身份异常和上游失败均返回 false，且不删除已有 Token", async () => {
-    for (const scenario of ["no-user", "identity-error", "no-token", "unauthorized", "timeout", "rate-limit", "server-error", "malformed"]) {
+it("仅未绑定和 Token 无效返回 false；其他故障返回分类错误且不删除凭据", async () => {
+    const cases = { "no-user":"platform_unauthorized", "identity-error":"platform_unavailable", "no-token":null,
+        unauthorized:null, forbidden:"upstream_forbidden", timeout:"upstream_timeout", "rate-limit":"rate_limited",
+        "server-error":"upstream_unavailable", malformed:"upstream_unavailable" };
+    for (const [scenario, expected] of Object.entries(cases)) {
         await withLuckinFake(async request => {
             if (isIdentity(request.url)) {
                 if (scenario === "identity-error") throw new Error("private-identity-error");
                 return { data: scenario === "no-user" ? {} : scenario === "no-token"
                     ? { data: { list: [{ userId: "another-user" }] } } : identity };
             }
-            if (scenario === "malformed") return { data: { jsonrpc: "2.0", id: 1, error: { code: -1 } } };
-            throw new Error(scenario);
+            if (scenario === "malformed") return { data: { jsonrpc: "2.0", id: 1, result: { unexpected: true } } };
+            const status = scenario === "unauthorized" ? 401 : scenario === "forbidden" ? 403 : scenario === "rate-limit" ? 429 : 500;
+            throw new AxiosError("private-secret", scenario === "timeout" ? "ECONNABORTED" : undefined, request,
+                undefined, scenario === "timeout" ? undefined : { data: "private-secret", status, statusText: "test", headers: {}, config: request });
         }, async () => withClient(async client => {
             const result = await client.callTool({ name: "luckin.auth.check", arguments: {} });
-            assert.notEqual(result.isError, true);
-            assert.deepEqual(result.structuredContent, { valid: false }, scenario);
+            if (expected === null) {
+                assert.notEqual(result.isError, true);
+                assert.deepEqual(result.structuredContent, { valid: false, message: "尚未登录瑞幸或登录已失效，请完成瑞幸登录。" });
+            } else {
+                assert.equal(result.isError, true);
+                const payload = JSON.parse((result.content as {text:string}[])[0].text);
+                assert.equal(payload.status, expected, scenario);
+                assert.equal(payload.valid, false);
+                assert.ok(payload.message);
+            }
+            assert.doesNotMatch(JSON.stringify(result), /private-secret|private-identity-error|fake-luckin-token/);
         }));
     }
-    assert.equal(readLuckinCredential("student-1")!.luckin_token, tokenData.luckyMcpToken);
+    assert.equal((await readLuckinCredential("student-1"))!.luckin_token, tokenData.luckyMcpToken);
 });
 
 it("没有 access_token 不调用上游；check 不接受模型指定用户", async () => {
     await withLuckinFake(async () => { throw new Error("must not execute"); }, async requests => {
         await withClient(async client => {
             const result = await client.callTool({ name: "luckin.auth.check", arguments: {} });
-            assert.deepEqual(result.structuredContent, { valid: false });
+            assert.equal(result.isError, true);
+            assert.match(JSON.stringify(result), /platform_unauthorized/);
             const login = await client.callTool({ name: "luckin.auth.login", arguments: input });
             assert.equal(login.isError, true);
             const invalid = await client.callTool({ name: "luckin.auth.check", arguments: { userId: "another" } });
@@ -119,7 +132,7 @@ it("验证码失败不覆盖数据库，非法入参不调用上游", async () =
         assert.equal(result.isError, true);
         assert.doesNotMatch(JSON.stringify(result), /private-secret|012345/);
         assert.equal(requests.length, 2);
-        assert.equal(readLuckinCredential("student-1")!.luckin_token, tokenData.luckyMcpToken);
+        assert.equal((await readLuckinCredential("student-1"))!.luckin_token, tokenData.luckyMcpToken);
         for (const args of [{ mobile: "bad" }, { ...input, validateCode: 123456 }, { ...input, countryCode: "+86" }]) {
             assert.equal((await client.callTool({ name: "luckin.auth.login", arguments: args })).isError, true);
         }
@@ -141,7 +154,7 @@ const businessCases = [
 ] as const;
 
 it("全部 8 个业务工具注册并经过真实 MCP/CAM 调用链，不额外 ping", async () => {
-    saveLuckinCredential("student-1", tokenData);
+    await saveLuckinCredential("student-1", tokenData);
     const data = { content: [{ type: "text", text: '{"orderIdStr":"1234567890123456789"}' }],
         structuredContent: { orderIdStr: "1234567890123456789", payOrderQrCodeUrl: "https://example.com/qr" } };
     const businessRequests: unknown[] = [];
@@ -199,7 +212,7 @@ it("业务工具缺身份/缺凭据不访问瑞幸，非法参数不执行任何
 });
 
 it("多用户业务请求只使用各自数据库 Token", async () => {
-    saveLuckinCredential("student-b", { ...tokenData, luckyMcpToken: "fixture-token-b" });
+    await saveLuckinCredential("student-b", { ...tokenData, luckyMcpToken: "fixture-token-b" });
     const tokens: string[] = [];
     await withLuckinFake(async request => {
         if (isIdentity(request.url)) return { data: { data: { list: [{ userId:
@@ -256,10 +269,10 @@ it("模拟闭环：check false → 短信 → 登录 → check true → 选品�
         return { data: { jsonrpc: "2.0", id: 1, result: method === "ping" ? {} : { content: [{ type: "text", text: JSON.stringify(payload) }] } } };
     }, async () => withClient(async client => {
         const invoke = (name: string, args: Record<string, unknown> = {}) => client.callTool({ name, arguments: args });
-        assert.deepEqual((await invoke("luckin.auth.check")).structuredContent, { valid: false });
+        assert.deepEqual((await invoke("luckin.auth.check")).structuredContent, { valid: false, message: "尚未登录瑞幸或登录已失效，请完成瑞幸登录。" });
         assert.notEqual((await invoke("luckin.auth.send_sms_code", { mobile: input.mobile })).isError, true);
         assert.notEqual((await invoke("luckin.auth.login", input)).isError, true);
-        assert.deepEqual((await invoke("luckin.auth.check")).structuredContent, { valid: true });
+        assert.deepEqual((await invoke("luckin.auth.check")).structuredContent, { valid: true, message: "瑞幸登录有效，可以继续操作。" });
         for (const [name, , args] of businessCases.slice(0, 6)) assert.notEqual((await invoke(name, args)).isError, true);
         const before = await invoke("luckin.order.get", { orderId: "1234567890123456789" });
         assert.match(JSON.stringify(before), /false/);
@@ -269,4 +282,66 @@ it("模拟闭环：check false → 短信 → 登录 → check true → 选品�
         assert.notEqual((await invoke("luckin.order.cancel", { orderId: "1234567890123456789" })).isError, true);
         assert.deepEqual(sequence, ["sms", "login", "token", "ping", ...businessCases.slice(0,6).map(row=>row[1]), "queryOrderDetailInfo", "queryOrderDetailInfo", "cancelOrder"]);
     }));
+});
+
+
+it("存储故障与检查期间凭据替换返回独立错误，不误判 Token 无效", async () => {
+    await withLuckinFake(async request => {
+        if (isIdentity(request.url)) return { data: identity };
+        await saveLuckinCredential("student-1", { ...tokenData, luckyMcpToken: "new-fixture-token" });
+        return { data: { jsonrpc: "2.0", id: 1, result: {} } };
+    }, async () => withClient(async client => {
+        failCredentialStorage = true;
+        try {
+            const result = await client.callTool({ name: "luckin.auth.check", arguments: {} });
+            assert.equal(result.isError, true);
+            assert.match(JSON.stringify(result), /credential_store_unavailable/);
+            assert.doesNotMatch(JSON.stringify(result), /private-storage-error/);
+        } finally { failCredentialStorage = false; }
+        await saveLuckinCredential("student-1", tokenData);
+        const result = await client.callTool({ name: "luckin.auth.check", arguments: {} });
+        assert.equal(result.isError, true);
+        assert.match(JSON.stringify(result), /credential_changed/);
+    }));
+});
+
+it("login 必须等待 PostgreSQL 写入完成，写入失败不得返回 authenticated", { timeout: 5000 }, async () => {
+    const originalQuery = pool.query.bind(pool);
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const entered = new Promise<void>(resolve => { started = resolve; });
+    let rejectWrite = false;
+    pool.query = async (...args: any[]) => {
+        if (String(args[0]).startsWith("INSERT INTO public.user_luckin_credentials")) {
+            started();
+            await gate;
+            if (rejectWrite) throw new Error("private-postgres-connection");
+        }
+        return originalQuery(...args);
+    };
+    try {
+        await withLuckinFake(async request => {
+            if (isIdentity(request.url)) return { data: identity };
+            if (request.url?.endsWith("/loginAi")) return { data: success({}), headers: { "set-cookie": loginCookies } };
+            return { data: success(tokenData) };
+        }, async () => withClient(async client => {
+            let completed = false;
+            const pending = client.callTool({ name: "luckin.auth.login", arguments: input }).then(result => {
+                completed = true;
+                return result;
+            });
+            await entered;
+            await new Promise(resolve => setImmediate(resolve));
+            assert.equal(completed, false);
+            release();
+            assert.deepEqual((await pending).structuredContent, {
+                status: "ok", data: { authenticated: true }, source: "Luckin Coffee",
+            });
+            rejectWrite = true;
+            const failed = await client.callTool({ name: "luckin.auth.login", arguments: input });
+            assert.equal(failed.isError, true);
+            assert.doesNotMatch(JSON.stringify(failed), /authenticated|private-postgres-connection/);
+        }));
+    } finally { release(); pool.query = originalQuery; }
 });

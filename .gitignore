@@ -48,5 +48,5 @@ node_modules/
 dist/
 npm-debug.log*
 
-# 常驻数据库及 WAL/SHM 含用户凭据，不进入版本管理
+# 本地教师评价运行库及 WAL/SHM 不进入版本管理
 /data/mcp.sqlite*

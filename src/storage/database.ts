@@ -6,7 +6,7 @@ const dataDirectory = resolve(__dirname, "../../data");
 export const MCP_DATABASE_PATH = resolve(dataDirectory, "mcp.sqlite");
 export const TEACHER_REVIEWS_SEED_PATH = resolve(dataDirectory, "teacher-reviews.seed.sqlite");
 
-// 初始化空库时导入随代码发布的教师评价；已有评价和用户凭据保持不变。
+// 初始化空库时导入随代码发布的教师评价；已有评价保持不变。
 export const openDatabase = (path = MCP_DATABASE_PATH): DatabaseSync => {
     mkdirSync(dirname(path), { recursive: true });
     const db = new DatabaseSync(path);
@@ -19,14 +19,8 @@ export const openDatabase = (path = MCP_DATABASE_PATH): DatabaseSync => {
             teacher TEXT NOT NULL,
             content TEXT NOT NULL
         );
-        CREATE INDEX IF NOT EXISTS teacher_reviews_teacher ON teacher_reviews(teacher);
-        CREATE TABLE IF NOT EXISTS user_luckin_credentials (
-            user_id TEXT PRIMARY KEY NOT NULL,
-            luckin_token TEXT NOT NULL,
-            token_date INTEGER NOT NULL,
-            token_timeout INTEGER NOT NULL,
-            last_verified_at INTEGER
-        )`);
+        CREATE INDEX IF NOT EXISTS teacher_reviews_teacher ON teacher_reviews(teacher)`);
+
         if (!db.prepare("SELECT 1 FROM teacher_reviews LIMIT 1").get()) {
             const seed = new DatabaseSync(TEACHER_REVIEWS_SEED_PATH, { readOnly: true });
             try {

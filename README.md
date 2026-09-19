@@ -170,5 +170,24 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 - `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
 - MCP tool：`tongji.course.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
-- 常驻数据库：`data/mcp.sqlite`，包含教师评价与瑞幸凭据表。数据库不存在时自动创建，并从 `data/teacher-reviews.seed.sqlite` 导入教师评价；瑞幸凭据表初始为空。部署须携带种子库，将 `data/` 放在可写持久化目录；发布不得覆盖运行库，备份见 [瑞幸登录](docs/LUCKIN.md)。
+- 常驻数据库：`data/mcp.sqlite`，仅存储教师评价。数据库不存在时自动创建，并从 `data/teacher-reviews.seed.sqlite` 导入教师评价。部署须携带种子库，将 `data/` 放在可写持久化目录；发布不得覆盖运行库，瑞幸凭据存储见下节。
 - 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。
+
+## 瑞幸凭据 PostgreSQL
+
+MCP 使用与 Agent 相同的 PostgreSQL 数据库，通过 MCP 仓根目录的 `.env` 中的
+`POSTGRES_DSN` 配置；部署时可直接注入同名环境变量，环境变量优先。
+`.env` 不进入 Git，配置格式见 [.env.example](.env.example)。
+
+1. 在上述 DSN 指向的数据库中手动执行 [建表 SQL](sql/user_luckin_credentials.sql)。
+   执行账号应是 MCP 连接账号，或为 MCP 账号授予该表的 SELECT、INSERT、UPDATE 权限。
+2. 配置 `POSTGRES_DSN`，安装依赖并构建、重启 MCP 服务。
+3. 通过正常短信登录重新绑定瑞幸，再调用 `luckin.auth.check`。
+
+程序不自动建 PostgreSQL 表，也不迁移旧 SQLite Token。凭据表仅包含
+`user_id`、`luckin_token`、`token_date`、`token_timeout`、`last_verified_at`。
+前两个时间值保留瑞幸原始整数；验证时间为 Unix 毫秒。Token 按要求明文保存。
+凭据读写全部异步，登录等待数据库写入提交后才返回成功；验证时间按用户和 Token 条件更新，
+避免并发登录的新 Token 被旧检查覆盖。缺表或连接故障时，check 返回
+`valid:false`、`status:credential_store_unavailable` 与提示，不触发短信登录。
+备份瑞幸凭据需使用 PostgreSQL 的备份机制；SQLite 仅保留教师评价。

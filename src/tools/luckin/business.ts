@@ -39,7 +39,7 @@ export const registerLuckinBusinessTool = <S extends z.AnyZodObject>(
         } catch { return createErrorResult("upstream_unavailable", "暂时无法验证当前同济用户，请稍后重试。"); }
         let invoked = false;
         try {
-            const credential = readLuckinCredential(userId);
+            const credential = await readLuckinCredential(userId);
             if (!credential) return createErrorResult("unauthorized", "当前用户尚未绑定瑞幸账号，请先完成瑞幸登录。");
             const client = createLuckinMcpAdapter(credential.luckin_token);
             invoked = true;

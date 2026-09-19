@@ -25,7 +25,7 @@ export const registerLuckinLoginTool = (server: McpServer, context: ToolRegistra
         const currentUserId = userId;
         return runLuckinAction(async () => {
             const token = await loginLuckinAndGetToken(input);
-            saveLuckinCredential(currentUserId, token);
+            await saveLuckinCredential(currentUserId, token);
             return { authenticated: true as const };
         });
     });

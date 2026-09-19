@@ -1,6 +1,6 @@
 # 历史教师评价
 
-两份原文 `raw/必修.md`、`raw/选修.md` 整理为本地 SQLite 快照。历史数据使用以下业务表；常驻数据库另含瑞幸凭据表：
+两份原文 `raw/必修.md`、`raw/选修.md` 整理为本地 SQLite 快照。历史数据使用以下业务表；瑞幸凭据已独立存储于 PostgreSQL：
 
 ```sql
 CREATE TABLE teacher_reviews (

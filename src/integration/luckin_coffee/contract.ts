@@ -66,7 +66,7 @@ export type LuckinMcpToolName = keyof typeof LUCKIN_MCP_ARGUMENT_SCHEMAS;
 export type LuckinMcpArguments<N extends LuckinMcpToolName> = z.input<typeof LUCKIN_MCP_ARGUMENT_SCHEMAS[N]>;
 export interface LuckinMcpConfig { timeoutMs?: number; }
 export class LuckinMcpError extends Error {
-    constructor(public readonly reason: "invalid_input" | "unauthorized" | "timeout" | "rate_limited"
+    constructor(public readonly reason: "invalid_input" | "unauthorized" | "forbidden" | "timeout" | "rate_limited"
         | "unavailable" | "malformed" | "rpc_error" | "tool_error") {
         super(`Luckin MCP: ${reason}`);
     }

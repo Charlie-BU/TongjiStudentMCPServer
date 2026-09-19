@@ -1,3 +1,54 @@
+## CHANGELOG - 2026-09-20 02:06 - 瑞幸凭据切换 PostgreSQL 并区分登录检查故障
+
+### 撰写时间
+
+- 2026-09-20 02:06（Asia/Shanghai）
+
+### Base Commit
+
+- `b74608c97f938cf66f353bce30544e8b21db6050`（沿用历史记录格式，取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`1265ab1f5a9d549e8754bf869f752c4744485d5d`）比较。此前已提交的瑞幸业务工具及闭环测试不作为本次新增能力。
+
+### 背景与改动目标
+
+瑞幸凭据原先存储在 MCP 实例的 SQLite 中，本次改为使用与 Agent 相同的 PostgreSQL 数据库，使凭据不再依赖实例本地文件。同时将“未绑定或 Token 无效”与“暂时无法检查”区分，避免身份、数据库或网络故障触发不必要的短信登录。
+
+### 改动概览
+
+- 新增 PostgreSQL 连接池与 `POSTGRES_DSN` 配置，支持从仓库根目录 `.env` 加载，显式环境变量优先；增加 `.env.example`、`pg` 依赖及 `pg-mem` 测试依赖。
+- 凭据读写改为异步 PostgreSQL 查询，使用 `public.user_luckin_credentials`；保持用户 ID、Token、两个上游时间值及最后验证时间五个字段，BIGINT 读取时校验安全整数。
+- 登录工具等待凭据写入完成后才返回 authenticated；业务工具异步读取当前用户凭据，验证时间仍按用户 ID 和原 Token 条件更新。
+- SQLite 初始化不再创建瑞幸凭据表，继续负责教师评价及种子数据导入；不自动迁移或删除旧 SQLite 凭据。
+- `luckin.auth.check` 成功结果增加 message；检查失败返回 isError 和分类 status/message，而不是统一作为普通 valid:false。适配器分别处理瑞幸 HTTP 401 与 403。
+- 进程接收 SIGTERM/SIGINT 后停止接收 HTTP 请求，待在途请求结束再关闭 PostgreSQL 连接池；同步部署文档、工具 Schema 和测试。
+
+### 关键链路解析（含上下游）
+
+- 连接与建表：连接池按需创建，最多 10 个连接，连接和语句超时各为 5 秒，空闲超时为 30 秒。应用不自动创建 PostgreSQL 表，部署要求手动执行建表 SQL并授予读写权限；当前变更尚未提供该 SQL，见下方阻断项。
+- 登录写入：同济身份解析与瑞幸登录取 Token 成功后，以参数化单条 upsert 保存凭据。写入完成才返回认证成功；失败不报告 authenticated。
+- 登录检查：先解析同济身份、读取凭据，再 ping 瑞幸。未绑定或瑞幸明确未授权返回无错误的 valid:false；成功 ping 后条件更新验证时间，若凭据已被替换则返回 credential_changed。
+- 故障分类：区分 platform_unauthorized、platform_unavailable、upstream_timeout、rate_limited、upstream_unavailable、upstream_forbidden、credential_store_unavailable 和 credential_changed，均提供固定公开提示，不返回原始异常或连接信息。
+
+### 改动结果与业务影响
+
+- 瑞幸凭据改由 PostgreSQL 保存；新建 SQLite 运行库仅含教师评价表，已有库中的旧凭据表不会自动清理。
+- **部署变化**：需配置 POSTGRES_DSN、创建凭据表并重新登录绑定。旧 SQLite Token 不自动迁移；PostgreSQL 凭据需单独备份。
+- **契约变化**：check 的成功输出为 `{valid,message}`，错误输出在文本内容中包含 `{valid:false,status,message}` 并标记 isError。调用方必须先判断错误状态，仅无错误的 valid:false 才进入短信登录流程。
+- 已核对同工作区 Agent 的检查结果归一和 Skill 已加入分类错误处理及 login/check 串行要求；这不代表已发布版本或真实端到端链路完成验证。
+
+### 风险与待办
+
+- 已验证：生产和测试 TypeScript 类型检查、差异检查通过；MCP 适配器与 ping 探测共 4 项离线测试通过。
+- 未通过：`test/luckin-storage.test.ts` 和 `test/tools/luckin.test.ts` 均在加载 fixture 时因上述 SQL 缺失报 ENOENT，测试用例未能执行。不得将 PostgreSQL 持久化、写入等待或新增故障分类标记为测试通过；本轮未执行全量 pnpm check。
+- 未验证真实 PostgreSQL 建表、权限、连接与停机行为，亦未调用真实瑞幸登录或业务接口。本次审阅只生成 changelog，未修改实现或补齐缺失 SQL。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(mcp): move Luckin credentials to PostgreSQL and classify auth checks`
+
 ## CHANGELOG - 2026-09-20 00:19 - 新增瑞幸门店、商品与订单业务工具
 
 ### 撰写时间

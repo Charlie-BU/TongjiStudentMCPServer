@@ -4473,7 +4473,7 @@
 
 ## 28. `luckin.auth.check` — 检查瑞幸登录状态
 
-检查当前同济用户已保存的瑞幸 Token 是否有效。不接受参数；缺少凭据、身份无法识别、超时、限流和上游故障均返回 valid:false。false 不一定表示 Token 已失效。
+检查当前同济用户已保存的瑞幸 Token。不接受参数；所有结果包含 valid 和 message；确认有效返回 valid:true，未绑定或 Token 无效返回 valid:false。身份异常、超时、限流、服务或存储故障返回 isError 和分类 status/message，须先判断错误状态，不得据 valid:false 发起短信登录。必须等待 login 成功后再单独调用。
 
 ### Schema
 
@@ -4488,10 +4488,14 @@
     "properties": {
       "valid": {
         "type": "boolean"
+      },
+      "message": {
+        "type": "string"
       }
     },
     "required": [
-      "valid"
+      "valid",
+      "message"
     ],
     "additionalProperties": false
   },

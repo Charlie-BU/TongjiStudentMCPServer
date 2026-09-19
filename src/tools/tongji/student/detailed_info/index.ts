@@ -2,13 +2,13 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
     getAllStudentDetailedInfo,
-    getUserBasicInfo,
 } from "../../../../integration/tongji_openapi";
 import type { ToolRegistrationContext } from "../../../registry";
 import {
     createErrorResult,
     isRecord,
     readArray,
+    readCurrentUserId,
     readNumber,
     readString,
     toErrorResult,
@@ -152,22 +152,6 @@ export const registerStudentDetailedInfoTool = (
             }
         },
     );
-};
-
-// readCurrentUserId 从人员基础信息中读取当前授权用户的 userId，仅供服务端调用上游接口使用。
-const readCurrentUserId = async (accessToken: string): Promise<string | null> => {
-    const response = await getUserBasicInfo({ accessToken });
-    const data = unwrapResponseData(response);
-    if (!isRecord(data) || !Array.isArray(data.list)) {
-        return null;
-    }
-    for (const item of readArray(data.list)) {
-        const userId = readString(isRecord(item) ? item.userId : undefined);
-        if (userId) {
-            return userId;
-        }
-    }
-    return null;
 };
 
 // normalizeStudentDetailedInfoData 裁剪并规范化学生详细学籍信息业务数据。

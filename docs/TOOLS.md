@@ -1,7 +1,7 @@
 # Tongji Student MCP Tool Catalog
 
 > 由服务内存实例执行 MCP `tools/list` 导出。服务：`tongji-student-mcp-server`，版本：`0.1.0`。
-> 当前注册 **27** 个 Tool；以下 Schema 为客户端实际可见契约。
+> 当前注册 **28** 个 Tool；以下 Schema 为客户端实际可见契约。
 
 ## 通用约定
 
@@ -12,7 +12,7 @@
 - 新 YourTJ 搜索使用 `keyword/page/size`，详情和关联使用 `courseId`；旧 `q/limit/id` 参数已移除。
 - 课程迁移和 CAM 总结生成缺口说明见 [YourTJ 接入](YOURTJ.md)。
 
-- 瑞幸工具不需要同济凭据；登录 Token 为敏感输出，调用方必须在进入模型或历史前处理，见 [瑞幸登录](LUCKIN.md)。
+- 瑞幸登录与检查使用同济凭据识别用户，Token 保存在服务端；check 返回 valid 布尔值，见 [瑞幸登录](LUCKIN.md)。
 
 ## 工具目录
 
@@ -44,7 +44,8 @@
 | 24 | `tongji.course.search` | 查询课程目录 | YourTJ |
 | 25 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
 | 26 | `luckin.auth.send_sms_code` | 发送瑞幸登录验证码 | Luckin Coffee |
-| 27 | `luckin.auth.login` | 登录瑞幸并获取 Token | Luckin Coffee |
+| 27 | `luckin.auth.login` | 登录瑞幸并保存凭据 | Luckin Coffee |
+| 28 | `luckin.auth.check` | 检查瑞幸登录状态 | Luckin Coffee |
 
 ## 1. `tongji.course.legacy-teacher-reviews` — 检索老师历史评价
 
@@ -4388,9 +4389,9 @@
 }
 ```
 
-## 27. `luckin.auth.login` — 登录瑞幸并获取 Token
+## 27. `luckin.auth.login` — 登录瑞幸并保存凭据
 
-使用用户提供的手机号及短信验证码登录瑞幸，然后自动携带登录 Cookie 获取 MCP Token。无需传入 Cookie、CSRF 或同济凭据。返回 Token 为敏感数据，调用方必须安全保存，不得写入日志、聊天历史或向用户复述；失败不自动重试。
+使用手机号和验证码登录瑞幸，获取 Token 并保存至当前同济用户。需要请求上下文中的同济 access_token；不返回 Token，失败不自动重试。
 
 ### Schema
 
@@ -4431,29 +4432,13 @@
       "data": {
         "type": "object",
         "properties": {
-          "luckyMcpToken": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^\\S+$",
-            "description": "瑞幸 MCP Bearer Token；敏感凭据，不得写入日志或聊天历史。"
-          },
-          "luckyMcpTokenDate": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991,
-            "description": "上游 Token 日期字段原值，具体时间单位和语义待确认。"
-          },
-          "luckyMcpTokenTimeout": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991,
-            "description": "上游 Token 超时字段原值，不与 Cookie 有效期混用。"
+          "authenticated": {
+            "type": "boolean",
+            "const": true
           }
         },
         "required": [
-          "luckyMcpToken",
-          "luckyMcpTokenDate",
-          "luckyMcpTokenTimeout"
+          "authenticated"
         ],
         "additionalProperties": false
       },
@@ -4473,6 +4458,39 @@
     "readOnlyHint": false,
     "destructiveHint": false,
     "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```
+
+## 28. `luckin.auth.check` — 检查瑞幸登录状态
+
+检查当前同济用户已保存的瑞幸 Token 是否有效。不接受参数；缺少凭据、身份无法识别、超时、限流和上游故障均返回 valid:false。false 不一定表示 Token 已失效。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {}
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "valid": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "valid"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
     "openWorldHint": true
   }
 }

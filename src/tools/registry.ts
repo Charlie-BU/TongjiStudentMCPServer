@@ -28,6 +28,7 @@ import { registerCourseReviewsTool } from "./tongji/course/reviews";
 import { registerCourseSummaryTool } from "./tongji/course/summary";
 import { registerLuckinSendSMSCodeTool } from "./luckin/auth/send_sms_code";
 import { registerLuckinLoginTool } from "./luckin/auth/login";
+import { registerLuckinCheckTool } from "./luckin/auth/check";
 
 export interface ToolRegistrationContext {
     invocation: ToolInvocationContext;
@@ -66,5 +67,6 @@ export const registerTools = (
     registerCalendarListTool(server, context);
     // Luckin Coffee
     registerLuckinSendSMSCodeTool(server);
-    registerLuckinLoginTool(server);
+    registerLuckinLoginTool(server, context);
+    registerLuckinCheckTool(server, context);
 };

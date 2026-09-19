@@ -11,7 +11,7 @@ Agent 的工具选择或回答内容。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
 
-瑞幸登录提供 `luckin.auth.send_sms_code` 和 `luckin.auth.login` 两个工具，后者合并登录与获取 Token；
+瑞幸提供发送验证码、登录并保存凭据、检查登录状态三个工具；`luckin.auth.login` 和 `luckin.auth.check` 使用同济请求凭据识别用户。
 CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界
@@ -170,5 +170,5 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 - `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
 - MCP tool：`tongji.course.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
-- 数据库：`data/legacy-teacher-reviews.sqlite`，唯一表 `teacher_reviews(id, teacher, content)`。部署时将 `data/` 与 `dist/` 一起复制；运行时只读，无需 Python 或外网。
+- 常驻数据库：`data/mcp.sqlite`，包含教师评价与瑞幸凭据表。数据库不存在时自动创建，并从 `data/teacher-reviews.seed.sqlite` 导入教师评价；瑞幸凭据表初始为空。部署须携带种子库，将 `data/` 放在可写持久化目录；发布不得覆盖运行库，备份见 [瑞幸登录](docs/LUCKIN.md)。
 - 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。

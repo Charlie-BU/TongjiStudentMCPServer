@@ -1,6 +1,6 @@
 # 瑞幸登录与凭据检测
 
-调用链：CAM `integration/cam_auto_generated/LuckinCoffee` → `integration/luckin_coffee` → `tools/luckin/auth`。
+调用链：CAM `integration/cam_auto_generated/LuckinCoffeeAuth` → `integration/luckin_coffee` → `tools/luckin/auth`。
 CAM 文件保持只读。无需 Shell。
 
 ## 用户身份

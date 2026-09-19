@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import axios from "axios";
 import { z } from "zod";
-import LuckinCoffeeService from "../cam_auto_generated/LuckinCoffee";
+import LuckinCoffeeAuthService from "../cam_auto_generated/LuckinCoffeeAuth";
 import {
     LUCKIN_SMS_INPUT_SCHEMA, LUCKIN_LOGIN_INPUT_SCHEMA,
     LUCKIN_SMS_DATA_SCHEMA, LUCKIN_TOKEN_DATA_SCHEMA,
@@ -37,7 +37,7 @@ interface RequestOptions {
 // 每次业务调用独立创建客户端。CAM 不序列化 Cookie，因此在手写传输层补齐。
 const createLuckinAdapter = (config: LuckinAdapterConfig = {}) => {
     const csrf = randomBytes(24).toString("hex");
-    const service = new LuckinCoffeeService<RequestOptions>({
+    const service = new LuckinCoffeeAuthService<RequestOptions>({
         baseURL: config.baseUrl ?? DEFAULT_BASE_URL,
         request: async <R>(request: {
             url: string; method: string; data?: unknown; params?: unknown;

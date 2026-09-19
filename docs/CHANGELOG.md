@@ -70,7 +70,7 @@
 ### 改动概览
 
 - 新增 `luckin.auth.send_sms_code` 和 `luckin.auth.login`，注册工具数量由 25 增至 27。前者发送短信，后者顺序完成登录与获取 Token；两者均标记为非只读、非幂等操作，不自动重试。
-- `cam.config.json` 增加 `LuckinCoffee` 服务，并将生成目录从 `src/integration/openapi/` 迁至 `src/integration/cam_auto_generated/`。原有三个来源的生成客户端随目录迁移，手写适配器调整为各来源目录下的 `index.ts`，YourTJ 契约调整为 `yourtj/contract.ts`，同步工具导入路径。
+- `cam.config.json` 增加 `LuckinCoffeeAuth` 服务，并将生成目录从 `src/integration/openapi/` 迁至 `src/integration/cam_auto_generated/`。原有三个来源的生成客户端随目录迁移，手写适配器调整为各来源目录下的 `index.ts`，YourTJ 契约调整为 `yourtj/contract.ts`，同步工具导入路径。
 - 新增 `luckin_coffee` 适配器及输入、响应契约。手机号和验证码使用字符串；区号默认 `86`，分别映射为短信接口的 `callCode` 和登录接口的 `countryNo`。
 - 删除旧人工调用示例 `src/integration/test.ts`。增加瑞幸适配器、MCP 工具测试和虚构 fixture，更新工具目录及瑞幸接入文档，并修正 README、测试规范及测试规则中的目录和示例引用。
 

@@ -18,9 +18,9 @@ import type {
   Login200Response,
 } from './namespaces';
 
-export default class LuckinCoffeeService<T> {
+export default class LuckinCoffeeAuthService<T> {
   private request: any = () => {
-    throw new Error('LuckinCoffeeService.request is undefined');
+    throw new Error('LuckinCoffeeAuthService.request is undefined');
   };
   private baseURL: string | ((path: string) => string) = '';
 

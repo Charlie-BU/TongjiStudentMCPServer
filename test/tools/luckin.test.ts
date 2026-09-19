@@ -236,3 +236,37 @@ it("业务错误脱敏；订单操作超时只执行一次并提示先核实状�
         }));
     }
 });
+
+it("模拟闭环：check false → 短信 → 登录 → check true → 选品预览创建 → 支付后查单 → 取消", async () => {
+    const sequence: string[] = [];
+    let paid = false;
+    await withLuckinFake(async request => {
+        if (isIdentity(request.url)) return { data: { data: { list: [{ userId: "workflow-user" }] } } };
+        if (request.url?.endsWith("/validcode")) { sequence.push("sms"); return { data: success(smsData, 0) }; }
+        if (request.url?.endsWith("/loginAi")) { sequence.push("login"); return { data: success({}), headers: { "set-cookie": loginCookies } }; }
+        if (request.url?.endsWith("/getToken")) { sequence.push("token"); return { data: success(tokenData) }; }
+        const requestBody = JSON.parse(request.data);
+        const method = requestBody.method === "ping" ? "ping" : requestBody.params.name;
+        sequence.push(method);
+        const payload = method === "queryOrderDetailInfo" ? { orderIdStr: "1234567890123456789", paid, pickupCode: paid ? "A123" : null }
+            : method === "createOrder" ? { orderIdStr: "1234567890123456789", payOrderQrCodeUrl: "https://example.com/qr", discountPrice: 10 }
+            : method === "previewOrder" ? { discountPrice: 10, couponCodeList: ["fixture-coupon"] }
+            : method === "cancelOrder" ? { cancelled: true }
+            : { success: true };
+        return { data: { jsonrpc: "2.0", id: 1, result: method === "ping" ? {} : { content: [{ type: "text", text: JSON.stringify(payload) }] } } };
+    }, async () => withClient(async client => {
+        const invoke = (name: string, args: Record<string, unknown> = {}) => client.callTool({ name, arguments: args });
+        assert.deepEqual((await invoke("luckin.auth.check")).structuredContent, { valid: false });
+        assert.notEqual((await invoke("luckin.auth.send_sms_code", { mobile: input.mobile })).isError, true);
+        assert.notEqual((await invoke("luckin.auth.login", input)).isError, true);
+        assert.deepEqual((await invoke("luckin.auth.check")).structuredContent, { valid: true });
+        for (const [name, , args] of businessCases.slice(0, 6)) assert.notEqual((await invoke(name, args)).isError, true);
+        const before = await invoke("luckin.order.get", { orderId: "1234567890123456789" });
+        assert.match(JSON.stringify(before), /false/);
+        paid = true; // 模拟用户在瑞幸支付，不调用任何支付 API。
+        const afterPayment = await invoke("luckin.order.get", { orderId: "1234567890123456789" });
+        assert.match(JSON.stringify(afterPayment), /A123/);
+        assert.notEqual((await invoke("luckin.order.cancel", { orderId: "1234567890123456789" })).isError, true);
+        assert.deepEqual(sequence, ["sms", "login", "token", "ping", ...businessCases.slice(0,6).map(row=>row[1]), "queryOrderDetailInfo", "queryOrderDetailInfo", "cancelOrder"]);
+    }));
+});

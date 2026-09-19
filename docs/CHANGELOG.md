@@ -1,3 +1,62 @@
+## CHANGELOG - 2026-09-20 00:19 - 新增瑞幸门店、商品与订单业务工具
+
+### 撰写时间
+
+- 2026-09-20 00:19（Asia/Shanghai）
+
+### Base Commit
+
+- `971baa9f6ab59dd38e0564af6eef4146220c848b`（沿用历史记录格式，取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`760ec8d93652d0365d0a9ae782c36ded29c5b8ec`）比较，不混入已提交的 CAM 服务拆分、MCP 适配器及凭据存储变更。
+
+### 背景与改动目标
+
+已有瑞幸鉴权工具和 MCP 适配器尚未将门店、商品及订单能力注册为本服务的公开工具。本次补齐八个业务入口，复用当前同济用户绑定的瑞幸凭据，让调用方可以完成查店、选品、预览及订单操作。
+
+### 改动概览
+
+| 新增工具 | 能力 | 上游方法 |
+| --- | --- | --- |
+| `luckin.shop.search` | 按位置及可选门店名查店 | `queryShopList` |
+| `luckin.product.search` | 在选定门店搜索商品 | `searchProductForMcp` |
+| `luckin.product.detail` | 查询商品规格和属性 | `queryProductDetailInfo` |
+| `luckin.product.switch` | 根据属性切换 SKU | `switchProduct` |
+| `luckin.order.preview` | 预览价格及优惠 | `previewOrder` |
+| `luckin.order.create` | 创建真实订单 | `createOrder` |
+| `luckin.order.get` | 查询支付状态和取餐信息 | `queryOrderDetailInfo` |
+| `luckin.order.cancel` | 取消指定订单 | `cancelOrder` |
+
+- 新增共享业务工具注册器，统一身份解析、凭据读取、成功结果包装和错误处理；瑞幸工具由 3 个增至 11 个。
+- 各入口复用已有上游参数 Schema，并映射至对应适配器方法；订单号使用字符串传递。
+- 更新 Registry、README 和工具目录中的输入输出 Schema；增加业务工具调用、参数校验、用户隔离和异常处理测试。
+
+### 关键链路解析（含上下游）
+
+- 身份与凭据：读取请求上下文中的同济 access token，经人员基础信息接口解析用户 ID，再从数据库读取该用户的瑞幸 Token。缺少身份或凭据时不访问瑞幸业务接口；工具不接受调用方指定 userId 或 Token。
+- 业务调用：为当前用户创建独立 MCP 适配器，只执行目标业务方法，不额外 ping，也不自动登录、发送短信或重试订单操作。
+- 成功结果：统一返回 `{status:"ok",data,source:"Luckin Coffee"}`，同时提供等价文本与 structuredContent。data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 `content[].text`。
+- 错误处理：身份校验异常、未绑定、瑞幸未授权、限流、参数错误及协议异常映射为稳定工具错误，不回显原始异常或上游自由错误正文。创建或取消订单发生超时、响应异常等结果不明情况时，提示先核实订单状态，不直接重复操作。
+
+### 改动结果与业务影响
+
+- 已绑定瑞幸账号的用户可通过 MCP 发现并调用完整业务入口；原有三个鉴权工具保持现有契约。
+- 创建和取消订单标记为非只读、破坏性、非幂等操作，其余六个业务工具标记为只读、幂等操作。
+- 工具描述明确要求创建前完成预览并取得用户对门店、规格、数量及价格条件的确认；保留优惠券列表，支付二维码使用 `payOrderQrCodeUrl`，订单号优先使用 `orderIdStr`，取餐码仅在查单确认已支付后展示。这些流程要求由调用方执行，当前注册器不保存预览或用户确认状态。
+
+### 风险与待办
+
+- 已验证：审阅期间源码和测试 TypeScript 类型检查通过，13 项相关离线测试全部通过，差异检查通过；覆盖八个入口的 MCP/CAM 参数映射、凭据隔离、缺失身份或凭据、非法参数、错误脱敏及订单操作不重试。
+- 本次仅生成文档，未重复运行测试；上述验证未包含全量 `pnpm check`。
+- 测试使用临时凭据库、虚构凭据和模拟上游响应，未调用真实瑞幸业务接口；实际创建订单、支付状态查询及取消流程仍需受控联调。
+- 本次仅扩展 MCP Server，未修改 Agent 的工具白名单或前端支付与取餐展示逻辑；下游需按新工具契约接入。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(mcp): expose Luckin shop product and order tools`
+
 ## CHANGELOG - 2026-09-19 23:07 - 持久化瑞幸凭据并自动初始化教师评价
 
 ### 撰写时间

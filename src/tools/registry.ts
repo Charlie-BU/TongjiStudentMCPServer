@@ -29,6 +29,14 @@ import { registerCourseSummaryTool } from "./tongji/course/summary";
 import { registerLuckinSendSMSCodeTool } from "./luckin/auth/send_sms_code";
 import { registerLuckinLoginTool } from "./luckin/auth/login";
 import { registerLuckinCheckTool } from "./luckin/auth/check";
+import { registerLuckinShopSearchTool } from "./luckin/shop/search";
+import { registerLuckinProductSearchTool } from "./luckin/product/search";
+import { registerLuckinProductDetailTool } from "./luckin/product/detail";
+import { registerLuckinProductSwitchTool } from "./luckin/product/switch";
+import { registerLuckinOrderPreviewTool } from "./luckin/order/preview";
+import { registerLuckinOrderCreateTool } from "./luckin/order/create";
+import { registerLuckinOrderGetTool } from "./luckin/order/get";
+import { registerLuckinOrderCancelTool } from "./luckin/order/cancel";
 
 export interface ToolRegistrationContext {
     invocation: ToolInvocationContext;
@@ -69,4 +77,12 @@ export const registerTools = (
     registerLuckinSendSMSCodeTool(server);
     registerLuckinLoginTool(server, context);
     registerLuckinCheckTool(server, context);
+    registerLuckinShopSearchTool(server, context);
+    registerLuckinProductSearchTool(server, context);
+    registerLuckinProductDetailTool(server, context);
+    registerLuckinProductSwitchTool(server, context);
+    registerLuckinOrderPreviewTool(server, context);
+    registerLuckinOrderCreateTool(server, context);
+    registerLuckinOrderGetTool(server, context);
+    registerLuckinOrderCancelTool(server, context);
 };

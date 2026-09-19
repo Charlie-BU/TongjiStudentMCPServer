@@ -11,7 +11,7 @@ Agent 的工具选择或回答内容。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
 
-瑞幸提供发送验证码、登录并保存凭据、检查登录状态三个工具；`luckin.auth.login` 和 `luckin.auth.check` 使用同济请求凭据识别用户。
+瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；`luckin.auth.login` 和 `luckin.auth.check` 使用同济请求凭据识别用户。
 CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界

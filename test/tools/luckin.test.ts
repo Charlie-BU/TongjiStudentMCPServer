@@ -30,9 +30,9 @@ const withClient = async (run: (client: Client) => Promise<void>, accessToken: s
 const identity = { data: { list: [{ userId: "student-1" }] } };
 const isIdentity = (url?: string) => !url?.includes("lkcoffee.com");
 
-it("注册三个工具：check 无参数且只有 valid 输出，login 不返回 Token", async () => withClient(async client => {
+it("注册瑞幸工具：check 无参数且只有 valid 输出，login 不返回 Token", async () => withClient(async client => {
     const { tools } = await client.listTools();
-    const luckin = tools.filter(t => t.name.startsWith("luckin."));
+    const luckin = tools.filter(t => t.name.startsWith("luckin.auth."));
     assert.deepEqual(luckin.map(t => t.name).sort(), ["luckin.auth.check", "luckin.auth.login", "luckin.auth.send_sms_code"]);
     const check = luckin.find(t => t.name.endsWith("check"))!;
     assert.deepEqual(check.inputSchema.properties, {});
@@ -125,4 +125,114 @@ it("验证码失败不覆盖数据库，非法入参不调用上游", async () =
         }
         assert.equal(requests.length, 2);
     }));
+});
+
+const businessCases = [
+    ["luckin.shop.search", "queryShopList", { longitude: 121, latitude: 31 }],
+    ["luckin.product.search", "searchProductForMcp", { deptId: 1, query: "拿铁" }],
+    ["luckin.product.detail", "queryProductDetailInfo", { deptId: 1, productId: 2 }],
+    ["luckin.product.switch", "switchProduct", { deptId: 1, productId: 2, skuCode: "fixture-sku", amount: 1,
+        attrOperationParam: { attributeId: 1, subAttr: { attributeId: 2, operation: 1 } } }],
+    ["luckin.order.preview", "previewOrder", { deptId: 1, productList: [{ amount: 1, productId: 2, skuCode: "fixture-sku" }] }],
+    ["luckin.order.create", "createOrder", { deptId: 1, productList: [{ amount: 1, productId: 2, skuCode: "fixture-sku" }],
+        longitude: 121, latitude: 31, couponCodeList: ["fixture-coupon"], remark: "test" }],
+    ["luckin.order.get", "queryOrderDetailInfo", { orderId: "1234567890123456789" }],
+    ["luckin.order.cancel", "cancelOrder", { orderId: "1234567890123456789" }],
+] as const;
+
+it("全部 8 个业务工具注册并经过真实 MCP/CAM 调用链，不额外 ping", async () => {
+    saveLuckinCredential("student-1", tokenData);
+    const data = { content: [{ type: "text", text: '{"orderIdStr":"1234567890123456789"}' }],
+        structuredContent: { orderIdStr: "1234567890123456789", payOrderQrCodeUrl: "https://example.com/qr" } };
+    const businessRequests: unknown[] = [];
+    await withLuckinFake(async request => {
+        if (isIdentity(request.url)) return { data: identity };
+        assert.equal(request.headers.Authorization, `Bearer ${tokenData.luckyMcpToken}`);
+        const body = JSON.parse(request.data);
+        assert.equal(body.method, "tools/call");
+        businessRequests.push(body.params);
+        return { data: { jsonrpc: "2.0", id: 1, result: data } };
+    }, async () => withClient(async client => {
+        const { tools } = await client.listTools();
+        assert.equal(tools.filter(tool => tool.name.startsWith("luckin.")).length, 11);
+        for (const [name, upstream, args] of businessCases) {
+            const tool = tools.find(tool => tool.name === name)!;
+            assert.ok(tool, name);
+            assert.doesNotMatch(JSON.stringify(tool.inputSchema), /userId|accessToken|luckin_token/);
+            const mutation = name === "luckin.order.create" || name === "luckin.order.cancel";
+            assert.equal(tool.annotations?.readOnlyHint, !mutation);
+            assert.equal(tool.annotations?.destructiveHint, mutation);
+            assert.equal(tool.annotations?.idempotentHint, !mutation);
+            const response = await client.callTool({ name, arguments: args });
+            assert.notEqual(response.isError, true);
+            assert.deepEqual(response.structuredContent, { status: "ok", data, source: "Luckin Coffee" });
+            assert.deepEqual(JSON.parse((response.content as { text: string }[])[0].text), response.structuredContent);
+            assert.deepEqual(businessRequests.at(-1), { name: upstream, arguments: args });
+            assert.doesNotMatch(JSON.stringify(response), /fake-luckin-token|campus-test-token/);
+        }
+        assert.equal(businessRequests.length, 8);
+    }));
+});
+
+it("业务工具缺身份/缺凭据不访问瑞幸，非法参数不执行任何请求", async () => {
+    await withLuckinFake(async request => {
+        assert.ok(isIdentity(request.url));
+        return { data: { data: { list: [{ userId: "no-credential-user" }] } } };
+    }, async requests => {
+        await withClient(async client => {
+            const result = await client.callTool({ name: "luckin.shop.search", arguments: { longitude: 121, latitude: 31 } });
+            assert.equal(result.isError, true);
+        }, "");
+        assert.equal(requests.length, 0);
+        await withClient(async client => {
+            for (const [name, , args] of businessCases) {
+                const result = await client.callTool({ name, arguments: args });
+                assert.equal(result.isError, true);
+            }
+            const count = requests.length;
+            for (const args of [{ longitude: 121 }, { longitude: 121, latitude: 31, userId: "student-1" }]) {
+                assert.equal((await client.callTool({ name: "luckin.shop.search", arguments: args })).isError, true);
+            }
+            assert.equal(requests.length, count);
+        });
+    });
+});
+
+it("多用户业务请求只使用各自数据库 Token", async () => {
+    saveLuckinCredential("student-b", { ...tokenData, luckyMcpToken: "fixture-token-b" });
+    const tokens: string[] = [];
+    await withLuckinFake(async request => {
+        if (isIdentity(request.url)) return { data: { data: { list: [{ userId:
+            request.headers.Authorization === "Bearer campus-b" ? "student-b" : "student-1" }] } } };
+        tokens.push(String(request.headers.Authorization));
+        return { data: { jsonrpc: "2.0", id: 1, result: { content: [] } } };
+    }, async () => {
+        await Promise.all(["campus-test-token", "campus-b"].map(access => withClient(async client => {
+            assert.notEqual((await client.callTool({ name: "luckin.shop.search", arguments: { longitude: 121, latitude: 31 } })).isError, true);
+        }, access)));
+        assert.deepEqual(tokens.sort(), ["Bearer fake-luckin-token", "Bearer fixture-token-b"]);
+    });
+});
+
+it("业务错误脱敏；订单操作超时只执行一次并提示先核实状态", async () => {
+    const { AxiosError } = await import("axios");
+    for (const mode of ["timeout", "unauthorized", "rate-limit", "malformed", "tool-error"]) {
+        let calls = 0;
+        await withLuckinFake(async request => {
+            if (isIdentity(request.url)) return { data: identity };
+            calls++;
+            if (mode === "tool-error") return { data: { jsonrpc: "2.0", id: 1,
+                result: { content: [{ type: "text", text: "private-secret" }], isError: true } } };
+            if (mode === "malformed") return { data: { bad: "private-secret" } };
+            throw new AxiosError("private-secret", mode === "timeout" ? "ECONNABORTED" : undefined, request,
+                undefined, mode === "timeout" ? undefined : { data: "private-secret", status: mode === "unauthorized" ? 401 : 429,
+                    statusText: "test", headers: {}, config: request });
+        }, async () => withClient(async client => {
+            const result = await client.callTool({ name: "luckin.order.create", arguments: businessCases[5][2] });
+            assert.equal(result.isError, true);
+            assert.doesNotMatch(JSON.stringify(result), /private-secret|fake-luckin-token/);
+            if (["timeout", "malformed", "tool-error"].includes(mode)) assert.match(JSON.stringify(result), /不要直接重复/);
+            assert.equal(calls, 1);
+        }));
+    }
 });

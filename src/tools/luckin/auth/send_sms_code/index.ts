@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { sendLuckinSMSCode } from "../../../../integration/luckin_coffee";
+import { sendLuckinSMSCode } from "../../../../integration/luckin_coffee/auth";
 import { LUCKIN_SMS_INPUT_SCHEMA, LUCKIN_SMS_DATA_SCHEMA } from "../../../../integration/luckin_coffee/contract";
 import { createLuckinOutputSchema, runLuckinAction } from "../../result";
 

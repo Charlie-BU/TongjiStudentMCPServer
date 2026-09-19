@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
 import axios, { AxiosError } from "axios";
-import { verifyLuckinToken } from "../../src/integration/luckin_coffee/probe";
+import { verifyLuckinToken } from "../../src/integration/luckin_coffee/mcp";
 
 it("ping 接受 JSON/SSE 成功响应，拒绝协议错误、错 ID、异常状态和传输失败", async () => {
     const original = axios.defaults.adapter;

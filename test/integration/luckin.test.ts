@@ -1,7 +1,8 @@
+import { LuckinResponseError } from "../../src/integration/luckin_coffee/contract";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { AxiosError } from "axios";
-import { loginLuckinAndGetToken, sendLuckinSMSCode, LuckinResponseError } from "../../src/integration/luckin_coffee";
+import { loginLuckinAndGetToken, sendLuckinSMSCode } from "../../src/integration/luckin_coffee/auth";
 import { withLuckinFake, success, smsData, tokenData, loginCookies } from "../fixtures/luckin";
 
 const config = { baseUrl: "https://luckin.example.test/", timeoutMs: 1234 };

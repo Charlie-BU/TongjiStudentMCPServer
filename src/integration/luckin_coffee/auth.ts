@@ -7,27 +7,12 @@ import {
     LUCKIN_SMS_DATA_SCHEMA, LUCKIN_TOKEN_DATA_SCHEMA,
     type LuckinSMSInput, type LuckinLoginInput,
 } from "./contract";
+import { LuckinResponseError, type LuckinAdapterConfig, type Stage, type Failure } from "./contract";
 
 const DEFAULT_BASE_URL = "https://open.lkcoffee.com";
 const CSID = "LK_luckyopen_prod_CSID";
 const SSID = "LK_PROD_LUCKYOPEN_SSID";
 type IdentityCookies = Record<typeof CSID | typeof SSID, string>;
-type Stage = "sms" | "login" | "token";
-type Failure = "rejected" | "malformed" | "cookies_missing" | "security_verification"
-    | "timeout" | "rate_limited" | "unauthorized" | "unavailable";
-
-export interface LuckinAdapterConfig {
-    baseUrl?: string;
-    timeoutMs?: number;
-}
-
-// 不保留 Axios error/cause：其中可能包含验证码、Cookie 和上游响应凭据。
-export class LuckinResponseError extends Error {
-    constructor(public readonly stage: Stage, public readonly reason: Failure) {
-        super(`Luckin ${stage}: ${reason}`);
-    }
-}
-
 interface RequestOptions {
     stage: Stage;
     identity?: IdentityCookies;

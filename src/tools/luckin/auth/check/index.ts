@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { ToolRegistrationContext } from "../../../registry";
 import { readCurrentUserId } from "../../../utils";
 import { readLuckinCredential, markLuckinVerified } from "../../../../storage/luckin-credentials";
-import { verifyLuckinToken } from "../../../../integration/luckin_coffee/probe";
+import { verifyLuckinToken } from "../../../../integration/luckin_coffee/mcp";
 
 export const LUCKIN_CHECK_TOOL_NAME = "luckin.auth.check";
 

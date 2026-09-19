@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LuckinResponseError } from "../../integration/luckin_coffee";
+import { LuckinResponseError } from "../../integration/luckin_coffee/contract";
 import { createErrorResult } from "../utils";
 
 export const createLuckinOutputSchema = <S extends z.AnyZodObject>(data: S) => z.object({

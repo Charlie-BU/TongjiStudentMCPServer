@@ -43,7 +43,7 @@ src/
 │       └── user/              # tongji.user.*
 ├── integration/
 │   ├── cam_auto_generated/    # CAM 自动生成的上游 API 客户端
-│   ├── luckin_coffee/         # 瑞幸适配器 index.ts 与 contract.ts
+│   ├── luckin_coffee/         # 瑞幸 contract.ts、auth.ts、mcp.ts
 │   ├── tongji_openapi/        # 同济开放平台适配器 index.ts
 │   ├── tongji_poby/           # 济星云适配器
 │   └── yourtj/                # YourTJ 适配器 index.ts 与 contract.ts

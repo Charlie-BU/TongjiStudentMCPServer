@@ -3,7 +3,7 @@ import type { ToolRegistrationContext } from "../../../registry";
 import { readCurrentUserId, createErrorResult } from "../../../utils";
 import { saveLuckinCredential } from "../../../../storage/luckin-credentials";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { loginLuckinAndGetToken } from "../../../../integration/luckin_coffee";
+import { loginLuckinAndGetToken } from "../../../../integration/luckin_coffee/auth";
 import { LUCKIN_LOGIN_INPUT_SCHEMA } from "../../../../integration/luckin_coffee/contract";
 import { createLuckinOutputSchema, runLuckinAction } from "../../result";
 

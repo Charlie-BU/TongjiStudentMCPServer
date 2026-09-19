@@ -3,6 +3,8 @@
 /* tslint:disable */
 // @ts-nocheck
 
+import type { CallMcpBodyRequest, CallMcp200Response } from './namespaces';
+
 export default class LuckinCoffeeMCPService<T> {
   private request: any = () => {
     throw new Error('LuckinCoffeeMCPService.request is undefined');
@@ -36,4 +38,23 @@ export default class LuckinCoffeeMCPService<T> {
   }
 
   /* API Services */
+
+  /** 发送完整 JSON-RPC 2.0 请求。请求适配器必须设置 Authorization: Bearer <当前用户瑞幸 Token>、Content-Type: application/json、Accept: application/json, text/event-stream。不需要 _csrf、csrfToken 或登录 Cookie。CAM 导入对应一个 CallMcp POST 方法；各工具共用 params.arguments 参数全集，由调用层根据 params.name 校验必填及允许字段。单例枚举用于限制 method 和工具名，不表示生成器必然自动补值。 */
+  CallMcpPOST(
+    req: CallMcpBodyRequest,
+    options?: T,
+  ): Promise<CallMcp200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/order/user/mcp');
+    const method = 'POST';
+    const data = {
+      id: _req['id'],
+      jsonrpc: _req['jsonrpc'],
+      method: _req['method'],
+      params: _req['params'],
+    };
+    const params = undefined;
+    const headers = undefined;
+    return this.request({ url, method, data, params, headers }, options);
+  }
 }

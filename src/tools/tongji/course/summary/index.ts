@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getCourseSummary } from "../../../../integration/yourtj";
 import { COURSE_SUMMARY_INPUT_SCHEMA, COURSE_SUMMARY_DATA_SCHEMA } from "../../../../integration/yourtj/contract";
 import type { ToolRegistrationContext } from "../../../registry";
-import { createYourtjOutputSchema, runYourtjQuery } from "../../../yourtj-result";
+import { createYourtjOutputSchema, runYourtjQuery } from "../../results";
 
 // COURSE_SUMMARY_TOOL_NAME 表示查询课程 AI 总结工具名称。
 export const COURSE_SUMMARY_TOOL_NAME = "tongji.course.summary";

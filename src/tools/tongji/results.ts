@@ -1,7 +1,7 @@
 import axios from "axios";
 import { z } from "zod";
-import { YourtjResponseError } from "../integration/yourtj";
-import { createErrorResult } from "./utils";
+import { YourtjResponseError } from "../../integration/yourtj";
+import { createErrorResult } from "../utils";
 
 // createYourtjOutputSchema 定义课程工具的统一 MCP 响应包装。
 export const createYourtjOutputSchema = <S extends z.AnyZodObject>(data: S) => z.object({

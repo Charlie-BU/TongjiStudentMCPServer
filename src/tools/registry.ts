@@ -1,6 +1,7 @@
-import { registerLegacyTeacherReviewsTool } from "./tongji/course/legacy-teacher-reviews";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ToolInvocationContext } from "../transport/invocation-context";
+
+import { registerLegacyTeacherReviewsTool } from "./tongji/course/legacy-teacher-reviews";
 import { registerAnnualBillTool } from "./tongji/student/annual_bill";
 import { registerCardSpendingFlowTool } from "./tongji/student/card_spending_flow";
 import { registerCompetitionPrizeTool } from "./tongji/student/competition_prize";
@@ -23,7 +24,6 @@ import { registerCalendarListTool } from "./tongji/course/calendar_list";
 import { registerCourseCatalogTool } from "./tongji/course/search";
 import { registerCourseDetailTool } from "./tongji/course/course-detail";
 import { registerCourseRelatedTool } from "./tongji/course/course-related";
-
 import { registerCourseReviewsTool } from "./tongji/course/reviews";
 import { registerCourseSummaryTool } from "./tongji/course/summary";
 import { registerLuckinSendSMSCodeTool } from "./luckin/auth/send_sms_code";

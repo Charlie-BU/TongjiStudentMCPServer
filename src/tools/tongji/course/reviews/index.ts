@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getCourseReviews } from "../../../../integration/yourtj";
 import { COURSE_REVIEW_INPUT_SCHEMA, COURSE_REVIEW_DATA_SCHEMA } from "../../../../integration/yourtj/contract";
 import type { ToolRegistrationContext } from "../../../registry";
-import { createYourtjOutputSchema, runYourtjQuery } from "../../../yourtj-result";
+import { createYourtjOutputSchema, runYourtjQuery } from "../../results";
 
 // COURSE_REVIEWS_TOOL_NAME 表示查询课程评价工具名称。
 export const COURSE_REVIEWS_TOOL_NAME = "tongji.course.reviews";

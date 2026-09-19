@@ -5,11 +5,14 @@
 Agent 的工具选择或回答内容。
 
 当前仓库是**可启动且已接入首个业务工具的 MCP 服务**。当前已注册
-`tongji.student.score`，用于查询本科生指定学期的成绩。进程入口不会直接调用同济开放平台；手写适配器位于 `src/integration/*.ts`，CAM 自动生成的客户端位于 `src/integration/openapi/`，不能直接作为生产适配器使用。
+`tongji.student.score`，用于查询本科生指定学期的成绩。进程入口不会直接调用同济开放平台；手写适配器位于 `src/integration/<来源>/index.ts`，CAM 自动生成的客户端位于 `src/integration/cam_auto_generated/`，不能直接作为生产适配器使用。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
+
+瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；`luckin.auth.login` 和 `luckin.auth.check` 使用同济请求凭据识别用户。
+CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界
 
@@ -32,15 +35,18 @@ Gateway
 src/
 ├── config/                    # 监听与开关配置
 ├── transport/                 # /mcp、认证边界与 HTTP 适配
-├── tools/                     # Tool 注册与输入/输出 Schema
+├── tools/                     # Tool 注册与输入/输出 Schema，按工具名分层（如 tongji/student/cet-score/）
 │   ├── registry.ts            # Tool Catalog 注册入口
-│   └── undergraduate-score/   # 本科生成绩查询工具
+│   └── tongji/                # tongji.* 工具命名空间
+│       ├── student/           # tongji.student.*（如 score/、cet-score/）
+│       ├── course/            # tongji.course.*
+│       └── user/              # tongji.user.*
 ├── integration/
-│   ├── openapi/               # CAM 自动生成的上游 API 客户端
-│   ├── tongji_openapi.ts      # 同济开放平台手写适配器
-│   ├── tongji_poby.ts         # 济星云手写适配器边界
-│   ├── yourtj.ts              # YourTJ 手写适配器边界
-│   └── test.ts                # 受控人工验证示例
+│   ├── cam_auto_generated/    # CAM 自动生成的上游 API 客户端
+│   ├── luckin_coffee/         # 瑞幸 contract.ts、auth.ts、mcp.ts
+│   ├── tongji_openapi/        # 同济开放平台适配器 index.ts
+│   ├── tongji_poby/           # 济星云适配器
+│   └── yourtj/                # YourTJ 适配器 index.ts 与 contract.ts
 ├── privacy/                   # 后续字段白名单与脱敏策略
 ├── observability/             # 后续日志、Trace、指标
 ├── server.ts                  # MCP Server 创建
@@ -136,14 +142,14 @@ pnpm start
 ## CAM 客户端生成
 
 CAM 配置位于仓库根目录的 `cam.config.json`，生成代码统一写入
-`src/integration/openapi/`。登录完成并需要同步已配置服务时，执行：
+`src/integration/cam_auto_generated/`。登录完成并需要同步已配置服务时，执行：
 
 ```bash
 pnpm cam update
 ```
 
 生成目录中的文件由 CAM 管理，不应手工编辑。业务层应在手写的
-`src/integration/*.ts` 适配器中封装、校验和脱敏这些客户端调用。
+`src/integration/<来源>/index.ts` 适配器中封装、校验和脱敏这些客户端调用。
 
 ## 下一步
 
@@ -164,5 +170,5 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 - `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
 - MCP tool：`tongji.course.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
-- 数据库：`data/legacy-teacher-reviews.sqlite`，唯一表 `teacher_reviews(id, teacher, content)`。部署时将 `data/` 与 `dist/` 一起复制；运行时只读，无需 Python 或外网。
+- 常驻数据库：`data/mcp.sqlite`，包含教师评价与瑞幸凭据表。数据库不存在时自动创建，并从 `data/teacher-reviews.seed.sqlite` 导入教师评价；瑞幸凭据表初始为空。部署须携带种子库，将 `data/` 放在可写持久化目录；发布不得覆盖运行库，备份见 [瑞幸登录](docs/LUCKIN.md)。
 - 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。

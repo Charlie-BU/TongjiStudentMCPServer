@@ -1,3 +1,162 @@
+## CHANGELOG - 2026-09-20 00:19 - 新增瑞幸门店、商品与订单业务工具
+
+### 撰写时间
+
+- 2026-09-20 00:19（Asia/Shanghai）
+
+### Base Commit
+
+- `971baa9f6ab59dd38e0564af6eef4146220c848b`（沿用历史记录格式，取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`760ec8d93652d0365d0a9ae782c36ded29c5b8ec`）比较，不混入已提交的 CAM 服务拆分、MCP 适配器及凭据存储变更。
+
+### 背景与改动目标
+
+已有瑞幸鉴权工具和 MCP 适配器尚未将门店、商品及订单能力注册为本服务的公开工具。本次补齐八个业务入口，复用当前同济用户绑定的瑞幸凭据，让调用方可以完成查店、选品、预览及订单操作。
+
+### 改动概览
+
+| 新增工具 | 能力 | 上游方法 |
+| --- | --- | --- |
+| `luckin.shop.search` | 按位置及可选门店名查店 | `queryShopList` |
+| `luckin.product.search` | 在选定门店搜索商品 | `searchProductForMcp` |
+| `luckin.product.detail` | 查询商品规格和属性 | `queryProductDetailInfo` |
+| `luckin.product.switch` | 根据属性切换 SKU | `switchProduct` |
+| `luckin.order.preview` | 预览价格及优惠 | `previewOrder` |
+| `luckin.order.create` | 创建真实订单 | `createOrder` |
+| `luckin.order.get` | 查询支付状态和取餐信息 | `queryOrderDetailInfo` |
+| `luckin.order.cancel` | 取消指定订单 | `cancelOrder` |
+
+- 新增共享业务工具注册器，统一身份解析、凭据读取、成功结果包装和错误处理；瑞幸工具由 3 个增至 11 个。
+- 各入口复用已有上游参数 Schema，并映射至对应适配器方法；订单号使用字符串传递。
+- 更新 Registry、README 和工具目录中的输入输出 Schema；增加业务工具调用、参数校验、用户隔离和异常处理测试。
+
+### 关键链路解析（含上下游）
+
+- 身份与凭据：读取请求上下文中的同济 access token，经人员基础信息接口解析用户 ID，再从数据库读取该用户的瑞幸 Token。缺少身份或凭据时不访问瑞幸业务接口；工具不接受调用方指定 userId 或 Token。
+- 业务调用：为当前用户创建独立 MCP 适配器，只执行目标业务方法，不额外 ping，也不自动登录、发送短信或重试订单操作。
+- 成功结果：统一返回 `{status:"ok",data,source:"Luckin Coffee"}`，同时提供等价文本与 structuredContent。data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 `content[].text`。
+- 错误处理：身份校验异常、未绑定、瑞幸未授权、限流、参数错误及协议异常映射为稳定工具错误，不回显原始异常或上游自由错误正文。创建或取消订单发生超时、响应异常等结果不明情况时，提示先核实订单状态，不直接重复操作。
+
+### 改动结果与业务影响
+
+- 已绑定瑞幸账号的用户可通过 MCP 发现并调用完整业务入口；原有三个鉴权工具保持现有契约。
+- 创建和取消订单标记为非只读、破坏性、非幂等操作，其余六个业务工具标记为只读、幂等操作。
+- 工具描述明确要求创建前完成预览并取得用户对门店、规格、数量及价格条件的确认；保留优惠券列表，支付二维码使用 `payOrderQrCodeUrl`，订单号优先使用 `orderIdStr`，取餐码仅在查单确认已支付后展示。这些流程要求由调用方执行，当前注册器不保存预览或用户确认状态。
+
+### 风险与待办
+
+- 已验证：审阅期间源码和测试 TypeScript 类型检查通过，13 项相关离线测试全部通过，差异检查通过；覆盖八个入口的 MCP/CAM 参数映射、凭据隔离、缺失身份或凭据、非法参数、错误脱敏及订单操作不重试。
+- 本次仅生成文档，未重复运行测试；上述验证未包含全量 `pnpm check`。
+- 测试使用临时凭据库、虚构凭据和模拟上游响应，未调用真实瑞幸业务接口；实际创建订单、支付状态查询及取消流程仍需受控联调。
+- 本次仅扩展 MCP Server，未修改 Agent 的工具白名单或前端支付与取餐展示逻辑；下游需按新工具契约接入。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(mcp): expose Luckin shop product and order tools`
+
+## CHANGELOG - 2026-09-19 23:07 - 持久化瑞幸凭据并自动初始化教师评价
+
+### 撰写时间
+
+- 2026-09-19 23:07（Asia/Shanghai）
+
+### Base Commit
+
+- `77c3948820ebe4fa1a1feec3a0be3efedca1d7ad`（沿用历史记录格式，取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`42919d159a1e71e54957533bb695c2feb812d688`）比较，包含新增种子数据库，不混入已提交变更。
+
+### 背景与改动目标
+
+瑞幸登录原先直接返回敏感 Token，由调用方负责保存。本次将凭据绑定到当前同济用户并在服务端持久化，增加登录状态检测工具。同时统一 SQLite 存储，在新库初始化时自动填入原有教师评价，保证首次部署即可查询历史评价。
+
+### 改动概览
+
+- 新增 `luckin.auth.check`，无输入参数，返回 `{valid:boolean}`；从当前用户保存的凭据中读取 Token，并调用瑞幸 MCP 的 JSON-RPC `ping` 验证。
+- 调整 `luckin.auth.login`：先通过同济 access token 获取用户身份，再执行瑞幸登录、获取 Token 和保存凭据；成功结果改为 `{status:"ok",data:{authenticated:true},source:"Luckin Coffee"}`，不再返回 Token。
+- 新增常驻数据库 `data/mcp.sqlite`，统一保存教师评价和 `user_luckin_credentials`。凭据按 `user_id` 隔离，保存 Token、两个上游时间字段及最近成功验证时间。
+- 将原教师评价快照作为 `data/teacher-reviews.seed.sqlite` 随代码发布。新库及已有空评价表自动导入全部 2704 条评价，保留原始 ID、教师姓名和正文；非空评价表不覆盖、不重复导入。
+- 提取共享的 `readCurrentUserId`，复用于学生详细信息和瑞幸工具；更新工具目录、部署说明及忽略规则，运行库和 WAL/SHM 不进入版本管理。
+
+### 关键链路解析（含上下游）
+
+- 身份与登录：从请求上下文读取同济 access token，经人员基础信息接口解析用户 ID。身份无法确认时不执行瑞幸登录；成功获取 Token 后按用户 ID upsert，保存完成才报告认证成功。
+- 凭据检测：使用保存的 Token 调用固定瑞幸 MCP 地址的 `ping`，请求超时 5 秒、禁止重定向、无自动重试；支持 JSON 和 SSE 响应，校验 JSON-RPC 版本、请求 ID 和空对象结果。
+- 验证时间：检测成功后按用户 ID 与原 Token 条件更新 `last_verified_at`，避免并发登录后把旧 Token 的验证结果写入新凭据；重新登录替换凭据时清空该时间。
+- 数据初始化：服务启动时初始化 SQLite，启用 WAL 和 5 秒 busy timeout；使用事务串行化初始化及种子导入，失败回滚。历史评价查询改为读取常驻库，HTTP 路由及 MCP 工具保持原检索契约。
+
+### 改动结果与业务影响
+
+- **兼容性变化**：`luckin.auth.login` 现在要求请求上下文中的同济 access token，成功响应不再包含三个 Token 字段，调用方需适配。短信发送仍无需同济凭据。
+- `luckin.auth.check` 返回 false 表示本次无法确认有效，可能由缺少凭据、身份异常、超时、限流、上游或数据库故障造成；不等同于确认 Token 过期，也不会自动删除凭据或发送短信。
+- 首次启动即可查询原有教师评价；重复启动保留已有评价修改及瑞幸凭据。教师评价测试改用临时运行库，避免依赖开发机上的常驻数据。
+- 部署须同时携带构建产物和 `data/teacher-reviews.seed.sqlite`，并为 `data/` 提供可写持久化目录；发布不得覆盖运行库。运行中备份需包含 WAL 一致性，不能只复制主文件。
+
+### 风险与待办
+
+- 已验证：14 项相关离线测试通过，覆盖完整种子数据导入、重复打开不覆盖或重复导入、空评价表补齐与凭据保留、用户隔离、登录绑定及 JSON/SSE 检测；生产和测试 TypeScript 类型检查通过。
+- 已验证：编译产物在独立临时目录中成功初始化 2704 条评价和空凭据表，重复打开后无重复数据；差异空白检查通过。本轮未重跑全量 `pnpm check`。
+- 本轮验证使用模拟凭据及上游响应，未发送真实短信或执行真实登录、Token 探测。Token 时间字段保留上游原值，不推测单位或本地过期时间。
+- Token 按当前设计明文存储；运行库及备份需受控保管。当前面向单实例持久化部署，多机器共享凭据仍需另行设计存储方案。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(mcp): persist Luckin credentials and seed teacher reviews`
+
+## CHANGELOG - 2026-09-16 20:41 - 新增瑞幸短信登录工具并整理上游适配器目录
+
+### 撰写时间
+
+- 2026-09-16 20:41（Asia/Shanghai）
+
+### Base Commit
+
+- `ff32e684483604ea362f4d0df315aa7e30431636`（按规范取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`42e983b1c883c92fb8a8a254874f278ae4956078`）比较，不混入已提交变更。
+
+### 背景与改动目标
+
+本次为 MCP Server 增加瑞幸短信登录入口，让调用方通过手机号和验证码完成登录及获取 MCP Token。CSRF 和登录 Cookie 由服务端处理，调用方不需要传入这些传输细节。随着上游来源增加，同时将 CAM 生成代码与手写适配器分目录管理。
+
+### 改动概览
+
+- 新增 `luckin.auth.send_sms_code` 和 `luckin.auth.login`，注册工具数量由 25 增至 27。前者发送短信，后者顺序完成登录与获取 Token；两者均标记为非只读、非幂等操作，不自动重试。
+- `cam.config.json` 增加 `LuckinCoffeeAuth` 服务，并将生成目录从 `src/integration/openapi/` 迁至 `src/integration/cam_auto_generated/`。原有三个来源的生成客户端随目录迁移，手写适配器调整为各来源目录下的 `index.ts`，YourTJ 契约调整为 `yourtj/contract.ts`，同步工具导入路径。
+- 新增 `luckin_coffee` 适配器及输入、响应契约。手机号和验证码使用字符串；区号默认 `86`，分别映射为短信接口的 `callCode` 和登录接口的 `countryNo`。
+- 删除旧人工调用示例 `src/integration/test.ts`。增加瑞幸适配器、MCP 工具测试和虚构 fixture，更新工具目录及瑞幸接入文档，并修正 README、测试规范及测试规则中的目录和示例引用。
+
+### 关键链路解析（含上下游）
+
+- 上游依赖：CAM 客户端提供短信、登录及取 Token 三个 POST 方法。生成方法未将 Cookie 参数序列化为 HTTP 头，因此由手写 Axios 传输层补齐；现有校园和 YourTJ 能力保持原有调用语义。
+- 发送短信：输入校验后为本次调用生成随机 CSRF，使查询参数 `_csrf` 与 Cookie `csrfToken` 一致。响应必须满足成功业务状态及字段契约，返回固定成功文案，不回显上游自由文本。
+- 登录及取 Token：登录成功后逐行解析两枚身份 Cookie，拒绝缺失、重复、非法字符及非正 `Max-Age` 的值；遇到额外安全校验、访客模式或授权要求时停止。随后以同一次调用的 CSRF 和两枚 Cookie 获取 Token，校验业务状态和字段，仅返回 Token 及两个原始时间字段。
+- 失败处理：请求默认超时为 10 秒，关闭重定向。错误映射为稳定工具错误，不保留携带验证码、Cookie 或响应正文的 Axios 异常。CSRF 和身份 Cookie 保存在单次调用局部变量中，并发调用不共享登录态。
+- 下游影响：Registry 通过 MCP 发布新增工具；原有工具名称、输入及输出不因目录迁移改变。Agent 当前白名单未开放瑞幸工具，本次也未增加 Agent 凭据存储或账号绑定链路。
+
+### 改动结果与业务影响
+
+- MCP 调用方可以完成发送验证码、提交验证码并获取瑞幸 MCP Token 的流程，不依赖同济 access token。
+- 新增工具沿用 `status/data/source` 成功结果及统一错误包装。登录结果中的 Token 仍是敏感凭据，调用方必须在结果进入模型、SSE、Trace 或聊天历史前截获并安全保存；工具描述本身不提供脱敏保证。
+- 目录迁移明确生成代码与手写逻辑的边界；测试规范和 README 已同步实际路径，移除不存在的 `demo.ts` 引用。
+
+### 风险与待办
+
+- 已验证：本次代码审阅期间 `pnpm check` 通过，包含 199 项离线测试、测试类型检查、生产类型检查及构建。测试覆盖请求构造、业务拒绝、Cookie 缺失与非法值、安全校验中断、Token 契约、并发隔离、错误脱敏和 MCP 输入输出。后续仅修正文档并生成本记录，没有再次运行全量测试。
+- 未验证：真实瑞幸短信、登录与获取 Token 的联调；现有测试使用虚构凭据及模拟上游，不发送真实短信。`remain` 和 Token 时间字段的单位及完整语义仍待确认，当前保留上游原值。
+- 接入 Agent 前仍需实现受信任的凭据截获、保存及用户绑定；对外提供短信入口时，调用方需落实用户授权和频率控制。当前改动不包含这些能力，也不应直接将登录工具开放给模型。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(mcp): add Luckin auth tools and reorganize integrations`
+
 ## CHANGELOG - 2026-09-10 15:51 - 统一课程工具命名并移除专业和年级查询
 
 ### 撰写时间

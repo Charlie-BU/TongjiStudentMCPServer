@@ -1,7 +1,7 @@
 # Tongji Student MCP Tool Catalog
 
 > 由服务内存实例执行 MCP `tools/list` 导出。服务：`tongji-student-mcp-server`，版本：`0.1.0`。
-> 当前注册 **25** 个 Tool；以下 Schema 为客户端实际可见契约。
+> 当前注册 **36** 个 Tool；以下 Schema 为客户端实际可见契约。
 
 ## 通用约定
 
@@ -11,6 +11,8 @@
 - 新 YourTJ 课程工具保留 `status/data/source` 包装，`data` 使用新的 camelCase 字段；可选字段缺失时不补 null。详情不再内嵌评价。
 - 新 YourTJ 搜索使用 `keyword/page/size`，详情和关联使用 `courseId`；旧 `q/limit/id` 参数已移除。
 - 课程迁移和 CAM 总结生成缺口说明见 [YourTJ 接入](YOURTJ.md)。
+
+- 瑞幸登录与检查使用同济凭据识别用户，Token 保存在服务端；check 返回 valid 布尔值，见 [瑞幸登录](LUCKIN.md)。
 
 ## 工具目录
 
@@ -41,6 +43,17 @@
 | 23 | `tongji.course.summary` | 查询课程 AI 总结 | YourTJ |
 | 24 | `tongji.course.search` | 查询课程目录 | YourTJ |
 | 25 | `tongji.course.calendar_list` | 查询学期列表 | YourTJ |
+| 26 | `luckin.auth.send_sms_code` | 发送瑞幸登录验证码 | Luckin Coffee |
+| 27 | `luckin.auth.login` | 登录瑞幸并保存凭据 | Luckin Coffee |
+| 28 | `luckin.auth.check` | 检查瑞幸登录状态 | Luckin Coffee |
+| 29 | `luckin.shop.search` | 查询瑞幸门店 | Luckin Coffee |
+| 30 | `luckin.product.search` | 搜索瑞幸商品 | Luckin Coffee |
+| 31 | `luckin.product.detail` | 查询瑞幸商品详情 | Luckin Coffee |
+| 32 | `luckin.product.switch` | 切换瑞幸商品规格 | Luckin Coffee |
+| 33 | `luckin.order.preview` | 预览瑞幸订单 | Luckin Coffee |
+| 34 | `luckin.order.create` | 创建瑞幸订单 | Luckin Coffee |
+| 35 | `luckin.order.get` | 查询瑞幸订单 | Luckin Coffee |
+| 36 | `luckin.order.cancel` | 取消瑞幸订单 | Luckin Coffee |
 
 ## 1. `tongji.course.legacy-teacher-reviews` — 检索老师历史评价
 
@@ -4304,3 +4317,969 @@
 ```
 
 本地历史教师评价的数据来源和 HTTP 接口见 [历史教师评价](LEGACY_TEACHER_REVIEWS.md)。
+
+## 26. `luckin.auth.send_sms_code` — 发送瑞幸登录验证码
+
+向用户指定手机号发送瑞幸登录短信。仅在用户要求登录并同意发送验证码时调用，不能自动重试。不需要同济凭据或瑞幸登录 Cookie；CSRF 由服务端管理。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "mobile": {
+        "type": "string",
+        "pattern": "^\\d{5,15}$",
+        "description": "接收瑞幸登录验证码的手机号，不含国家区号。"
+      },
+      "countryCode": {
+        "type": "string",
+        "pattern": "^[1-9]\\d{0,3}$",
+        "default": "86",
+        "description": "国家或地区电话区号，不含 +，默认 86；发送与登录时保持一致。"
+      }
+    },
+    "required": [
+      "mobile"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string",
+            "description": "验证码发送结果。"
+          },
+          "remain": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "上游 remain 原值；时间单位尚未确认。"
+          },
+          "validate": {
+            "type": "boolean",
+            "description": "上游校验标志，不作为发送成功的判断条件。"
+          }
+        },
+        "required": [
+          "msg",
+          "remain",
+          "validate"
+        ],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```
+
+## 27. `luckin.auth.login` — 登录瑞幸并保存凭据
+
+使用手机号和验证码登录瑞幸，获取 Token 并保存至当前同济用户。需要请求上下文中的同济 access_token；不返回 Token，失败不自动重试。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "mobile": {
+        "type": "string",
+        "pattern": "^\\d{5,15}$",
+        "description": "接收瑞幸登录验证码的手机号，不含国家区号。"
+      },
+      "countryCode": {
+        "type": "string",
+        "pattern": "^[1-9]\\d{0,3}$",
+        "default": "86",
+        "description": "国家或地区电话区号，不含 +，默认 86；发送与登录时保持一致。"
+      },
+      "validateCode": {
+        "type": "string",
+        "pattern": "^\\d{1,16}$",
+        "description": "用户收到的短信验证码，使用字符串保留前导零。"
+      }
+    },
+    "required": [
+      "mobile",
+      "validateCode"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "authenticated": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "authenticated"
+        ],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```
+
+## 28. `luckin.auth.check` — 检查瑞幸登录状态
+
+检查当前同济用户已保存的瑞幸 Token 是否有效。不接受参数；缺少凭据、身份无法识别、超时、限流和上游故障均返回 valid:false。false 不一定表示 Token 已失效。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {}
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "valid": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "valid"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 29. `luckin.shop.search` — 查询瑞幸门店
+
+按经纬度及可选门店名查询门店。经纬度必须来自用户提供或授权的位置。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "longitude": {
+        "type": "number"
+      },
+      "latitude": {
+        "type": "number"
+      },
+      "deptName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "longitude",
+      "latitude"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 30. `luckin.product.search` — 搜索瑞幸商品
+
+在用户选定的门店搜索商品。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "deptId": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "query": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "deptId",
+      "query"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 31. `luckin.product.detail` — 查询瑞幸商品详情
+
+获取选定商品的可选规格和属性，不猜测规格 ID。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "deptId": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "productId": {
+        "$ref": "#/properties/deptId"
+      }
+    },
+    "required": [
+      "deptId",
+      "productId"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 32. `luckin.product.switch` — 切换瑞幸商品规格
+
+根据商品详情提供的属性切换目标 SKU。此操作不创建订单。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "deptId": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "productId": {
+        "$ref": "#/properties/deptId"
+      },
+      "skuCode": {
+        "type": "string"
+      },
+      "amount": {
+        "$ref": "#/properties/deptId"
+      },
+      "attrOperationParam": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "$ref": "#/properties/deptId"
+          },
+          "subAttr": {
+            "type": "object",
+            "properties": {
+              "attributeId": {
+                "$ref": "#/properties/deptId"
+              },
+              "operation": {
+                "$ref": "#/properties/deptId"
+              }
+            },
+            "required": [
+              "attributeId",
+              "operation"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "attributeId",
+          "subAttr"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "deptId",
+      "productId",
+      "skuCode",
+      "amount",
+      "attrOperationParam"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 33. `luckin.order.preview` — 预览瑞幸订单
+
+预览指定门店商品的价格和优惠。创建前必须预览，保留返回的 couponCodeList。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "deptId": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "productList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "$ref": "#/properties/deptId"
+            },
+            "productId": {
+              "$ref": "#/properties/deptId"
+            },
+            "skuCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "amount",
+            "productId",
+            "skuCode"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "deptId",
+      "productList"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 34. `luckin.order.create` — 创建瑞幸订单
+
+创建真实订单。仅在用户确认门店、规格、数量及价格条件且订单预览通过后调用；非空优惠券列表原样传入。超时不得自动重试。仅展示支付二维码 payOrderQrCodeUrl，订单号优先使用字符串 orderIdStr。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "deptId": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "productList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "$ref": "#/properties/deptId"
+            },
+            "productId": {
+              "$ref": "#/properties/deptId"
+            },
+            "skuCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "amount",
+            "productId",
+            "skuCode"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "longitude": {
+        "type": "number"
+      },
+      "latitude": {
+        "type": "number"
+      },
+      "couponCodeList": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "remark": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "deptId",
+      "productList",
+      "longitude",
+      "latitude"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```
+
+## 35. `luckin.order.get` — 查询瑞幸订单
+
+查询用户指定订单的支付状态与取餐信息。orderId 必须为字符串，只有查询确认已支付后才展示取餐码。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "orderId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "orderId"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  }
+}
+```
+
+## 36. `luckin.order.cancel` — 取消瑞幸订单
+
+取消用户明确要求取消的订单，orderId 必须为字符串。操作结果不明时先查单，不直接重复取消。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+
+### Schema
+
+```json
+{
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "orderId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "orderId"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "const": "ok"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": true
+      },
+      "source": {
+        "type": "string",
+        "const": "Luckin Coffee"
+      }
+    },
+    "required": [
+      "status",
+      "data",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": false,
+    "openWorldHint": true
+  }
+}
+```

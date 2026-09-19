@@ -1,4 +1,4 @@
-import { LEGACY_TEACHER_REVIEWS_PATH, legacyTeacherNameSchema, searchLegacyTeacherReviews } from "../tools/legacy-teacher-reviews/query";
+import { LEGACY_TEACHER_REVIEWS_PATH, legacyTeacherNameSchema, searchLegacyTeacherReviews } from "../tools/tongji/course/legacy-teacher-reviews/query";
 import {
     createServer,
     type IncomingMessage,

@@ -1,5 +1,8 @@
+import { openDatabase } from "./storage/database";
 import { loadServerConfig } from './config/server';
 import { createHttpServer } from './transport/http';
+
+openDatabase().close();
 
 // config 保存 MCP 服务的运行配置。
 const config = loadServerConfig();

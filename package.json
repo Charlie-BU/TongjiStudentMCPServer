@@ -22,7 +22,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.22.0",
     "axios": "^1.20.0",
-    "cam-fe-code-generator": "^1.9.7",
+    "cam-fe-code-generator": "^1.9.8",
     "zod": "3.25.76"
   },
   "devDependencies": {

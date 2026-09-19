@@ -2,8 +2,10 @@
   "services": {
     "tongji_openapi": "agent/tongjistudent/tongji_openapi@latest",
     "tongji_poby": "agent/tongjistudent/poby@latest",
-    "yourtj": "agent/tongjistudent/yourtj@latest"
+    "yourtj": "agent/tongjistudent/yourtj@latest",
+    "LuckinCoffeeAuth": "third_party/luckin_coffee/auth@latest",
+    "LuckinCoffeeMCP": "third_party/luckin_coffee/mcp@latest"
   },
-  "outDir": "src/integration/openapi",
+  "outDir": "src/integration/cam_auto_generated",
   "generateConfig": {}
 }

@@ -1,6 +1,6 @@
 # 历史教师评价
 
-两份原文 `raw/必修.md`、`raw/选修.md` 整理为本地 SQLite 快照。仅一张表：
+两份原文 `raw/必修.md`、`raw/选修.md` 整理为本地 SQLite 快照。历史数据使用以下业务表；常驻数据库另含瑞幸凭据表：
 
 ```sql
 CREATE TABLE teacher_reviews (
@@ -25,4 +25,4 @@ Node.js 要求 22.13+，使用 `node:sqlite`；开发与测试使用 tsx 时禁�
 
 评价保留来源、课程、学期和原文正文，已过滤空条目、仅手册页码引用及无评价的场地条目。简短、负面、相互矛盾或重复但含实质正文的评价均保留。旧数据不代表当前教学情况。
 
-一次性导入脚本、清单和报告已移除，运行时仅依赖 `data/legacy-teacher-reviews.sqlite`。执行 `pnpm check` 验证数据库结构、检索、HTTP 路由与 MCP 工具。
+一次性导入脚本、清单和报告已移除，运行时读取常驻库 `data/mcp.sqlite`。数据库不存在或评价表为空时，自动从随代码发布的 `data/teacher-reviews.seed.sqlite` 导入全部 2704 条评价，保留原始 ID、教师姓名及正文；已有非空评价表保持不变。部署须同时携带种子库与构建产物，不能用种子库覆盖运行库。执行 `pnpm check` 验证数据库结构、检索、HTTP 路由与 MCP 工具。

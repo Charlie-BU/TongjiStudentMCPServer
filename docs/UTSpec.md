@@ -11,7 +11,7 @@
 - 测试失败应能定位到配置、传输、工具、领域或适配层；不依赖真实账号、真实 token、真实校园数据或外网。
 - 单测不替代与真实 OpenAPI 的联调。真实系统联调另行安排，不能混入提交前单测。
 
-适用范围是 `src/` 中手写的生产代码。CAM 管理的 `src/integration/openapi/` 是生成客户端：不手改、不为其生成代码补逐行单测；应测试其上层的业务适配器和调用契约。
+适用范围是 `src/` 中手写的生产代码。CAM 管理的 `src/integration/cam_auto_generated/` 是生成客户端：不手改、不为其生成代码补逐行单测；应测试其上层的业务适配器和调用契约。
 
 ## 2. 基线工具与执行方式
 
@@ -61,14 +61,14 @@ TongjiStudentMCPServer/
 │   ├── transport/
 │   ├── tools/
 │   └── integration/
-│       ├── tongji-openapi/      # 后续手写适配器
-│       └── openapi/             # CAM 生成代码，不在此直接测试
+│       ├── tongji_openapi/      # 同济开放平台手写适配器
+│       └── cam_auto_generated/ # CAM 生成代码，不在此直接测试
 └── test/
     ├── config/server.test.ts
     ├── transport/invocation-context.test.ts
     ├── transport/http.test.ts
     ├── tools/<domain>.test.ts
-    ├── integration/tongji-openapi/<adapter>.test.ts
+    ├── integration/tongji-openapi.test.ts
     ├── fixtures/
     └── helpers/
 ```
@@ -77,7 +77,7 @@ TongjiStudentMCPServer/
 - `describe` 使用模块或 Tool 名；`it`/`test` 描述可观察行为，使用“应……”或 `should ...`，同一文件保持一致。
 - 一个测试只验证一个核心行为；相关边界场景可以放在同一个 `describe` 下。
 - `test/fixtures/` 只放稳定、脱敏且可复用的协议或上游响应样例；`test/helpers/` 只放测试工厂、Fake 和本地 HTTP 辅助函数。禁止把通用业务逻辑搬入 helper 以逃避测试。
-- `src/integration/test.ts` 是当前的人工调用示例，不是单测；不得在 `pnpm test` 中执行，也不得作为测试数据来源。
+- `src/integration/cam_auto_generated/request-demo.ts` 是生成客户端的请求示例，不是单测；不得在 `pnpm test` 中执行，也不得作为测试数据来源。
 
 最小示例：
 
@@ -104,7 +104,7 @@ describe('readToolInvocationContext', () => {
 | 依赖或边界 | 单测做法 |
 | --- | --- |
 | 同济开放平台／济星云 HTTP 调用 | 使用可注入的接口和 Fake；断言请求构造、token 注入、超时与错误归一，绝不发真实请求。 |
-| CAM 生成客户端 | 在手写适配器边界替换为 Fake，不深度 mock 或修改 `src/integration/openapi/`。 |
+| CAM 生成客户端 | 在手写适配器边界替换为 Fake，不深度 mock 或修改 `src/integration/cam_auto_generated/`。 |
 | MCP SDK、HTTP 网络栈 | 传输层可以在 loopback 临时端口上做协议测试；不得访问外网。纯工具和领域逻辑优先直接调用。 |
 | 时间、随机数、环境变量 | 显式注入，或在测试中保存并恢复；不得让用例依赖当前日期、端口、机器环境或执行顺序。 |
 | 日志、Trace、指标 | 注入 spy/Fake，断言不含 token 和敏感字段；不要因日志实现细节写快照。 |
@@ -150,13 +150,13 @@ HTTP 测试必须在 `finally` 中关闭临时 server，避免端口泄漏和测
 
 Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；必须同时断言调用参数和面向 MCP 客户端的结果／错误。
 
-### 5.4 业务查询模块：`src/tools/<tool>/`
+### 5.4 业务查询模块：`src/tools/<namespace>/<domain>/<tool>/`
 
 业务查询模块与对应 Tool 放在同一目录，承载确定性的校园业务查询与聚合。每个公开能力应覆盖正常结果、空数据、排序/筛选/去重、跨系统字段冲突、领域边界与可读的业务错误。领域测试使用最小化的脱敏 fixture，不依赖 HTTP 或 MCP SDK。
 
 首个 `campus.schedule.get_term` 闭环至少要验证：调用上下文的 token 仅交给适配器、正常课表/学期数据的归一结果、空数据、超时、上游未授权和异常响应的统一映射，以及输出字段白名单。
 
-### 5.5 上游适配与隐私：`src/integration/tongji-openapi/`、`src/privacy/`
+### 5.5 上游适配与隐私：`src/integration/tongji_openapi/`、`src/privacy/`
 
 适配器测试通过 Fake CAM client 验证 URL/方法/参数和认证头构造，并将网络错误、超时、4xx/5xx 与上游业务错误映射为领域可识别的错误。隐私测试以“应保留字段”的 allowlist 为中心：即使 fixture 新增未知字段，也不得出现在领域对象、Tool Result、日志或错误信息中。
 

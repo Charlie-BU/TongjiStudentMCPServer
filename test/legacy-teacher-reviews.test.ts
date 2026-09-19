@@ -1,16 +1,30 @@
 import assert from "node:assert/strict";
-import { it } from "node:test";
+import { after, it } from "node:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { LEGACY_TEACHER_REVIEWS_DATABASE, searchLegacyTeacherReviews } from "../src/tools/legacy-teacher-reviews/query";
-import { LEGACY_TEACHER_REVIEWS_TOOL_NAME } from "../src/tools/legacy-teacher-reviews";
-import { createMcpServer } from "../src/server";
+const directory = mkdtempSync(join(tmpdir(), "teacher-reviews-test-"));
+const path = join(directory, "mcp.sqlite");
+const database = require("../src/storage/database") as typeof import("../src/storage/database");
+const databaseModule = require.cache[require.resolve("../src/storage/database")]!;
+databaseModule.exports = { ...database, MCP_DATABASE_PATH: path, openDatabase: () => database.openDatabase(path) };
+const { LEGACY_TEACHER_REVIEWS_DATABASE, searchLegacyTeacherReviews } = require("../src/tools/tongji/course/legacy-teacher-reviews/query") as typeof import("../src/tools/tongji/course/legacy-teacher-reviews/query");
+const { LEGACY_TEACHER_REVIEWS_TOOL_NAME } = require("../src/tools/tongji/course/legacy-teacher-reviews") as typeof import("../src/tools/tongji/course/legacy-teacher-reviews");
+const { createMcpServer } = require("../src/server") as typeof import("../src/server");
+
+database.openDatabase(path).close();
+after(() => {
+    databaseModule.exports = database;
+    rmSync(directory, { recursive: true, force: true });
+});
 
 it("SQLite snapshot has exactly the requested table and columns", () => {
     const db = new DatabaseSync(LEGACY_TEACHER_REVIEWS_DATABASE, { readOnly: true });
     try {
-        assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(r => r.name), ["teacher_reviews"]);
+        assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(r => r.name), ["teacher_reviews", "user_luckin_credentials"]);
         assert.deepEqual(db.prepare("PRAGMA table_info(teacher_reviews)").all().map(r => r.name), ["id", "teacher", "content"]);
         assert.equal(db.prepare("PRAGMA integrity_check").get()?.integrity_check, "ok");
     } finally { db.close(); }

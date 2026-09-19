@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { ToolErrorStatus } from "./types";
+import { getUserBasicInfo } from "../integration/tongji_openapi";
 
 // unwrapResponseData 提取上游响应中的业务数据。
 export const unwrapResponseData = (response: unknown): unknown => {
@@ -93,4 +94,20 @@ export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
         "upstream_unavailable",
         config.upstreamUnavailable,
     );
+};
+
+// readCurrentUserId 从人员基础信息中读取当前授权用户的 userId，仅供服务端调用上游接口使用。
+export const readCurrentUserId = async (accessToken: string): Promise<string | null> => {
+    const response = await getUserBasicInfo({ accessToken });
+    const data = unwrapResponseData(response);
+    if (!isRecord(data) || !Array.isArray(data.list)) {
+        return null;
+    }
+    for (const item of readArray(data.list)) {
+        const userId = readString(isRecord(item) ? item.userId : undefined);
+        if (userId) {
+            return userId;
+        }
+    }
+    return null;
 };

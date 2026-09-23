@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 export const COMPETITION_PRIZE_SCHEMA = z.object({
-    awardCategory: z.string().nullable().describe("奖励类别，例如竞赛获奖。"),
-    awardDate: z.string().nullable().describe("获奖时间。"),
-    awardLevel: z.string().nullable().describe("奖项等级，例如一等奖。"),
-    competitionLevel: z.string().nullable().describe("比赛等级，例如校级。"),
-    competitionName: z.string().nullable().describe("比赛名称。"),
-    deptName: z.string().nullable().describe("获奖记录所属部门名称。"),
-    name: z.string().nullable().describe("获奖人姓名，以上游返回内容为准。"),
-    schoolYear: z.string().nullable().describe("获奖记录所属学年。"),
+    awardCategory: z.string().nullable().describe("奖项类别"),
+    awardDate: z.string().nullable().describe("获奖日期"),
+    awardLevel: z.string().nullable().describe("奖项等级"),
+    competitionLevel: z.string().nullable().describe("竞赛等级"),
+    competitionName: z.string().nullable().describe("竞赛名称"),
+    deptName: z.string().nullable().describe("所属学院名称"),
+    name: z.string().nullable().describe("竞赛获奖学生姓名"),
+    schoolYear: z.string().nullable().describe("学年度"),
 });
 
 export const COMPETITION_PRIZE_OUTPUT_SCHEMA = z.object({
@@ -19,7 +19,7 @@ export const COMPETITION_PRIZE_OUTPUT_SCHEMA = z.object({
         list: z
             .array(COMPETITION_PRIZE_SCHEMA)
             .describe("当前授权本科生的竞赛奖励记录列表。"),
-    }),
-    pagination: z.record(z.string()).optional(),
+    }).describe("业务响应数据。"),
+    pagination: z.record(z.string()).optional().describe("分页游标信息；沿用上游返回的游标字段进行后续查询。"),
     source: z.literal("Tongji Open Platform").describe("竞赛奖励数据来源。"),
 });

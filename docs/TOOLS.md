@@ -155,7 +155,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -168,13 +169,15 @@
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "平均绩点"
               },
               "MS": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "平均成绩"
               }
             },
             "additionalProperties": false
@@ -183,17 +186,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -240,7 +246,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -253,7 +260,8 @@
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "应修学分"
               }
             },
             "additionalProperties": false
@@ -262,17 +270,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -349,7 +360,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -364,19 +376,22 @@
                     "type": [
                       "number",
                       "null"
-                    ]
+                    ],
+                    "description": "时间"
                   },
                   "note": {
                     "type": [
                       "string",
                       "null"
-                    ]
+                    ],
+                    "description": "时间描述"
                   },
                   "tradeAmt": {
                     "type": [
                       "number",
                       "null"
-                    ]
+                    ],
+                    "description": "金额总数"
                   }
                 },
                 "additionalProperties": false
@@ -390,17 +405,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -453,7 +471,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -464,7 +483,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "userInfos": {
               "anyOf": [
@@ -477,133 +497,155 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目编号"
                       },
                       "projSecondLevelCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "纵向项目二级类别代码"
                       },
                       "projSecondLevelName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "纵向项目二级类别名称"
                       },
                       "projStartDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "开始日期"
                       },
                       "projStatusName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目状态名称"
                       },
                       "appropriationCompany": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "资助单位名称"
                       },
                       "closingDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "完成日期"
                       },
                       "contractAmount": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "合同经费"
                       },
                       "deptCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "人员所属学院代码"
                       },
                       "deptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "人员所属学院名称"
                       },
                       "id": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "主键"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目负责人姓名"
                       },
                       "participationModeCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目性质代码"
                       },
                       "participationModeName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目性质名称"
                       },
                       "projClassifyCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目分类代码"
                       },
                       "projClassifyName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目分类名称"
                       },
                       "projEndDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "结束日期"
                       },
                       "projEstablishmentDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "立项日期"
                       },
                       "projFirstLevelCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "纵向项目类别代码"
                       },
                       "projFirstLevelName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "纵向项目类别名称"
                       },
                       "projId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目id"
                       },
                       "projName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目名称"
                       }
                     },
                     "additionalProperties": false
@@ -612,7 +654,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "人员业务记录。"
             }
           },
           "additionalProperties": false
@@ -620,17 +663,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -677,7 +723,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -688,7 +735,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "userInfos": {
               "anyOf": [
@@ -701,61 +749,71 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "著作类别代码"
                       },
                       "bookCategoryName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "著作类别名称"
                       },
                       "bookName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "著作名称"
                       },
                       "deptCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "人员所属学院代码"
                       },
                       "deptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "人员所属学院名称"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "姓名"
                       },
                       "publicationYear": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "出版时间"
                       },
                       "publishHouseName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "出版社名称"
                       },
                       "seqNo": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "作者排名"
                       },
                       "totalWords": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "总字数（万）"
                       }
                     },
                     "additionalProperties": false
@@ -764,7 +822,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "人员业务记录。"
             }
           },
           "additionalProperties": false
@@ -772,17 +831,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -836,7 +898,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -849,31 +912,36 @@
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "姓名"
               },
               "phone": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "手机号"
               },
               "deptCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "部门/学院代码"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "部门/学院姓名"
               },
               "email": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "邮箱"
               }
             },
             "additionalProperties": false
@@ -882,17 +950,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -949,7 +1020,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -962,13 +1034,15 @@
                   "type": [
                     "string",
                     "null"
-                  ]
+                  ],
+                  "description": "状态码"
                 },
                 "effectRows": {
                   "type": [
                     "number",
                     "null"
-                  ]
+                  ],
+                  "description": "受影响的记录行数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                 }
               },
               "additionalProperties": false
@@ -981,17 +1055,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1038,7 +1115,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1049,7 +1127,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "userInfos": {
               "anyOf": [
@@ -1062,49 +1141,57 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "所属学院名称"
                       },
                       "hardshipAllowanceName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "困难补助名称"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "获得困难补助学生姓名"
                       },
                       "ratingLevelName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "评定等级名称"
                       },
                       "ratingTerm": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "评定学期"
                       },
                       "ratingYear": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "评定学年"
                       },
                       "amount": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "金额"
                       },
                       "deptCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "所属学院代码"
                       }
                     },
                     "additionalProperties": false
@@ -1113,7 +1200,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "人员业务记录。"
             }
           },
           "additionalProperties": false
@@ -1121,17 +1209,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1178,7 +1269,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1189,7 +1281,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "userInfos": {
               "anyOf": [
@@ -1202,49 +1295,57 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "所属学院代码"
                       },
                       "deptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "所属学院名称"
                       },
                       "loanAmount": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "贷款金额"
                       },
                       "loanCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "贷款编码"
                       },
                       "loanType": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "贷款类型"
                       },
                       "loanYear": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "贷款学年"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "获得助学贷款学生姓名"
                       },
                       "repaymentYear": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "应还款学年"
                       }
                     },
                     "additionalProperties": false
@@ -1253,7 +1354,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "人员业务记录。"
             }
           },
           "additionalProperties": false
@@ -1261,17 +1363,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1318,7 +1423,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1329,7 +1435,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "userInfos": {
               "anyOf": [
@@ -1342,55 +1449,64 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "申请编号"
                       },
                       "companyName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "勤工单位名称"
                       },
                       "deptCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学生学院代码"
                       },
                       "deptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学生学院名称"
                       },
                       "jobName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "勤工岗位名称"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "勤工助学学生姓名"
                       },
                       "paid": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "已获薪酬"
                       },
                       "workEndDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "工作结束日期"
                       },
                       "workStartDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "工作开始日期"
                       }
                     },
                     "additionalProperties": false
@@ -1399,7 +1515,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "人员业务记录。"
             }
           },
           "additionalProperties": false
@@ -1407,17 +1524,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1464,7 +1584,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1477,7 +1598,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "人员业务记录。"
             }
           },
           "additionalProperties": false
@@ -1485,17 +1607,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1542,7 +1667,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1555,7 +1681,8 @@
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "余额"
               }
             },
             "additionalProperties": false
@@ -1564,17 +1691,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1621,7 +1751,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1648,55 +1779,64 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "子项（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "credit": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "isPass": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "是否通过（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "labelId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "labelName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "分类名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "labelNameEn": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "分类英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "parentId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "父项标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "yearEnd": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "结束学年（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "yearStart": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "开始学年（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               }
             },
             "additionalProperties": false
@@ -1705,17 +1845,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -1762,7 +1905,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -1773,535 +1917,624 @@
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "部门代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "studentName": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学生姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "teacherId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "教师工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "teacherName": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "教师姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "teacherNameEn": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "教师英文姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "templateId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "模板标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "term": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学期序号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "trainingCategory": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "trainingCategoryCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养类别代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "trainingCategoryI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养类别显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "trainingLevel": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养层次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "trainingLevelCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养层次代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "trainingLevelI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养层次显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "workFolwId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "工作流标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "associationStatus": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "关联状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "associationStatusStr": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "关联状态说明（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "campus": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "校区（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "campusI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "校区显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "college": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学院（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "condition": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "条件信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseCodeList": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程代码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseCodeStr": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程代码汇总文本（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseCodeStrStatus": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程代码状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseName": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseNameEn": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseRelStatus": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程关联状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "courseRemarks": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "课程备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "createTime": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "credits": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "cultureId": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "培养方案标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "cultureName": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养方案名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "cultureNameEn": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养方案英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "degreeType": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学位类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "degreeTypeI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学位类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "departmentId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "部门信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "departmentId2": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "第二部门信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "departmentId2I18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "第二部门显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "departmentIdI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "部门显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "deptIds": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "部门标识列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "dic": {
               "type": [
                 "boolean",
                 "null"
-              ]
+              ],
+              "description": "上游 dic 字段；官网仅有返回示例，未说明业务含义，按原值返回。"
             },
             "directionCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "研究方向代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "directionName": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "研究方向名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "enrolDate": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "入学日期（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "enrolSeason": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "入学季节（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "faculty": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "院系信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "faculty2": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "第二院系信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "faculty2I18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "第二院系显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "facultyCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "院系代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "facultyI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "院系显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "firstForeignLanguage": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "第一外语（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "fisrtLanguage": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "第一外语（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "formLearning": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学习形式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "formLearningI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学习形式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "grade": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "年级（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "id": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "ids": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "标识集合（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "isElective": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "是否选修（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "isOverseas": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "是否境外（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "isOverseasI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "境外状态显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "labelId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "leaveSchool": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "离校状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "lengthSchooling": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学制（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "major": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "majorCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "majorCodeI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业代码显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "majorCodeList": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业代码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "majorEn": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "majorI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "majorList": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专业列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "name": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "姓名或记录名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "nameSpelling": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "姓名拼写（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "newCourseCodeList": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "新课程代码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "newCourseCodeStr": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "新课程代码汇总文本（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "newCoursesCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "old4m3": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "上游 old4m3 字段；官网仅有返回示例，未说明业务含义，按原值返回。"
             },
             "oldCoursesCode": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "旧课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "oldCultureId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "原培养方案标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "pageNum_": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "分页页码。"
             },
             "pageSize_": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "每页记录数。"
             },
             "passHistory": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "历史通过记录（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "period": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学时（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "plansComplete": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养计划完成状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "plansCompleteStr": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "培养计划完成情况（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "projId": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "项目标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "projIdsTemp": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "临时项目标识集合（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "remarks": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "schemeGrade": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "方案年级（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "spcialPlan": {
               "anyOf": [
@@ -2314,37 +2547,43 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "专项计划（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "spcialPlanI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "专项计划显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "statusPlan": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "计划状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "statusPlanStr": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "计划状态说明（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "studentCategory": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学生类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "studentCategoryI18n": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "学生类别显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             }
           },
           "additionalProperties": false
@@ -2352,17 +2591,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -2409,7 +2651,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -2422,97 +2665,113 @@
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "二级学科校标代码"
               },
               "Type": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "专业类型"
               },
               "disciplineClassCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "学科门类代码"
               },
               "disciplineClassName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "学科门类名称"
               },
               "doctorTime": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "博士点批准时间"
               },
               "firstLevelDisciplineCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "一级学科代码"
               },
               "firstLevelDisciplineName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "一级学科名称"
               },
               "firstLevelDisciplineSchoolCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "一级学科校标代码"
               },
               "id": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "序号"
               },
               "majorCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "专业代码"
               },
               "majorEnName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "专业英文名称"
               },
               "majorName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "专业名称"
               },
               "masterTime": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "硕士点批准时间"
               },
               "nationImportant": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "是否国家重点学科：1，是；0，否"
               },
               "selfMajor": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "自设专业标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "status": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "是否在用：1，在用；0，不在用"
               }
             },
             "additionalProperties": false
@@ -2521,17 +2780,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -2584,7 +2846,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -2595,49 +2858,57 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "当前页记录数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "endRow": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "末行位置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "firstPage": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "首页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "hasNextPage": {
               "type": [
                 "boolean",
                 "null"
-              ]
+              ],
+              "description": "是否有下一页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "hasPreviousPage": {
               "type": [
                 "boolean",
                 "null"
-              ]
+              ],
+              "description": "是否有上一页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "isFirstPage": {
               "type": [
                 "boolean",
                 "null"
-              ]
+              ],
+              "description": "是否首页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "isLastPage": {
               "type": [
                 "boolean",
                 "null"
-              ]
+              ],
+              "description": "是否末页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "lastPage": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "末页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "list": {
               "anyOf": [
@@ -2650,91 +2921,106 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "附加成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "calendar": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学期信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "calendarId": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseCredit": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseLabel": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程分类（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseLabelId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseLabelName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "分类名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseNameEn": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseNature": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程性质（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseNatureI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程性质显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "courseNum": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "课程编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "createAt": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "credit": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "dailyScore": {
                         "anyOf": [
@@ -2747,79 +3033,92 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "平时成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "enterPerson": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "成绩录入人（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "enterTime": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "成绩录入时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examMode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试方式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examModeI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试方式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examScore1": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试成绩一（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examScore2": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试成绩二（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examScoreName1": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试成绩一名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examScoreName2": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试成绩二名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examType": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "examTypeI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "考试类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "faculty": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "院系信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "facultyI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "院系显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "finalScore": {
                         "anyOf": [
@@ -2832,97 +3131,113 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "最终成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "formLearning": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学习形式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "formLearningI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学习形式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "greadePoint": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "绩点（上游字段拼写为 greadePoint）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "huxuan": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "互选标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "id": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "isDegreeCourse": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "是否学位课程（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "isElcCourse": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "选课标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "isPass": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "是否通过（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "isPassCn": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "是否通过的中文说明（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "isShow": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "是否展示（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "learnType": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "修读类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "learnTypeI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "修读类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "makeupScore": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "补考成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "managerDeptId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "管理部门标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "midtermExamType": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "期中考试类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "midtermScore": {
                         "anyOf": [
@@ -2935,163 +3250,190 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "期中成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "newCourseCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "newCourseNum": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "新课程编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "period": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学时（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "projId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "项目标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "recoredType": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "记录类型（沿用上游拼写）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "recoredTypeI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "记录类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "releaseAt": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "发布时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "releaseType": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "发布类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "remark": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "remarkPk": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "排课备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "scoreSource": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "成绩来源（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "scoreTypeList": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "成绩类型列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "showAt": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "展示时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "slowScore": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "缓考成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "specialScore": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "特殊成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "standardScore": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "标准成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "studentName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学生姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "teacherId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "教师工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "teacherName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "教师姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "teachingClassId": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "teachingClassIdNew": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "新教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "teachingClassName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "教学班名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "totalMarkScore": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "总评成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "trainingLevel": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "培养层次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "trainingLevelI18n": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "培养层次显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "updateTime": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       }
                     },
                     "additionalProperties": false
@@ -3100,25 +3442,29 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "业务记录列表。"
             },
             "navigateFirstPage": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "导航起始页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "navigateLastPage": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "导航结束页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "navigatePages": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "导航页数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "navigatepageNums": {
               "anyOf": [
@@ -3131,49 +3477,57 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "导航页码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "nextPage": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "下一页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "pageNum": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "当前页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "pageSize": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "每页记录数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "pages": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "总页数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "prePage": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "上一页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "startRow": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "起始行位置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "total": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "记录总数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             }
           },
           "additionalProperties": false
@@ -3181,17 +3535,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -3245,7 +3602,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -3256,7 +3614,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "infos": {
               "anyOf": [
@@ -3269,85 +3628,99 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "专利所属学院代码"
                       },
                       "patentDeptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "专利所属学院名称"
                       },
                       "patentTitle": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "专利名称"
                       },
                       "regPublishDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "授权公告日"
                       },
                       "statusCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "案件状态代码"
                       },
                       "statusName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "案件状态名称"
                       },
                       "allInventorName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "所有发明人姓名"
                       },
                       "allInventorUserId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "所有发明人学工号"
                       },
                       "appDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "申请日"
                       },
                       "appNo": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "申请号(专利号)"
                       },
                       "appTypeCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "申请类型代码"
                       },
                       "appTypeName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "申请类型名称"
                       },
                       "countryName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "是否国际专利"
                       },
                       "inventorCount": {
                         "type": [
                           "number",
                           "null"
-                        ]
+                        ],
+                        "description": "发明人总数"
                       }
                     },
                     "additionalProperties": false
@@ -3356,7 +3729,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "专利记录列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             }
           },
           "additionalProperties": false
@@ -3364,17 +3738,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -3438,7 +3815,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -3458,43 +3836,50 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "审核状态，期末考该字段为空"
               },
               "assessmentMode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "考核方式 1考试/2考查"
               },
               "calendarId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "classCalendarId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "课程所在学期"
               },
               "college": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "开课学院"
               },
               "courseCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程代码"
               },
               "courseName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程名称"
               },
               "defect": {
                 "anyOf": [
@@ -3507,19 +3892,22 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "是否缺考 1 是 0 否"
               },
               "deptCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "学院"
               },
               "examCalendarId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "考试学期"
               },
               "examDate": {
                 "anyOf": [
@@ -3532,7 +3920,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "排考具体日期"
               },
               "examEndTime": {
                 "anyOf": [
@@ -3545,7 +3934,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "结束时间"
               },
               "examInfoId": {
                 "anyOf": [
@@ -3558,7 +3948,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科排考管理表ID"
               },
               "examRoomId": {
                 "anyOf": [
@@ -3571,7 +3962,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科学生排考表 本科排考教室ID"
               },
               "examSituation": {
                 "anyOf": [
@@ -3584,7 +3976,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考试情况 1 正常 2 缓考 3无资格 4免试"
               },
               "examStartTime": {
                 "anyOf": [
@@ -3597,13 +3990,15 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "开始时间"
               },
               "examStatus": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "排考状态 1 排考时间未排考考场 2 时间考场"
               },
               "examStudentId": {
                 "anyOf": [
@@ -3616,7 +4011,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科学生排考表ID"
               },
               "examTime": {
                 "anyOf": [
@@ -3629,7 +4025,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考试时间"
               },
               "examType": {
                 "anyOf": [
@@ -3642,19 +4039,22 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考试类型 1 期末考试 2 补缓考"
               },
               "grade": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "年级（本科：当前年级；研究生：年级）"
               },
               "major": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "专业代码"
               },
               "major2": {
                 "anyOf": [
@@ -3667,7 +4067,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "专业2代码"
               },
               "managementCollege2Code": {
                 "anyOf": [
@@ -3680,13 +4081,15 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "学院2"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "姓名"
               },
               "reExamRemark": {
                 "anyOf": [
@@ -3699,7 +4102,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "缓考备注 期末考该字段为空"
               },
               "remark": {
                 "anyOf": [
@@ -3712,7 +4116,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科排考管理表 备注"
               },
               "roomId": {
                 "anyOf": [
@@ -3725,7 +4130,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考场代码"
               },
               "roomName": {
                 "anyOf": [
@@ -3738,25 +4144,29 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考场名称"
               },
               "teacherStr": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "任课教师，格式为：姓名（工号），姓名（工号），姓名（工号）"
               },
               "teachingClassCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程序号"
               },
               "teachingClassId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "教学班表ID"
               },
               "weekDay": {
                 "anyOf": [
@@ -3769,7 +4179,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "星期几"
               },
               "weekNumber": {
                 "anyOf": [
@@ -3782,7 +4193,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "第几周"
               }
             },
             "additionalProperties": false
@@ -3791,17 +4203,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -3865,7 +4280,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -3885,7 +4301,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "星期几"
               },
               "weekNumber": {
                 "anyOf": [
@@ -3898,49 +4315,57 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "第几周"
               },
               "applyStatus": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "审核状态 期末考该字段为空"
               },
               "assessmentMode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "考核方式 1考试/2考查"
               },
               "calendarId": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "classCalendarId": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程所在学期"
               },
               "college": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "开课学院"
               },
               "courseCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程代码"
               },
               "courseName": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程名称"
               },
               "defect": {
                 "anyOf": [
@@ -3953,19 +4378,22 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "是否缺考 1 是 0 否 默认否"
               },
               "deptCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "学院"
               },
               "examCalendarId": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "考试学期"
               },
               "examDate": {
                 "anyOf": [
@@ -3978,7 +4406,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "排考具体日期"
               },
               "examEndTime": {
                 "anyOf": [
@@ -3991,7 +4420,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "结束时间"
               },
               "examInfoId": {
                 "anyOf": [
@@ -4004,7 +4434,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科排考管理表ID"
               },
               "examRoomId": {
                 "anyOf": [
@@ -4017,7 +4448,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科学生排考表 本科排考教室ID"
               },
               "examSituation": {
                 "anyOf": [
@@ -4030,7 +4462,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考试情况 1 正常 2 缓考 3无资格 4免试"
               },
               "examStartTime": {
                 "anyOf": [
@@ -4043,13 +4476,15 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "开始时间"
               },
               "examStatus": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "排考状态 1 排考时间未排考考场 2 时间考场"
               },
               "examStudentId": {
                 "anyOf": [
@@ -4062,7 +4497,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科学生排考表ID"
               },
               "examTime": {
                 "anyOf": [
@@ -4075,25 +4511,29 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考试时间"
               },
               "examType": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "考试类型 1 期末考试 2 补缓考"
               },
               "grade": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "年级（本科：当前年级；研究生：年级）"
               },
               "major": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "专业代码"
               },
               "major2": {
                 "anyOf": [
@@ -4106,7 +4546,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "专业2代码"
               },
               "managementCollege2Code": {
                 "anyOf": [
@@ -4119,13 +4560,15 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "学院2"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "姓名"
               },
               "reExamRemark": {
                 "anyOf": [
@@ -4138,7 +4581,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "缓考备注 期末考该字段为空"
               },
               "remark": {
                 "anyOf": [
@@ -4151,7 +4595,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "本科排考管理表 备注"
               },
               "roomId": {
                 "anyOf": [
@@ -4164,7 +4609,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考场代码"
               },
               "roomName": {
                 "anyOf": [
@@ -4177,25 +4623,29 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "考场名称"
               },
               "teacherStr": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "任课教师，格式为：姓名（工号），姓名（工号），姓名（工号）"
               },
               "teachingClassCode": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "课程序号"
               },
               "teachingClassId": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "教学班表ID"
               }
             },
             "additionalProperties": false
@@ -4204,17 +4654,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -4261,7 +4714,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -4274,25 +4728,29 @@
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "绩点"
               },
               "completedCredit": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "实修学分"
               },
               "hundredMarkScore": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "百分制成绩"
               },
               "requiredCredit": {
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "修读学分"
               }
             },
             "additionalProperties": false
@@ -4301,17 +4759,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -4358,7 +4819,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -4371,19 +4833,22 @@
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "删除标识；码表：1-正常，0-失效，2-删除，3-锁定"
               },
               "email": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "邮箱地址（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "type": {
                 "type": [
                   "string",
                   "null"
-                ]
+                ],
+                "description": "邮箱类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               }
             },
             "additionalProperties": false
@@ -4392,17 +4857,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -4462,7 +4930,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -4473,13 +4942,15 @@
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "count": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "list": {
               "anyOf": [
@@ -4492,73 +4963,85 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "聘任专业技术职务名称"
                       },
                       "updateTime": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                       },
                       "deptCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "部门/学院代码"
                       },
                       "deptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "部门/学院名称"
                       },
                       "firstTitleDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "初次聘任职称级别时间"
                       },
                       "jobLevelCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "岗位等级代码；码表：tech_post_level_code"
                       },
                       "jobLevelName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "岗位等级名称"
                       },
                       "jobOfferDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "岗位聘任时间"
                       },
                       "jobTypeCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "岗位类别代码；码表：types"
                       },
                       "jobTypeName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "岗位类别名称"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "姓名"
                       },
                       "partyGovLevelCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "党政职务等级代码"
                       },
                       "partyGovLevelName": {
                         "anyOf": [
@@ -4571,43 +5054,50 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "党政职务等级名称"
                       },
                       "partyJob": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "党政职务"
                       },
                       "partyJobDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "党政职务任职年月"
                       },
                       "partyJobFirstDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "党政职务级别初任时间"
                       },
                       "techJobLevelCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "专业技术职务级别代码；码表：types"
                       },
                       "techJobLevelName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "专业技术职务级别名称"
                       },
                       "techJobTypeCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "专技岗分类代码"
                       },
                       "techJobTypeName": {
                         "anyOf": [
@@ -4620,13 +5110,15 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "专技岗分类名称"
                       },
                       "techLevelOfWorkersCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "工人技术等级代码；码表：types"
                       },
                       "techLevelOfWorkersName": {
                         "anyOf": [
@@ -4639,19 +5131,22 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "工人技术等级名称"
                       },
                       "tenureEndTime": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "长聘协议结束时间"
                       },
                       "tenurePositionCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "长聘体系职务代码"
                       },
                       "tenurePositionName": {
                         "anyOf": [
@@ -4664,25 +5159,29 @@
                           {
                             "type": "null"
                           }
-                        ]
+                        ],
+                        "description": "长聘体系职务名称"
                       },
                       "tenureStartTime": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "长聘协议开始时间"
                       },
                       "titleCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "聘任专业技术职务代码；码表：types"
                       },
                       "titleDate": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "聘任专业技术职务年月"
                       }
                     },
                     "additionalProperties": false
@@ -4691,7 +5190,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "业务记录列表。"
             }
           },
           "additionalProperties": false
@@ -4699,17 +5199,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -4763,7 +5266,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -4774,13 +5278,15 @@
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
             },
             "count": {
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "description": "返回记录数量。"
             },
             "list": {
               "anyOf": [
@@ -4793,55 +5299,64 @@
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "班级代码"
                       },
                       "className": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "班级名称"
                       },
                       "counselorId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "辅导员工号"
                       },
                       "counselorName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "辅导员姓名"
                       },
                       "deptCode": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学院代码"
                       },
                       "deptName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "学院名称"
                       },
                       "headTeacherId": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "班主任工号"
                       },
                       "headTeacherName": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "班主任姓名"
                       },
                       "name": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "姓名"
                       }
                     },
                     "additionalProperties": false
@@ -4850,7 +5365,8 @@
                 {
                   "type": "null"
                 }
-              ]
+              ],
+              "description": "业务记录列表。"
             }
           },
           "additionalProperties": false
@@ -4858,17 +5374,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -4915,7 +5434,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -4928,7 +5448,8 @@
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "已修学分"
               }
             },
             "additionalProperties": false
@@ -4937,17 +5458,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -4994,7 +5518,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -5007,7 +5532,8 @@
                 "type": [
                   "number",
                   "null"
-                ]
+                ],
+                "description": "学位课总学分"
               }
             },
             "additionalProperties": false
@@ -5016,17 +5542,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -5073,7 +5602,8 @@
       "enum": [
         "ok",
         "empty"
-      ]
+      ],
+      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
     },
     "data": {
       "anyOf": [
@@ -5093,7 +5623,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "学位课平均分"
               }
             },
             "additionalProperties": false
@@ -5102,17 +5633,20 @@
         {
           "type": "null"
         }
-      ]
+      ],
+      "description": "本工具返回的业务数据；无数据时为 null。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
-      "const": "Tongji Open Platform"
+      "const": "Tongji Open Platform",
+      "description": "业务数据来源：同济大学开放平台。"
     }
   },
   "required": [
@@ -5184,126 +5718,126 @@
                   "number",
                   "null"
                 ],
-                "description": "借阅图书数量超越全校学生的百分比。"
+                "description": "一年中的总借书数是全校师生的前X%"
               },
               "avgDailySpending": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "日均消费金额，单位元。"
+                "description": "平均每次消费金额（食堂里），单位：元"
               },
               "booksCount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "年度借阅图书数量。"
+                "description": "一年中的总借书数"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生所属学院或部门名称。"
+                "description": "学院代码名称"
               },
               "earliestEntryTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "年度最早入校时间。"
+                "description": "最早进入图书馆的具体时间（精确到秒）"
               },
               "latestExitTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "年度最晚出校或夜归时间。"
+                "description": "最晚出校门的准确时间（精确到秒）"
               },
               "libraryAccessCount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "年度图书馆入馆总次数。"
+                "description": "进出图书馆次数"
               },
               "libraryStudyTime": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "年度在图书馆学习的总时长，单位小时。"
+                "description": "在图书馆学习时长，单位：小时"
               },
               "libraryStudyTopPct": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "图书馆学习时长超越全校学生的百分比。"
+                "description": "在图书馆学习时间位于全校师生前X%"
               },
               "maxCumulativeLoc": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "年度最常去或累计消费最多的地点。"
+                "description": "累计消费最多的地点（食堂名）"
               },
               "maxTransactionAmt": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "年度单笔最高消费金额，单位元。"
+                "description": "单次消费最多金额，单位：元"
               },
               "maxTransactionLoc": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "年度单笔最高消费地点。"
+                "description": "单次消费最多的地点（食堂名）"
               },
               "maxTransactionTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "年度单笔最高消费发生日期。"
+                "description": "单次消费最多的时间（年月日）"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生姓名，以上游返回内容为准。"
+                "description": "姓名"
               },
               "shuttleRidesCount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "跨校区班车乘坐次数。"
+                "description": "校车乘坐次数（年度）"
               },
               "totalEntries": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "年度进出校总次数。"
+                "description": "进出校门总数"
               },
               "totalSpendingCanteen": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "年度食堂总消费金额，单位元。"
+                "description": "全年消费总金额（食堂里），单位：元"
               },
               "year": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "统计年份。"
+                "description": "年份"
               }
             },
             "required": [
@@ -5334,7 +5868,8 @@
       "required": [
         "list"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -5343,7 +5878,7 @@
     },
     "year": {
       "type": "string",
-      "description": "本次查询指定的统计年份。"
+      "description": "年份"
     }
   },
   "required": [
@@ -5418,63 +5953,63 @@
                   "string",
                   "null"
                 ],
-                "description": "消费发生的校区名称，例如四平校区。"
+                "description": "所属校区"
               },
               "cardBalance": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "本次消费完成后的一卡通卡内余额，单位元。"
+                "description": "卡内余额"
               },
               "mercName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "发生消费的具体商户或商铺名称。"
+                "description": "商铺名称"
               },
               "mercTypeName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "消费分类名称，例如食堂、超市或店铺。"
+                "description": "商铺类别"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "消费人员姓名，以上游返回内容为准。"
+                "description": "姓名"
               },
               "personTypeCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "消费人员的人员类型或身份标签。"
+                "description": "人员类别代码"
               },
               "restaurantName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "餐厅名称；非食堂场景可能返回无。"
+                "description": "所属食堂"
               },
               "tradeAmount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "本次一卡通消费金额，单位元。"
+                "description": "交易金额"
               },
               "tradeDateTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "完整交易时间戳，用于按时间排序和查看详细账单。"
+                "description": "交易时间（年月日时分秒）"
               }
             },
             "required": [
@@ -5496,7 +6031,8 @@
       "required": [
         "userInfos"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -5578,70 +6114,70 @@
                   "string",
                   "null"
                 ],
-                "description": "教学班级编号或选课代码。"
+                "description": "教学班级编号或选课代码。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "className": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "班级名称，例如 01班。"
+                "description": "班级名称，例如 01班。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "courseCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程代码。"
+                "description": "课程代码。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "courseName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程名称。"
+                "description": "课程名称。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "credits": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "课程学分。"
+                "description": "课程学分。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "teacherName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "授课教师姓名。"
+                "description": "授课教师姓名。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "classTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "上课时间概要或汇总上课时间文本，适合列表直接展示。"
+                "description": "上课时间概要或汇总上课时间文本，适合列表直接展示。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "classRoom": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "原始教室代码。"
+                "description": "原始教室代码。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "classRoomPractice": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "实践地点分类，例如校内或校外。"
+                "description": "实践地点分类，例如校内或校外。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "remark": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程备注信息，有值时可展示。"
+                "description": "课程备注信息，有值时可展示。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "timeTableList": {
                 "type": "array",
@@ -5653,63 +6189,63 @@
                         "number",
                         "null"
                       ],
-                      "description": "星期几，数字 1-7，用于在日历或格子课表中定位列。"
+                      "description": "星期几，数字 1-7，用于在日历或格子课表中定位列。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "timeStart": {
                       "type": [
                         "number",
                         "null"
                       ],
-                      "description": "本次上课的开始节次。"
+                      "description": "本次上课的开始节次。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "timeEnd": {
                       "type": [
                         "number",
                         "null"
                       ],
-                      "description": "本次上课的结束节次。"
+                      "description": "本次上课的结束节次。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "weekNum": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "本次上课的周次范围文本。"
+                      "description": "本次上课的周次范围文本。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "weekstr": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "本次上课的星期文本。"
+                      "description": "本次上课的星期文本。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "weeks": {
                       "type": "array",
                       "items": {
                         "type": "number"
                       },
-                      "description": "本次排课实际发生的具体上课周次列表。"
+                      "description": "本次排课实际发生的具体上课周次列表。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "popover": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "鼠标悬停或点击课程时可展示的弹窗文本。"
+                      "description": "鼠标悬停或点击课程时可展示的弹窗文本。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "roomIdI18n": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "本次上课的教室名称。"
+                      "description": "本次上课的教室名称。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "campusI18n": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "本次上课所在校区名称。"
+                      "description": "校区显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
                     }
                   },
                   "required": [
@@ -5725,35 +6261,35 @@
                   ],
                   "additionalProperties": false
                 },
-                "description": "结构化课表细则数组，用于渲染日历或格子课表。"
+                "description": "结构化课表细则数组，用于渲染日历或格子课表。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "campusI18n": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程所在校区名称。"
+                "description": "校区显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。）"
               },
               "assessmentModeI18n": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程考核方式文本，例如考查或考试。"
+                "description": "课程考核方式文本，例如考查或考试。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "classRoomI18n": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程主教室名称。"
+                "description": "课程主教室名称。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "teachingWayI18n": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "课程授课方式文本，例如线下授课或线上。"
+                "description": "课程授课方式文本，例如线下授课或线上。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               }
             },
             "required": [
@@ -5781,7 +6317,8 @@
       "required": [
         "list"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -5853,245 +6390,245 @@
                   "string",
                   "null"
                 ],
-                "description": "学生民族。"
+                "description": "民族"
               },
               "faculty": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生所属学院名称。"
+                "description": "管理学院"
               },
               "degreeCategory": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学位类别。"
+                "description": "学位上报类别"
               },
               "enrolDate": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生入学日期。"
+                "description": "入学时间"
               },
               "cultureProfession": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "培养专业名称。"
+                "description": "培养专业"
               },
               "state": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生国籍。"
+                "description": "国家地区"
               },
               "profession": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "专业名称。"
+                "description": "招生专业"
               },
               "expectedGraduationDate": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "预计毕业日期。"
+                "description": "预计毕业时间"
               },
               "campus": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所在校区名称。"
+                "description": "校区"
               },
               "degree": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "拟获得的学位名称。"
+                "description": "学位"
               },
               "enrolMethods": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "录取或入学方式。"
+                "description": "入学方式"
               },
               "studentSource": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "生源地。"
+                "description": "生源地"
               },
               "grade": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "学生所在年级。"
+                "description": "入学年级"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生姓名，以上游返回内容为准。"
+                "description": "姓名"
               },
               "householdRegister": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "户籍所在地。"
+                "description": "户口所在地"
               },
               "trainingMethods": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "培养方式。"
+                "description": "培养方式"
               },
               "maritalStatus": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "婚姻状况。"
+                "description": "婚姻状况"
               },
               "birthday": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "出生日期。"
+                "description": "出生日期"
               },
               "projId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "项目或学生类别。"
+                "description": "管理部门"
               },
               "leaveSchool": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学籍或在校状态。"
+                "description": "在校状态"
               },
               "degreeType": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学位类型，例如专业型或学术型。"
+                "description": "学位类型"
               },
               "learningStyle": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学习形式，例如脱产或半脱产。"
+                "description": "学习方式"
               },
               "studentId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生学号。"
+                "description": "学号"
               },
               "enrolCategory": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "录取类别。"
+                "description": "录取类别"
               },
               "trainingLevel": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "培养层次，例如硕士、博士或本科。"
+                "description": "培养层次"
               },
               "politicalStatus": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "政治面貌。"
+                "description": "政治面貌"
               },
               "sex": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生性别。"
+                "description": "性别"
               },
               "enrolSeason": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "入学季节。"
+                "description": "入学季节"
               },
               "teacherId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "导师编号或后端映射后的导师姓名。"
+                "description": "导师"
               },
               "mailingAddress": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "通讯地址或联系地址。"
+                "description": "法定送达地址"
               },
               "formLearning": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学习形式，例如全日制或非全日制。"
+                "description": "学习形式"
               },
               "stationTermini": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "乘车优惠区间终点。"
+                "description": "火车终点站"
               },
               "researchDirection": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "研究方向或具体项目。"
+                "description": "研究方向"
               },
               "lengthSchooling": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学制，单位年。"
+                "description": "学制"
               },
               "stationStart": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "乘车优惠区间起点。"
+                "description": "火车起点站"
               }
             },
             "required": [
@@ -6139,7 +6676,8 @@
       "required": [
         "list"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -6208,28 +6746,28 @@
             "string",
             "null"
           ],
-          "description": "全部学期已修总学分。"
+          "description": "全部学期已修总学分。（沿用现有工具定义；官网未提供该字段的明确说明。）"
         },
         "failingCourseCount": {
           "type": [
             "string",
             "null"
           ],
-          "description": "全部学期不及格课程总数量。"
+          "description": "全部学期不及格课程总数量。（沿用现有工具定义；官网未提供该字段的明确说明。）"
         },
         "failingCredits": {
           "type": [
             "string",
             "null"
           ],
-          "description": "全部学期不及格课程总学分。"
+          "description": "全部学期不及格课程总学分。（沿用现有工具定义；官网未提供该字段的明确说明。）"
         },
         "totalGradePoint": {
           "type": [
             "string",
             "null"
           ],
-          "description": "全部学期平均绩点。"
+          "description": "全部学期平均绩点。（沿用现有工具定义；官网未提供该字段的明确说明。）"
         },
         "term": {
           "type": "array",
@@ -6241,14 +6779,14 @@
                   "string",
                   "null"
                 ],
-                "description": "本学期平均绩点。"
+                "description": "本学期平均绩点。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "calName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学期名称或编号。"
+                "description": "学期名称或编号。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "creditInfo": {
                 "type": "array",
@@ -6260,77 +6798,77 @@
                         "string",
                         "null"
                       ],
-                      "description": "课程代码。"
+                      "description": "课程代码。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "courseName": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "课程名称。"
+                      "description": "课程名称。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "credit": {
                       "type": [
                         "number",
                         "null"
                       ],
-                      "description": "课程学分。"
+                      "description": "课程学分。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "gradePoint": {
                       "type": [
                         "number",
                         "null"
                       ],
-                      "description": "课程绩点。"
+                      "description": "课程绩点。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "isPass": {
                       "type": [
                         "number",
                         "null"
                       ],
-                      "description": "是否及格，1 表示及格。"
+                      "description": "是否及格，1 表示及格。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "isPassName": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "是否及格的文字说明。"
+                      "description": "是否及格的文字说明。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "publicCoursesName": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "课程类型，例如必修。"
+                      "description": "课程类型，例如必修。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "score": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "课程成绩等级。"
+                      "description": "课程成绩等级。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "scoreName": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "课程成绩名称。"
+                      "description": "课程成绩名称。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "updateTime": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "成绩记录更新时间。"
+                      "description": "成绩记录更新时间。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     },
                     "year": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "成绩所属学年。"
+                      "description": "成绩所属学年。（沿用现有工具定义；官网未提供该字段的明确说明。）"
                     }
                   },
                   "required": [
@@ -6348,21 +6886,21 @@
                   ],
                   "additionalProperties": false
                 },
-                "description": "本学期课程成绩列表。"
+                "description": "本学期课程成绩列表。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "termName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学期完整名称。"
+                "description": "学期完整名称。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "termcode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学期代码，可作为 calendarId 使用。"
+                "description": "学期代码，可作为 calendarId 使用。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               }
             },
             "required": [
@@ -6374,7 +6912,7 @@
             ],
             "additionalProperties": false
           },
-          "description": "按学期分组的成绩数据。"
+          "description": "按学期分组的成绩数据。（沿用现有工具定义；官网未提供该字段的明确说明。）"
         }
       },
       "required": [
@@ -6384,7 +6922,8 @@
         "totalGradePoint",
         "term"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -6456,98 +6995,98 @@
                   "number",
                   "null"
                 ],
-                "description": "学期记录ID。"
+                "description": "学期记录ID。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "year": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "学年起始年份。"
+                "description": "学年起始年份。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "term": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "学期编号，1 表示第一学期，2 表示第二学期。"
+                "description": "学期编号，1 表示第一学期，2 表示第二学期。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "beginDay": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "学期开始日期（Unix 时间戳，毫秒）。"
+                "description": "学期开始日期（Unix 时间戳，毫秒）。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "endDay": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "学期结束日期（Unix 时间戳，毫秒）。"
+                "description": "学期结束日期（Unix 时间戳，毫秒）。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "weekNum": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "该学期包含的教学周数。"
+                "description": "该学期包含的教学周数。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "weekBenginDay": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "每周起始日（1=周日，2=周一）。"
+                "description": "每周起始日（1=周日，2=周一）。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "gradePartOne": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学年第一部分，例如 2021。"
+                "description": "学年第一部分，例如 2021。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "gradePartTwo": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学年第二部分，例如 2022。"
+                "description": "学年第二部分，例如 2022。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "fullName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学期完整名称，例如 2021-2022学年第2学期。"
+                "description": "学期完整名称，例如 2021-2022学年第2学期。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "currentTermFlag": {
                 "type": [
                   "boolean",
                   "null"
                 ],
-                "description": "是否为当前学期标识，true 表示是。"
+                "description": "是否为当前学期标识，true 表示是。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "nextTermFlag": {
                 "type": [
                   "boolean",
                   "null"
                 ],
-                "description": "是否为下一学期标识，false 表示否。"
+                "description": "是否为下一学期标识，false 表示否。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "perTerm": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学期部分名称，例如 第2学期。"
+                "description": "学期部分名称，例如 第2学期。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "perYear": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学年部分名称，例如 2021-2022学年。"
+                "description": "学年部分名称，例如 2021-2022学年。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               }
             },
             "required": [
@@ -6574,7 +7113,8 @@
       "required": [
         "terms"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -6639,98 +7179,98 @@
                 "number",
                 "null"
               ],
-              "description": "当前学期的 calendarId。"
+              "description": "当前学期编号；由上游 schoolCalendar.id 映射为 calendarId。"
             },
             "beginDay": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "当前学期开始日期的时间戳。"
+              "description": "当前学期开始日期的时间戳。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "endDay": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "当前学期结束日期的时间戳。"
+              "description": "当前学期结束日期的时间戳。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "examWeekEnd": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "考试周结束周次。"
+              "description": "考试周结束周次。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "examWeekStart": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "考试周开始周次。"
+              "description": "考试周开始周次。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "teachingWeekEnd": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "教学周结束周次。"
+              "description": "教学周结束周次。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "teachingWeekStart": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "教学周开始周次。"
+              "description": "教学周开始周次。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "year": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "学年年份。"
+              "description": "学年年份。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "term": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "学期序号，1 表示第一学期，2 表示第二学期。"
+              "description": "学期序号，1 表示第一学期，2 表示第二学期。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "weekNum": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "该学期包含的教学周数。"
+              "description": "该学期包含的教学周数。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "week": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "当前所处的教学周序号。"
+              "description": "当前所处的教学周序号。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "simpleName": {
               "type": [
                 "string",
                 "null"
               ],
-              "description": "学期简称，例如 2021-2022学年度第2学期。"
+              "description": "学期简称，例如 2021-2022学年度第2学期。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "now": {
               "type": [
                 "string",
                 "null"
               ],
-              "description": "当前日期所在的月份描述，例如 2022年5月。"
+              "description": "当前日期所在的月份描述，例如 2022年5月。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             },
             "name": {
               "type": [
                 "string",
                 "null"
               ],
-              "description": "当前学期的完整描述，包含日期与周数。"
+              "description": "当前学期的完整描述，包含日期与周数。（沿用现有工具定义；官网未提供该字段的明确说明。）"
             }
           },
           "required": [
@@ -6823,70 +7363,70 @@
                   "string",
                   "null"
                 ],
-                "description": "学生ID，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "学生ID，已由上游做脱敏处理，不可用于身份验证。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "studentName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生姓名，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "学生姓名，已由上游做脱敏处理，不可用于身份验证。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "competitionType": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "竞赛类型。"
+                "description": "竞赛类型。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "writtenSubjectName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "考试科目名称，例如（2）英语六级笔试。"
+                "description": "考试科目名称，例如（2）英语六级笔试。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "cardNo": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "准考证号，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "准考证号，已由上游做脱敏处理，不可用于身份验证。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "score": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "笔试成绩。"
+                "description": "笔试成绩。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "scoreRank": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "分数排名。"
+                "description": "分数排名。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "oralScore": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "口语成绩。"
+                "description": "口语成绩。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "examTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "考试时间。"
+                "description": "考试时间。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "cetType": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "CET 类型，1 表示四级，2 表示六级。"
+                "description": "CET 类型，1 表示四级，2 表示六级。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               }
             },
             "required": [
@@ -6909,7 +7449,8 @@
       "required": [
         "records"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -6977,196 +7518,196 @@
                   "string",
                   "null"
                 ],
-                "description": "催还日期。"
+                "description": "催还日期"
               },
               "asbackTimes": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "催还次数。"
+                "description": "催还次数"
               },
               "author": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "责任者（作者）。"
+                "description": "责任者(作者)"
               },
               "callNo": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "图书类别代码。"
+                "description": "图书类别代码"
               },
               "callNoName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "图书类别名称。"
+                "description": "图书类别名称"
               },
               "countryCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "书籍国别代码。"
+                "description": "书籍国别代码"
               },
               "countryName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "书籍国别。"
+                "description": "书籍国别"
               },
               "debtFlag": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "欠款状态标识。"
+                "description": "欠款状态标识"
               },
               "deptCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "读者所属单位代码。"
+                "description": "单位代码"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "读者所属单位名称。"
+                "description": "单位名称"
               },
               "docTypeCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "文献类型代码。"
+                "description": "文献类型代码"
               },
               "docTypeName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "文献类型名称。"
+                "description": "文献类型"
               },
               "isbn": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "ISBN 编号。"
+                "description": "ISBN编号"
               },
               "langCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "书籍语种代码。"
+                "description": "书籍语种代码"
               },
               "langName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "书籍语种名称。"
+                "description": "书籍语种"
               },
               "lendDate": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "借出日期。"
+                "description": "借出日期"
               },
               "locationCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "馆藏地代码。"
+                "description": "馆藏地代码"
               },
               "locationName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "馆藏地名称。"
+                "description": "名称"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "读者姓名，注意该字段未做脱敏处理，不可在公开输出中直接引用。"
+                "description": "姓名 读者姓名，注意该字段未做脱敏处理，不可在公开输出中直接引用。"
               },
               "propNo": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "财产号。"
+                "description": "财产号"
               },
               "pubYear": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "出版年份。"
+                "description": "出版年"
               },
               "publisher": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "出版社名称。"
+                "description": "出版社"
               },
               "renewDate": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "续借日期。"
+                "description": "续借日期"
               },
               "renewTimes": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "续借次数。"
+                "description": "续借次数"
               },
               "retDate": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "实际还书时间。"
+                "description": "实际还书时间"
               },
               "title": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "题名（书名）。"
+                "description": "题名(书名)"
               },
               "totalLendQty": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "累计借书次数。"
+                "description": "累计借书次数"
               },
               "userId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学工号，注意该字段未做脱敏处理，不可在公开输出中直接引用。"
+                "description": "学工号 学工号，注意该字段未做脱敏处理，不可在公开输出中直接引用。"
               }
             },
             "required": [
@@ -7207,7 +7748,8 @@
       "required": [
         "records"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -7275,224 +7817,224 @@
                   "string",
                   "null"
                 ],
-                "description": "借阅最多的图书主题类别。"
+                "description": "最喜欢的主题"
               },
               "bookCoun": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "累计借阅图书数量。"
+                "description": "借了X本书"
               },
               "bookFirst": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "借阅的第一本书的书名。"
+                "description": "借阅的第一本书"
               },
               "canteenAmount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "食堂累计消费总金额。"
+                "description": "食堂总消费"
               },
               "canteenAmtPercentileRank": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "食堂总消费超过同济人的百分比。"
+                "description": "超过X%的同济人（用总消费算）"
               },
               "canteenCoun": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "在食堂累计消费次数。"
+                "description": "在食堂累计消费X次"
               },
               "canteenOften": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "最常去的食堂名称。"
+                "description": "对X食堂情有独钟"
               },
               "canteenOftenPercentileRank": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "最常去食堂的消费占比百分比。"
+                "description": "属于你X%的美味时光在此度过"
               },
               "cardPelaceCoun": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "校园卡补卡次数。"
+                "description": "补卡次数"
               },
               "college": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所属学院，已由上游做脱敏处理。"
+                "description": "学院 所属学院，已由上游做脱敏处理。"
               },
               "consumMostAmount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "单日最高消费金额。"
+                "description": "这一天一共花了￥ 元"
               },
               "consumMostTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "单笔最大消费的发生时间。"
+                "description": "最大的一笔消费发生在 年 月 日"
               },
               "consumePlaceOften": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "最常光顾的消费场所名称。"
+                "description": "你最常光顾X（即最多次的消费场所）"
               },
               "consumeTotal": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "校园卡累计消费总金额。"
+                "description": "累计消费￥ 元（所有消费）"
               },
               "consumeTotalPercentileRank": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "全部消费总金额超过同济人的百分比。"
+                "description": "超过了 %的同济人（所有消费）"
               },
               "earlistTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "最早进入图书馆的时间。"
+                "description": "最早进入图书馆的时间（精确到秒）"
               },
               "entYear": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "入学年份。"
+                "description": "X年你离开了家"
               },
               "entranceCoun": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "累计进入图书馆次数。"
+                "description": "去了X次图书馆"
               },
               "firstCardPlaceTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "第一次补卡的时间。"
+                "description": "第一次补卡时间"
               },
               "gender": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "性别，0 表示未知。"
+                "description": "性别"
               },
               "latestTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "最晚离开图书馆的时间。"
+                "description": "最晚离开图书馆的时间（精确到秒）"
               },
               "major": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "专业名称，已由上游做脱敏处理。"
+                "description": "专业 专业名称，已由上游做脱敏处理。"
               },
               "marketAmount": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "在校园超市累计消费金额。"
+                "description": "在超市共消费了 元"
               },
               "rechargeTimeSlot": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "最常进行校园卡充值的时段，以 2 小时为间隔。"
+                "description": "你最喜欢在X时间段进行充值,以2小时为间隔，依次类推"
               },
               "rideCoun": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "乘坐校车在校区间往返的次数。"
+                "description": "乘坐校车在校区之间往返 次"
               },
               "scholarshipCoun": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "获得奖学金的次数。"
+                "description": "获得奖学金 次"
               },
               "sname": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生姓名，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "姓名 学生姓名，已由上游做脱敏处理，不可用于身份验证。"
               },
               "stayTime": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "在图书馆累计停留的小时数。"
+                "description": "在馆一共 小时"
               },
               "stayTimePercentileRank": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "图书馆在馆时长超过同济人的百分比。"
+                "description": "超过了 %的同济人"
               },
               "stayYear": {
                 "type": [
                   "number",
                   "null"
                 ],
-                "description": "在本校就读的总年数（本研合计）。"
+                "description": "开启了属于你的X年济忆时光（本研在同济的所有年头）"
               },
               "stuLevel": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学历层次，0 表示本科，1 表示硕士，2 表示博士，9 表示教师。"
+                "description": "学历:0->本;1->硕;2->博;9->师"
               },
               "userId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学工号，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "学工号 学工号，已由上游做脱敏处理，不可用于身份验证。"
               }
             },
             "required": [
@@ -7537,7 +8079,8 @@
       "required": [
         "records"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "source": {
       "type": "string",
@@ -7616,84 +8159,84 @@
                   "number",
                   "null"
                 ],
-                "description": "助学金金额。"
+                "description": "金额"
               },
               "deptCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所属学院代码。"
+                "description": "所属学院代码"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所属学院名称。"
+                "description": "所属学院名称"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获得助学金学生姓名，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "获得助学金学生姓名 获得助学金学生姓名，已由上游做脱敏处理，不可用于身份验证。"
               },
               "rankName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "助学金等级名称。"
+                "description": "等级名称"
               },
               "ratingTerm": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "评定学期。"
+                "description": "评定学期"
               },
               "ratingYear": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "评定学年。"
+                "description": "评定学年"
               },
               "stipendName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "助学金名称。"
+                "description": "助学金名称"
               },
               "unitAbbreviation": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所属单位简称。"
+                "description": "单位简称"
               },
               "updateTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "记录更新时间。"
+                "description": "记录更新时间。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "userId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获得助学金学生学号，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "获得助学金学生学号 获得助学金学生学号，已由上游做脱敏处理，不可用于身份验证。"
               },
               "wid": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "助学金记录唯一标识。"
+                "description": "wid"
               }
             },
             "required": [
@@ -7718,13 +8261,15 @@
       "required": [
         "records"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
@@ -7803,84 +8348,84 @@
                   "string",
                   "null"
                 ],
-                "description": "宿舍楼代码。"
+                "description": "宿舍楼；码表：types"
               },
               "accomBuildingName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "宿舍楼名称。"
+                "description": "宿舍楼名称"
               },
               "accomRegionCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "宿舍区代码。"
+                "description": "宿舍区；码表：types"
               },
               "accomRegionName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "宿舍区名称。"
+                "description": "宿舍区名称"
               },
               "deptCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所属部门/学院代码。"
+                "description": "部门/学院代码"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "所属部门/学院名称。"
+                "description": "部门/学院名称"
               },
               "floor": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "楼层。"
+                "description": "楼层"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学生姓名，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "姓名 学生姓名，已由上游做脱敏处理，不可用于身份验证。"
               },
               "roomNo": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "房间号。"
+                "description": "房间号"
               },
               "userId": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "学号，已由上游做脱敏处理，不可用于身份验证。"
+                "description": "学号 学号，已由上游做脱敏处理，不可用于身份验证。"
               },
               "usertypeCode": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "人员类型代码。"
+                "description": "人员类型代码。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               },
               "usertypeName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "人员类型名称，例如硕士研究生。"
+                "description": "人员类型名称，例如硕士研究生。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               }
             },
             "required": [
@@ -7905,13 +8450,15 @@
       "required": [
         "records"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
@@ -7985,56 +8532,56 @@
                   "string",
                   "null"
                 ],
-                "description": "奖励类别，例如竞赛获奖。"
+                "description": "奖项类别"
               },
               "awardDate": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获奖时间。"
+                "description": "获奖日期"
               },
               "awardLevel": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "奖项等级，例如一等奖。"
+                "description": "奖项等级"
               },
               "competitionLevel": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "比赛等级，例如校级。"
+                "description": "竞赛等级"
               },
               "competitionName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "比赛名称。"
+                "description": "竞赛名称"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获奖记录所属部门名称。"
+                "description": "所属学院名称"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获奖人姓名，以上游返回内容为准。"
+                "description": "竞赛获奖学生姓名"
               },
               "schoolYear": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获奖记录所属学年。"
+                "description": "学年度"
               }
             },
             "required": [
@@ -8055,13 +8602,15 @@
       "required": [
         "list"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
@@ -8140,28 +8689,28 @@
                   "string",
                   "null"
                 ],
-                "description": "获奖人所属学院或部门名称。"
+                "description": "所属学院名称"
               },
               "honorTitle": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "荣誉称号或奖项名称。"
+                "description": "荣誉称号"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获奖人姓名，以上游返回内容为准。"
+                "description": "获得荣誉称号学生姓名"
               },
               "ratingYear": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "荣誉称号或奖项的评定年份。"
+                "description": "评定学年"
               }
             },
             "required": [
@@ -8178,13 +8727,15 @@
       "required": [
         "list"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
@@ -8270,49 +8821,49 @@
                   "string",
                   "null"
                 ],
-                "description": "获奖学生所属学院名称。"
+                "description": "所属学院名称"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "获奖学生姓名，以上游返回内容为准。"
+                "description": "获得奖学金学生姓名"
               },
               "rating": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "奖学金评级，例如校内。"
+                "description": "评定等级"
               },
               "ratingYear": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "奖学金评级年度。"
+                "description": "评定学年"
               },
               "scholarshipLevel": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "奖学金获奖等级。"
+                "description": "奖学金级别"
               },
               "scholarshipName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "奖学金奖项名称。"
+                "description": "奖学金名称"
               },
               "updateTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "奖学金记录更新时间。"
+                "description": "奖学金记录更新时间。（沿用现有工具定义；官网未提供该字段的明确说明。）"
               }
             },
             "required": [
@@ -8333,13 +8884,15 @@
         "count",
         "list"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "pagination": {
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
     },
     "source": {
       "type": "string",
@@ -8440,49 +8993,49 @@
                   "string",
                   "null"
                 ],
-                "description": "校门通行时间。"
+                "description": "记录时间；由上游 recordTime 映射为 dataTime。"
               },
               "deptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "通行人所属学院名称。"
+                "description": "部门名称"
               },
               "equptName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "校门通行点或设备名称。"
+                "description": "设备名称"
               },
               "lctnName": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "校门通行位置名称。"
+                "description": "安装位置名称"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "通行人姓名，以上游返回内容为准。"
+                "description": "姓名"
               },
               "portNum": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "进出状态，例如入门或出门。"
+                "description": "录端口号,1-入门，2-出门"
               },
               "sex": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "通行人性别。"
+                "description": "性别"
               }
             },
             "required": [
@@ -8503,7 +9056,8 @@
         "count",
         "userInfos"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "sinceCardRecordID": {
       "type": "string",
@@ -8621,49 +9175,49 @@
                   "string",
                   "null"
                 ],
-                "description": "通行人所属学院名称。"
+                "description": "院系"
               },
               "direction": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "图书馆进出方向，1 表示进，2 表示出。"
+                "description": "进出模式，1-进，2-出"
               },
               "door": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "图书馆出入口名称。"
+                "description": "所属区域"
               },
               "libPlace": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "图书馆通行地点。"
+                "description": "所属校区"
               },
               "name": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "通行人姓名，以上游返回内容为准。"
+                "description": "姓名"
               },
               "type": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "通行人身份类型。"
+                "description": "类型"
               },
               "visitTime": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "图书馆刷卡通行时间。"
+                "description": "刷卡时间"
               }
             },
             "required": [
@@ -8683,7 +9237,8 @@
       "required": [
         "userInfos"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "业务响应数据。"
     },
     "sinceVisitNo": {
       "type": "string",
@@ -8696,7 +9251,7 @@
     },
     "direction": {
       "type": "string",
-      "description": "本次查询指定的进出方向。"
+      "description": "进出模式，1-进，2-出"
     },
     "visitStartTime": {
       "type": "string",

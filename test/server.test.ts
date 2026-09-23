@@ -122,11 +122,11 @@ describe("createMcpServer", () => {
             assert.ok(annualBillTool);
             assert.match(
                 JSON.stringify(annualBillTool.outputSchema),
-                /年度图书馆入馆总次数/,
+                /进出图书馆次数/,
             );
             assert.match(
                 JSON.stringify(annualBillTool.outputSchema),
-                /年度食堂总消费金额/,
+                /全年消费总金额（食堂里），单位：元/,
             );
             const cardSpendingFlowTool = toolList.tools.find(
                 (tool) => tool.name === CARD_SPENDING_FLOW_TOOL_NAME,
@@ -134,11 +134,11 @@ describe("createMcpServer", () => {
             assert.ok(cardSpendingFlowTool);
             assert.match(
                 JSON.stringify(cardSpendingFlowTool.outputSchema),
-                /本次一卡通消费金额/,
+                /交易金额/,
             );
             assert.match(
                 JSON.stringify(cardSpendingFlowTool.outputSchema),
-                /完整交易时间戳/,
+                /交易时间（年月日时分秒）/,
             );
             const courseCatalogTool = toolList.tools.find(
                 (tool) => tool.name === COURSE_CATALOG_TOOL_NAME,
@@ -170,7 +170,7 @@ describe("createMcpServer", () => {
             assert.ok(studentDetailedInfoTool);
             assert.match(
                 JSON.stringify(studentDetailedInfoTool.outputSchema),
-                /学生学号/,
+                /学号/,
             );
             assert.match(
                 JSON.stringify(studentDetailedInfoTool.outputSchema),
@@ -178,7 +178,7 @@ describe("createMcpServer", () => {
             );
             assert.match(
                 JSON.stringify(studentDetailedInfoTool.outputSchema),
-                /通讯地址或联系地址/,
+                /法定送达地址/,
             );
             const scoreTool = toolList.tools.find(
                 (tool) => tool.name === UNDERGRADUATE_SCORE_TOOL_NAME,
@@ -234,7 +234,7 @@ describe("createMcpServer", () => {
             assert.ok(bookLendTool);
             assert.match(
                 JSON.stringify(bookLendTool.outputSchema),
-                /责任者（作者）/,
+                /作者/,
             );
             assert.match(
                 JSON.stringify(bookLendTool.outputSchema),
@@ -246,7 +246,7 @@ describe("createMcpServer", () => {
             assert.ok(statsTool);
             assert.match(
                 JSON.stringify(statsTool.outputSchema),
-                /食堂累计消费总金额/,
+                /食堂总消费/,
             );
             assert.match(
                 JSON.stringify(statsTool.outputSchema),
@@ -293,11 +293,11 @@ describe("createMcpServer", () => {
             assert.ok(competitionPrizeTool);
             assert.match(
                 JSON.stringify(competitionPrizeTool.outputSchema),
-                /比赛名称/,
+                /竞赛名称/,
             );
             assert.match(
                 JSON.stringify(competitionPrizeTool.outputSchema),
-                /获奖人姓名/,
+                /竞赛获奖学生姓名/,
             );
             const honoraryTitleTool = toolList.tools.find(
                 (tool) => tool.name === HONORARY_TITLE_TOOL_NAME,
@@ -305,11 +305,11 @@ describe("createMcpServer", () => {
             assert.ok(honoraryTitleTool);
             assert.match(
                 JSON.stringify(honoraryTitleTool.outputSchema),
-                /荣誉称号或奖项名称/,
+                /荣誉称号/,
             );
             assert.match(
                 JSON.stringify(honoraryTitleTool.outputSchema),
-                /评定年份/,
+                /评定学年/,
             );
             const scholarshipInfoTool = toolList.tools.find(
                 (tool) => tool.name === SCHOLARSHIP_INFO_TOOL_NAME,
@@ -321,7 +321,7 @@ describe("createMcpServer", () => {
             );
             assert.match(
                 JSON.stringify(scholarshipInfoTool.outputSchema),
-                /奖学金奖项名称/,
+                /奖学金名称/,
             );
             const schoolAccessTool = toolList.tools.find(
                 (tool) => tool.name === SCHOOL_ACCESS_TOOL_NAME,
@@ -333,7 +333,7 @@ describe("createMcpServer", () => {
             );
             assert.match(
                 JSON.stringify(schoolAccessTool.outputSchema),
-                /校门通行点或设备名称/,
+                /设备名称/,
             );
             const libraryAccessTool = toolList.tools.find(
                 (tool) => tool.name === LIBRARY_ACCESS_TOOL_NAME,
@@ -341,11 +341,11 @@ describe("createMcpServer", () => {
             assert.ok(libraryAccessTool);
             assert.match(
                 JSON.stringify(libraryAccessTool.outputSchema),
-                /图书馆刷卡通行时间/,
+                /刷卡时间/,
             );
             assert.match(
                 JSON.stringify(libraryAccessTool.outputSchema),
-                /图书馆出入口名称/,
+                /所属区域/,
             );
         } finally {
             await server.close();

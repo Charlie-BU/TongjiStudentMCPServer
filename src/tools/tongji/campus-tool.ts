@@ -48,7 +48,12 @@ export const campusTool = <S extends z.ZodRawShape, O extends z.AnyZodObject>(de
 } & CampusResponse<S, O>) => ({
     name: definition.name,
     register(server: McpServer, context: ToolRegistrationContext): void {
-        const output = definition.output ?? z.object({ status: z.enum(["ok", "empty"]), data: definition.data!.nullable(), pagination: z.record(z.string()).optional(), source: z.literal("Tongji Open Platform") });
+        const output = definition.output ?? z.object({
+            status: z.enum(["ok", "empty"]).describe("查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"),
+            data: definition.data!.nullable().describe("本工具返回的业务数据；无数据时为 null。"),
+            pagination: z.record(z.string()).optional().describe("分页游标信息；沿用上游返回的游标字段进行后续查询。"),
+            source: z.literal("Tongji Open Platform").describe("业务数据来源：同济大学开放平台。"),
+        });
         const inputSchema = definition.input.strict();
         server.registerTool<typeof inputSchema, typeof output>(definition.name, {
             title: definition.title,
@@ -89,4 +94,3 @@ export const campusTool = <S extends z.ZodRawShape, O extends z.AnyZodObject>(de
         });
     },
 });
-

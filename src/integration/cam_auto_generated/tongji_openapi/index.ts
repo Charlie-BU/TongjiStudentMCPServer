@@ -7,12 +7,6 @@ import type {
   Get_card_spending_flowQueryRequest,
   Get_card_spending_flowHeaderRequest,
   Get_card_spending_flow200Response,
-  Get_postgraduate_gpa_and_msQueryRequest,
-  Get_postgraduate_gpa_and_msHeaderRequest,
-  Get_postgraduate_gpa_and_ms200Response,
-  Get_postgraduate_required_creditQueryRequest,
-  Get_postgraduate_required_creditHeaderRequest,
-  Get_postgraduate_required_credit200Response,
   Get_card_spending_summaryQueryRequest,
   Get_card_spending_summaryHeaderRequest,
   Get_card_spending_summary200Response,
@@ -166,6 +160,12 @@ import type {
   Get_postgraduate_degree_course_msQueryRequest,
   Get_postgraduate_degree_course_msHeaderRequest,
   Get_postgraduate_degree_course_ms200Response,
+  Get_postgraduate_gpa_and_msQueryRequest,
+  Get_postgraduate_gpa_and_msHeaderRequest,
+  Get_postgraduate_gpa_and_ms200Response,
+  Get_postgraduate_required_creditQueryRequest,
+  Get_postgraduate_required_creditHeaderRequest,
+  Get_postgraduate_required_credit200Response,
   Get_user_basic_infoQueryRequest,
   Get_user_basic_infoHeaderRequest,
   Get_user_basic_info200Response,
@@ -220,38 +220,6 @@ export default class Tongji_openapiService<T> {
       tradeStartTime: _req['tradeStartTime'],
       tradeEndTime: _req['tradeEndTime'],
     };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询研究生平均成绩与平均绩点 */
-  Get_postgraduate_gpa_and_msGET(
-    req: Get_postgraduate_gpa_and_msQueryRequest &
-      Get_postgraduate_gpa_and_msHeaderRequest,
-    options?: T,
-  ): Promise<Get_postgraduate_gpa_and_ms200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/rt/teaching_info/postgraduate_gpa_and_ms');
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询研究生应修学分 */
-  Get_postgraduate_required_creditGET(
-    req: Get_postgraduate_required_creditQueryRequest &
-      Get_postgraduate_required_creditHeaderRequest,
-    options?: T,
-  ): Promise<Get_postgraduate_required_credit200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v2/rt/teaching_info/postgraduate_required_credit',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
@@ -1102,6 +1070,38 @@ export default class Tongji_openapiService<T> {
     const _req = req || {};
     let url = this.genBaseURL(
       '/v2/rt/teaching_info/postgraduate_degree_course_ms',
+    );
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询研究生平均成绩与平均绩点 */
+  Get_postgraduate_gpa_and_msGET(
+    req: Get_postgraduate_gpa_and_msQueryRequest &
+      Get_postgraduate_gpa_and_msHeaderRequest,
+    options?: T,
+  ): Promise<Get_postgraduate_gpa_and_ms200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/rt/teaching_info/postgraduate_gpa_and_ms');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询研究生应修学分 */
+  Get_postgraduate_required_creditGET(
+    req: Get_postgraduate_required_creditQueryRequest &
+      Get_postgraduate_required_creditHeaderRequest,
+    options?: T,
+  ): Promise<Get_postgraduate_required_credit200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL(
+      '/v2/rt/teaching_info/postgraduate_required_credit',
     );
     const method = 'GET';
     const data = undefined;

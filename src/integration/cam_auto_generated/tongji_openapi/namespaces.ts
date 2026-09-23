@@ -18,19 +18,22 @@ export interface Get_card_spending_flowHeaderRequest {
 }
 
 export interface Get_card_spending_flow200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_card_spending_flow200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_card_spending_flow200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_card_spending_flow200ResponseDataUserInfosItem[];
 }
 
 export interface Get_card_spending_flow200ResponseDataUserInfosItem {
-  /** 时间代码 */
-  tranCode?: string;
   /** 所属校区 */
   campusAreaName?: string;
   /** 卡内余额 */
@@ -61,55 +64,9 @@ export interface Get_card_spending_flow200ResponseDataUserInfosItem {
   tradeMonth?: string;
   /** 交易时间段（时分秒） */
   tradeTime?: string;
+  /** 时间代码 */
+  tranCode?: string;
   /** 学工号 */
-  userId?: string;
-}
-
-export interface Get_postgraduate_gpa_and_msQueryRequest {
-  /** 学号 */
-  userId: string;
-}
-
-export interface Get_postgraduate_gpa_and_msHeaderRequest {
-  /** Bearer <service access_token> */
-  Authorization: string;
-}
-
-export interface Get_postgraduate_gpa_and_ms200Response {
-  code?: string;
-  data?: Get_postgraduate_gpa_and_ms200ResponseDataItem[];
-  msg?: string;
-}
-
-export interface Get_postgraduate_gpa_and_ms200ResponseDataItem {
-  /** 平均绩点 */
-  GPA?: number;
-  /** 平均成绩 */
-  MS?: number;
-  /** 学号 */
-  userId?: string;
-}
-
-export interface Get_postgraduate_required_creditQueryRequest {
-  /** 学号 */
-  userId: string;
-}
-
-export interface Get_postgraduate_required_creditHeaderRequest {
-  /** Bearer <service access_token> */
-  Authorization: string;
-}
-
-export interface Get_postgraduate_required_credit200Response {
-  code?: string;
-  data?: Get_postgraduate_required_credit200ResponseDataItem[];
-  msg?: string;
-}
-
-export interface Get_postgraduate_required_credit200ResponseDataItem {
-  /** 应修学分 */
-  requiredCredit?: number;
-  /** 学号 */
   userId?: string;
 }
 
@@ -132,10 +89,15 @@ export interface Get_card_spending_summaryHeaderRequest {
 }
 
 export interface Get_card_spending_summary200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_card_spending_summary200ResponseDataItem[] | null;
+  /** 错误代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   error_code?: number;
+  /** 错误消息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   error_msg?: string;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
@@ -159,47 +121,82 @@ export interface Get_book_lend_info_v1HeaderRequest {
 }
 
 export interface Get_book_lend_info_v1200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_book_lend_info_v1200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_book_lend_info_v1200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_book_lend_info_v1200ResponseDataUserInfosItem[];
 }
 
 export interface Get_book_lend_info_v1200ResponseDataUserInfosItem {
-  docTypeName?: string;
-  isJournal?: string;
-  isbn?: string;
-  langCode?: string;
-  locationCode?: string;
-  locationName?: string;
-  name?: string;
-  propNo?: string;
-  pubYear?: string;
-  publisher?: string;
-  renewDate?: string;
-  renewTimes?: number;
-  retDate?: string;
-  title?: string;
-  totalLendQty?: number;
-  userId?: string;
-  voltFlag?: string;
-  langName?: string;
-  lendDate?: string;
+  /** 催还日期 */
   asbackDate?: string;
+  /** 催还次数 */
   asbackTimes?: number;
+  /** 责任者(作者) */
   author?: string;
+  /** 图书类别代码 */
   callNo?: string;
+  /** 图书类别名称 */
   callNoName?: string;
+  /** 书籍国别代码 */
   countryCode?: string;
+  /** 书籍国别 */
   countryName?: string;
+  /** 欠款状态标识 */
   debtFlag?: number;
+  /** 单位代码 */
   deptCode?: string;
+  /** 单位名称 */
   deptName?: string;
+  /** 文献类型代码 */
   docTypeCode?: string;
+  /** 文献类型 */
+  docTypeName?: string;
+  /** 暂无描述 */
+  isJournal?: string;
+  /** ISBN编号 */
+  isbn?: string;
+  /** 书籍语种代码 */
+  langCode?: string;
+  /** 书籍语种 */
+  langName?: string;
+  /** 借出日期 */
+  lendDate?: string;
+  /** 馆藏地代码 */
+  locationCode?: string;
+  /** 名称 */
+  locationName?: string;
+  /** 姓名 */
+  name?: string;
+  /** 财产号 */
+  propNo?: string;
+  /** 出版年 */
+  pubYear?: string;
+  /** 出版社 */
+  publisher?: string;
+  /** 续借日期 */
+  renewDate?: string;
+  /** 续借次数 */
+  renewTimes?: number;
+  /** 实际还书时间 */
+  retDate?: string;
+  /** 题名(书名) */
+  title?: string;
+  /** 累计借书次数 */
+  totalLendQty?: number;
+  /** 学工号 */
+  userId?: string;
+  /** 违章状态标识 */
+  voltFlag?: string;
 }
 
 export interface Get_research_projectsQueryRequest {
@@ -215,40 +212,68 @@ export interface Get_research_projectsHeaderRequest {
 }
 
 export interface Get_research_projects200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_research_projects200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_research_projects200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_research_projects200ResponseDataUserInfosItem[];
 }
 
 export interface Get_research_projects200ResponseDataUserInfosItem {
-  projNo?: string;
-  projSecondLevelCode?: string;
-  projSecondLevelName?: string;
-  projStartDate?: string;
-  projStatusName?: string;
-  userId?: string;
-  appropriationCompany?: string;
-  closingDate?: string;
-  contractAmount?: string;
-  deptCode?: string;
-  deptName?: string;
-  id?: string;
-  name?: string;
-  participationModeCode?: string;
-  participationModeName?: string;
-  projClassifyCode?: string;
-  projClassifyName?: string;
-  projEndDate?: string;
-  projEstablishmentDate?: string;
-  projFirstLevelCode?: string;
-  projFirstLevelName?: string;
+  /** 项目id */
   projId?: string;
+  /** 纵向项目二级类别名称 */
+  projSecondLevelName?: string;
+  /** 开始日期 */
+  projStartDate?: string;
+  /** 项目状态名称 */
+  projStatusName?: string;
+  /** 项目负责人工号 */
+  userId?: string;
+  /** 资助单位名称 */
+  appropriationCompany?: string;
+  /** 完成日期 */
+  closingDate?: string;
+  /** 合同经费 */
+  contractAmount?: string;
+  /** 人员所属学院代码 */
+  deptCode?: string;
+  /** 人员所属学院名称 */
+  deptName?: string;
+  /** 主键 */
+  id?: string;
+  /** 项目负责人姓名 */
+  name?: string;
+  /** 项目性质代码 */
+  participationModeCode?: string;
+  /** 项目性质名称 */
+  participationModeName?: string;
+  /** 项目分类代码 */
+  projClassifyCode?: string;
+  /** 项目分类名称 */
+  projClassifyName?: string;
+  /** 结束日期 */
+  projEndDate?: string;
+  /** 立项日期 */
+  projEstablishmentDate?: string;
+  /** 纵向项目类别代码 */
+  projFirstLevelCode?: string;
+  /** 纵向项目类别名称 */
+  projFirstLevelName?: string;
+  /** 项目名称 */
   projName?: string;
+  /** 项目编号 */
+  projNo?: string;
+  /** 纵向项目二级类别代码 */
+  projSecondLevelCode?: string;
 }
 
 export interface Get_research_worksQueryRequest {
@@ -262,27 +287,43 @@ export interface Get_research_worksHeaderRequest {
 }
 
 export interface Get_research_works200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_research_works200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_research_works200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_research_works200ResponseDataUserInfosItem[];
 }
 
 export interface Get_research_works200ResponseDataUserInfosItem {
+  /** 著作类别代码 */
   bookCategoryCode?: string;
+  /** 著作类别名称 */
   bookCategoryName?: string;
+  /** 著作名称 */
   bookName?: string;
+  /** 人员所属学院代码 */
   deptCode?: string;
+  /** 人员所属学院名称 */
   deptName?: string;
+  /** 姓名 */
   name?: string;
+  /** 出版时间 */
   publicationYear?: string;
+  /** 出版社名称 */
   publishHouseName?: string;
+  /** 作者排名 */
   seqNo?: number;
+  /** 总字数（万） */
   totalWords?: number;
+  /** 学工号 */
   userId?: string;
 }
 
@@ -299,24 +340,27 @@ export interface Get_user_contact_infoHeaderRequest {
 }
 
 export interface Get_user_contact_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_user_contact_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_user_contact_info200ResponseDataItem {
-  /** 姓名 */
-  name?: string;
-  /** 手机号 */
-  phone?: string;
-  /** 学工号 */
-  userId?: string;
   /** 部门/学院代码 */
   deptCode?: string;
   /** 部门/学院姓名 */
   deptName?: string;
   /** 邮箱 */
   email?: string;
+  /** 姓名 */
+  name?: string;
+  /** 手机号 */
+  phone?: string;
+  /** 学工号 */
+  userId?: string;
 }
 
 export interface Update_user_contact_infoHeaderRequest {
@@ -342,7 +386,9 @@ export interface Update_user_contact_info200Response {
 export interface Update_user_contact_info200ResponseData {
   /** 状态码 */
   code?: string;
+  /** 受影响的记录行数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   effectRows?: number;
+  /** 上游日志追踪信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   logTrace?: string;
 }
 
@@ -357,29 +403,47 @@ export interface Get_competition_prizes_v1HeaderRequest {
 }
 
 export interface Get_competition_prizes_v1200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_competition_prizes_v1200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_competition_prizes_v1200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_competition_prizes_v1200ResponseDataUserInfosItem[];
 }
 
 export interface Get_competition_prizes_v1200ResponseDataUserInfosItem {
+  /** 创新成绩认定类型 */
   achievementRecognitionType?: string;
+  /** 奖项类别 */
   awardCategory?: string;
+  /** 获奖日期 */
   awardDate?: string;
+  /** 奖项等级 */
   awardLevel?: string;
+  /** 竞赛等级 */
   competitionLevel?: string;
+  /** 竞赛名称 */
   competitionName?: string;
+  /** 学分 */
   credit?: string;
+  /** 所属学院代码 */
   deptCode?: string;
+  /** 所属学院名称 */
   deptName?: string;
+  /** id */
   id?: string;
+  /** 竞赛获奖学生姓名 */
   name?: string;
+  /** 学年度 */
   schoolYear?: string;
+  /** 竞赛获奖学生学号 */
   userId?: string;
 }
 
@@ -394,26 +458,40 @@ export interface Get_hardship_allowanceHeaderRequest {
 }
 
 export interface Get_hardship_allowance200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_hardship_allowance200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_hardship_allowance200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_hardship_allowance200ResponseDataUserInfosItem[];
 }
 
 export interface Get_hardship_allowance200ResponseDataUserInfosItem {
-  deptName?: string;
-  hardshipAllowanceName?: string;
-  name?: string;
-  ratingLevelName?: string;
-  ratingTerm?: string;
-  ratingYear?: string;
-  userId?: string;
+  /** 金额 */
   amount?: number;
+  /** 所属学院代码 */
   deptCode?: string;
+  /** 所属学院名称 */
+  deptName?: string;
+  /** 困难补助名称 */
+  hardshipAllowanceName?: string;
+  /** 获得困难补助学生姓名 */
+  name?: string;
+  /** 评定等级名称 */
+  ratingLevelName?: string;
+  /** 评定学期 */
+  ratingTerm?: string;
+  /** 评定学年 */
+  ratingYear?: string;
+  /** 获得困难补助学生学号 */
+  userId?: string;
 }
 
 export interface Student_honorary_title_v1QueryRequest {
@@ -427,26 +505,40 @@ export interface Student_honorary_title_v1HeaderRequest {
 }
 
 export interface Student_honorary_title_v1200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Student_honorary_title_v1200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Student_honorary_title_v1200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Student_honorary_title_v1200ResponseDataUserInfosItem[];
 }
 
 export interface Student_honorary_title_v1200ResponseDataUserInfosItem {
+  /** 评定学期 */
   ratingTerm?: string;
+  /** 评定学年 */
   ratingYear?: string;
+  /** 奖励级别 */
   rewardLevel?: string;
-  wid?: string;
-  deptCode?: string;
-  deptName?: string;
-  honorTitle?: string;
-  name?: string;
+  /** 获得荣誉称号学生学号 */
   userId?: string;
+  /** wid */
+  wid?: string;
+  /** 所属学院代码 */
+  deptCode?: string;
+  /** 所属学院名称 */
+  deptName?: string;
+  /** 荣誉称号 */
+  honorTitle?: string;
+  /** 获得荣誉称号学生姓名 */
+  name?: string;
 }
 
 export interface Get_scholarship_info_v1QueryRequest {
@@ -460,26 +552,41 @@ export interface Get_scholarship_info_v1HeaderRequest {
 }
 
 export interface Get_scholarship_info_v1200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_scholarship_info_v1200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_scholarship_info_v1200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_scholarship_info_v1200ResponseDataUserInfosItem[];
 }
 
 export interface Get_scholarship_info_v1200ResponseDataUserInfosItem {
+  /** 金额 */
   amount?: string;
+  /** 所属学院代码 */
   deptCode?: string;
+  /** 所属学院名称 */
   deptName?: string;
+  /** 获得奖学金学生姓名 */
   name?: string;
+  /** 评定等级 */
   rating?: string;
+  /** 评定学年 */
   ratingYear?: string;
+  /** 奖学金级别 */
   scholarshipLevel?: string;
+  /** 奖学金名称 */
   scholarshipName?: string;
+  /** 获得奖学金学生学号 */
   userId?: string;
+  /** wid */
   wid?: string;
 }
 
@@ -494,26 +601,41 @@ export interface Get_stipend_v1HeaderRequest {
 }
 
 export interface Get_stipend_v1200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_stipend_v1200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_stipend_v1200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_stipend_v1200ResponseDataUserInfosItem[];
 }
 
 export interface Get_stipend_v1200ResponseDataUserInfosItem {
+  /** 金额 */
   amount?: number;
+  /** 所属学院代码 */
   deptCode?: string;
+  /** 所属学院名称 */
   deptName?: string;
+  /** 获得助学金学生姓名 */
   name?: string;
+  /** 等级名称 */
   rankName?: string;
+  /** 评定学期 */
   ratingTerm?: string;
+  /** 评定学年 */
   ratingYear?: string;
+  /** 助学金名称 */
   stipendName?: string;
+  /** 单位简称 */
   unitAbbreviation?: string;
+  /** 获得助学金学生学号 */
   userId?: string;
 }
 
@@ -528,25 +650,39 @@ export interface Get_student_loanHeaderRequest {
 }
 
 export interface Get_student_loan200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_student_loan200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_student_loan200ResponseData {
-  count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_student_loan200ResponseDataUserInfosItem[];
+  /** 返回记录数量。 */
+  count?: number;
 }
 
 export interface Get_student_loan200ResponseDataUserInfosItem {
+  /** 所属学院代码 */
   deptCode?: string;
+  /** 所属学院名称 */
   deptName?: string;
+  /** 贷款金额 */
   loanAmount?: number;
+  /** 贷款编码 */
   loanCode?: string;
+  /** 贷款类型 */
   loanType?: string;
+  /** 贷款学年 */
   loanYear?: string;
+  /** 获得助学贷款学生姓名 */
   name?: string;
+  /** 应还款学年 */
   repaymentYear?: string;
+  /** 获得助学贷款学生学号 */
   userId?: string;
 }
 
@@ -561,26 +697,41 @@ export interface Get_work_studyHeaderRequest {
 }
 
 export interface Get_work_study200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_work_study200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_work_study200ResponseData {
-  count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_work_study200ResponseDataUserInfosItem[];
+  /** 返回记录数量。 */
+  count?: number;
 }
 
 export interface Get_work_study200ResponseDataUserInfosItem {
+  /** 申请编号 */
   applicationNo?: string;
+  /** 勤工单位名称 */
   companyName?: string;
+  /** 学生学院代码 */
   deptCode?: string;
+  /** 学生学院名称 */
   deptName?: string;
+  /** 勤工岗位名称 */
   jobName?: string;
+  /** 勤工助学学生姓名 */
   name?: string;
+  /** 已获薪酬 */
   paid?: number;
+  /** 勤工助学学生学号 */
   userId?: string;
+  /** 工作结束日期 */
   workEndDate?: string;
+  /** 工作开始日期 */
   workStartDate?: string;
 }
 
@@ -595,12 +746,16 @@ export interface Get_teacher_current_term_timetableHeaderRequest {
 }
 
 export interface Get_teacher_current_term_timetable200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_teacher_current_term_timetable200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_teacher_current_term_timetable200ResponseData {
+  /** 人员业务记录。 */
   userInfos?: any;
 }
 
@@ -628,18 +783,6 @@ export interface Create_cloud_meeting200Response {
 }
 
 export interface Create_cloud_meeting200ResponseData {
-  /** 自动录制 */
-  autoRecord?: number;
-  /** 会议描述 */
-  description?: string;
-  /** 会议时长 */
-  duration?: string;
-  /** 会议链接 */
-  hostUrl?: string;
-  /** id */
-  id?: number;
-  /** 邀请函链接 */
-  invitationImageUrl?: string;
   /** 加入链接 */
   joinUrl?: string;
   /** 会议日期 */
@@ -658,6 +801,18 @@ export interface Create_cloud_meeting200ResponseData {
   topic?: string;
   /** 主持密码 */
   zcode?: string;
+  /** 自动录制；码表：0：不录，1：本地录制，2：云端录制 */
+  autoRecord?: number;
+  /** 会议描述 */
+  description?: string;
+  /** 会议时长 */
+  duration?: string;
+  /** 会议链接 */
+  hostUrl?: string;
+  /** id */
+  id?: number;
+  /** 邀请函链接 */
+  invitationImageUrl?: string;
 }
 
 export interface Get_card_balanceQueryRequest {
@@ -671,13 +826,18 @@ export interface Get_card_balanceHeaderRequest {
 }
 
 export interface Get_card_balance200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_card_balance200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_card_balance200ResponseDataItem {
+  /** 余额 */
   balance?: number;
+  /** 学工号 */
   userId?: string;
 }
 
@@ -698,26 +858,40 @@ export interface Get_card_current_actual_flowHeaderRequest {
 }
 
 export interface Get_card_current_actual_flow200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_card_current_actual_flow200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_card_current_actual_flow200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_card_current_actual_flow200ResponseDataUserInfosItem[];
 }
 
 export interface Get_card_current_actual_flow200ResponseDataUserInfosItem {
-  cardBalance?: number;
-  entryTime?: string;
-  name?: string;
-  pos?: number;
-  tradeAmount?: number;
+  /** 交易地点；码表：trade_place */
   tradePlace?: number;
+  /** 交易时间 */
   tradeTime?: string;
+  /** 交易类型；码表：trade_type */
   tradeType?: string;
+  /** 学工号 */
   userId?: string;
+  /** 卡内余额 */
+  cardBalance?: number;
+  /** 入账时间 */
+  entryTime?: string;
+  /** 姓名 */
+  name?: string;
+  /** POS号 */
+  pos?: number;
+  /** 交易金额 */
+  tradeAmount?: number;
 }
 
 export interface Get_school_accessQueryRequest {
@@ -739,21 +913,35 @@ export interface Get_school_accessHeaderRequest {
 }
 
 export interface Get_school_access200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_school_access200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_school_access200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_school_access200ResponseDataUserInfosItem[];
 }
 
 export interface Get_school_access200ResponseDataUserInfosItem {
+  /** 入、出门 */
+  PortNumName?: string;
+  /** 校区编号 */
+  campusId?: number;
+  /** 校区名称 */
+  campusName?: string;
+  /** 记录卡号 */
+  cardData?: string;
   /** 流水号 */
   cardRecordID?: number;
   /** 部门名称 */
   deptName?: string;
+  /** 设备标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   equptID?: number;
   /** 设备ID */
   equptId?: string;
@@ -765,25 +953,18 @@ export interface Get_school_access200ResponseDataUserInfosItem {
   lctnName?: string;
   /** 姓名 */
   name?: string;
-  /** 学工号 */
-  userId?: string;
   /** 内部人员编号 */
   personnelId?: number;
   /** 录端口号,1-入门，2-出门 */
   portNum?: number;
+  /** 通行方向名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   portNumName?: string;
   /** 记录时间 */
   recordTime?: string;
   /** 性别 */
   sex?: string;
-  /** 入、出门 */
-  PortNumName?: string;
-  /** 校区编号 */
-  campusId?: number;
-  /** 校区名称 */
-  campusName?: string;
-  /** 记录卡号 */
-  cardData?: string;
+  /** 学工号 */
+  userId?: string;
 }
 
 export interface Get_library_accessQueryRequest {
@@ -805,17 +986,23 @@ export interface Get_library_accessHeaderRequest {
 }
 
 export interface Get_library_access200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_library_access200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_library_access200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 人员业务记录。 */
   userInfos?: Get_library_access200ResponseDataUserInfosItem[];
 }
 
 export interface Get_library_access200ResponseDataUserInfosItem {
+  /** 校园卡标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   cardId?: string;
   /** 入出门 */
   dataEvent?: string;
@@ -854,8 +1041,11 @@ export interface Get_school_calendarHeaderRequest {
 }
 
 export interface Get_school_calendar200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: any;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
@@ -870,52 +1060,67 @@ export interface Cet_scoreHeaderRequest {
 }
 
 export interface Cet_score200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Cet_score200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Cet_score200ResponseData {
-  list?: Cet_score200ResponseDataListItem[];
+  /** 分页页码。 */
   pageNum_?: number;
+  /** 业务记录列表。 */
+  list?: Cet_score200ResponseDataListItem[];
+  /** 每页记录数。 */
   pageSize_?: number;
+  /** 记录总数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   total_?: number;
 }
 
 export interface Cet_score200ResponseDataListItem {
-  calendarId?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  calendarTerm?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  calendarYear?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  calendarYearTerm?: string;
-  calendarYearTermCn?: string;
-  cardNo?: string;
-  cetType?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  competitionExamCategory?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试项目标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   competitionId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 竞赛类型。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   competitionType?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试时间。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   examTime?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 口语成绩。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   oralScore?: string;
+  /** 笔试成绩。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   score?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   scoreExamCategory?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  calendarId?: number;
+  /** 学期序号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  calendarTerm?: string;
+  /** 学年（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  calendarYear?: string;
+  /** 学年学期标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  calendarYearTerm?: string;
+  /** 学年学期名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  calendarYearTermCn?: string;
+  /** 准考证号，已由上游做脱敏处理，不可用于身份验证。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  cardNo?: string;
+  /** CET 类型，1 表示四级，2 表示六级。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  cetType?: number;
+  /** 考试类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  competitionExamCategory?: string;
+  /** 分数排名。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   scoreRank?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试报名记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   signUpStudentId?: string;
+  /** 学生ID，已由上游做脱敏处理，不可用于身份验证。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   studentId?: string;
+  /** 学生姓名，已由上游做脱敏处理，不可用于身份验证。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   studentName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 科目代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   subjectCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 标题（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   title?: string;
+  /** 考试科目名称，例如（2）英语六级笔试。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   writtenSubjectName?: string;
 }
 
@@ -930,21 +1135,33 @@ export interface Get_postgraduate_culture_plan_countHeaderRequest {
 }
 
 export interface Get_postgraduate_culture_plan_count200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code: string;
+  /** 业务响应数据。 */
   data: Get_postgraduate_culture_plan_count200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_postgraduate_culture_plan_count200ResponseDataItem {
-  children?: number[] | null;
-  credit?: string;
-  isPass?: string;
-  labelId?: number;
-  labelName?: string;
-  labelNameEn?: string;
-  parentId?: number;
-  yearEnd?: number;
+  /** 开始学年（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   yearStart?: number;
+  /** 子项（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  children?: number[] | null;
+  /** 学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  credit?: string;
+  /** 是否通过（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  isPass?: string;
+  /** 分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  labelId?: number;
+  /** 分类名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  labelName?: string;
+  /** 分类英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  labelNameEn?: string;
+  /** 父项标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  parentId?: number;
+  /** 结束学年（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  yearEnd?: number;
 }
 
 export interface Get_postgraduate_culture_planQueryRequest {
@@ -958,150 +1175,213 @@ export interface Get_postgraduate_culture_planHeaderRequest {
 }
 
 export interface Get_postgraduate_culture_plan200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_postgraduate_culture_plan200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_postgraduate_culture_plan200ResponseData {
-  departmentCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  studentIdList?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  studentIds?: string;
-  studentName?: string;
-  teacherId?: string;
-  teacherName?: string;
-  teacherNameEn?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  templateId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  term?: string;
-  trainingCategory?: string;
-  trainingCategoryCode?: string;
-  trainingCategoryI18n?: string;
-  trainingLevel?: string;
-  trainingLevelCode?: string;
-  trainingLevelI18n?: string;
-  workFolwId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  associationStatus?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  associationStatusStr?: string;
-  campus?: string;
-  campusI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  college?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  condition?: string;
-  courseCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseCodeList?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseCodeStr?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseCodeStrStatus?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseNameEn?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseRelStatus?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  courseRemarks?: string;
-  createBy?: string;
-  createTime?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  credits?: string;
-  cultureId?: number;
-  cultureName?: string;
-  cultureNameEn?: string;
-  degreeType?: string;
-  degreeTypeI18n?: string;
-  departmentId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  departmentId2?: string;
-  departmentId2I18n?: string;
-  departmentIdI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  deptIds?: string;
-  dic?: boolean;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  directionCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  directionName?: string;
-  enrolDate?: string;
-  enrolSeason?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  faculty?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  faculty2?: string;
-  faculty2I18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  facultyCode?: string;
-  facultyI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  firstForeignLanguage?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  fisrtLanguage?: string;
-  formLearning?: string;
-  formLearningI18n?: string;
-  grade?: number;
-  id?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  ids?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  isElective?: string;
-  isOverseas?: string;
-  isOverseasI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  labelId?: string;
-  leaveSchool?: string;
-  lengthSchooling?: string;
-  major?: string;
-  majorCode?: string;
-  majorCodeI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  majorCodeList?: string;
-  majorEn?: string;
-  majorI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  majorList?: string;
-  name?: string;
-  nameSpelling?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  newCourseCodeList?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  newCourseCodeStr?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  newCoursesCode?: string;
-  old4m3?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  oldCoursesCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  oldCultureId?: string;
+  /** 分页页码。 */
   pageNum_?: number;
+  /** 关联状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  associationStatus?: string;
+  /** 关联状态说明（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  associationStatusStr?: string;
+  /** 校区（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  campus?: string;
+  /** 校区显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  campusI18n?: string;
+  /** 学院（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  college?: string;
+  /** 条件信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  condition?: string;
+  /** 课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseCode?: string;
+  /** 课程代码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseCodeList?: string;
+  /** 课程代码汇总文本（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseCodeStr?: string;
+  /** 课程代码状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseCodeStrStatus?: string;
+  /** 课程标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseId?: string;
+  /** 课程名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseName?: string;
+  /** 课程英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseNameEn?: string;
+  /** 课程关联状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseRelStatus?: string;
+  /** 课程备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseRemarks?: string;
+  /** 创建人（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createBy?: string;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createTime?: number;
+  /** 学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  credits?: string;
+  /** 培养方案标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  cultureId?: number;
+  /** 培养方案名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  cultureName?: string;
+  /** 培养方案英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  cultureNameEn?: string;
+  /** 学位类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  degreeType?: string;
+  /** 学位类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  degreeTypeI18n?: string;
+  /** 部门代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  departmentCode?: string;
+  /** 部门信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  departmentId?: string;
+  /** 第二部门信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  departmentId2?: string;
+  /** 第二部门显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  departmentId2I18n?: string;
+  /** 部门显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  departmentIdI18n?: string;
+  /** 部门标识列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  deptIds?: string;
+  /** 上游 dic 字段；官网仅有返回示例，未说明业务含义，按原值返回。 */
+  dic?: boolean;
+  /** 研究方向代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  directionCode?: string;
+  /** 研究方向名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  directionName?: string;
+  /** 入学日期（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  enrolDate?: string;
+  /** 入学季节（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  enrolSeason?: string;
+  /** 院系信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  faculty?: string;
+  /** 第二院系信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  faculty2?: string;
+  /** 第二院系显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  faculty2I18n?: string;
+  /** 院系代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  facultyCode?: string;
+  /** 院系显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  facultyI18n?: string;
+  /** 第一外语（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  firstForeignLanguage?: string;
+  /** 第一外语（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  fisrtLanguage?: string;
+  /** 学习形式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  formLearning?: string;
+  /** 学习形式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  formLearningI18n?: string;
+  /** 年级（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  grade?: number;
+  /** 记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  id?: number;
+  /** 标识集合（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  ids?: string;
+  /** 是否选修（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  isElective?: string;
+  /** 是否境外（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  isOverseas?: string;
+  /** 境外状态显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  isOverseasI18n?: string;
+  /** 分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  labelId?: string;
+  /** 离校状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  leaveSchool?: string;
+  /** 学制（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  lengthSchooling?: string;
+  /** 专业（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  major?: string;
+  /** 专业代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  majorCode?: string;
+  /** 专业代码显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  majorCodeI18n?: string;
+  /** 专业代码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  majorCodeList?: string;
+  /** 专业英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  majorEn?: string;
+  /** 专业显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  majorI18n?: string;
+  /** 专业列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  majorList?: string;
+  /** 姓名或记录名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  name?: string;
+  /** 姓名拼写（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  nameSpelling?: string;
+  /** 新课程代码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newCourseCodeList?: string;
+  /** 新课程代码汇总文本（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newCourseCodeStr?: string;
+  /** 新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newCoursesCode?: string;
+  /** 上游 old4m3 字段；官网仅有返回示例，未说明业务含义，按原值返回。 */
+  old4m3?: string;
+  /** 旧课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  oldCoursesCode?: string;
+  /** 原培养方案标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  oldCultureId?: string;
+  /** 每页记录数。 */
   pageSize_?: number;
+  /** 历史通过记录（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   passHistory?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 学时（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   period?: string;
+  /** 培养计划完成状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   plansComplete?: string;
+  /** 培养计划完成情况（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   plansCompleteStr?: string;
+  /** 项目标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   projId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 临时项目标识集合（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   projIdsTemp?: string;
+  /** 备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remarks?: string;
+  /** 方案年级（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   schemeGrade?: number;
+  /** 专项计划（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   spcialPlan?: string | null;
+  /** 专项计划显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   spcialPlanI18n?: string;
+  /** 计划状态（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   statusPlan?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 计划状态说明（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   statusPlanStr?: string;
+  /** 学生类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   studentCategory?: string;
+  /** 学生类别显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   studentCategoryI18n?: string;
+  /** 学生学号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   studentId?: string;
+  /** 学生标识列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  studentIdList?: string;
+  /** 学生标识列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  studentIds?: string;
+  /** 学生姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  studentName?: string;
+  /** 教师工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  teacherId?: string;
+  /** 教师姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  teacherName?: string;
+  /** 教师英文姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  teacherNameEn?: string;
+  /** 模板标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  templateId?: string;
+  /** 学期序号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  term?: string;
+  /** 培养类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  trainingCategory?: string;
+  /** 培养类别代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  trainingCategoryCode?: string;
+  /** 培养类别显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  trainingCategoryI18n?: string;
+  /** 培养层次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  trainingLevel?: string;
+  /** 培养层次代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  trainingLevelCode?: string;
+  /** 培养层次显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  trainingLevelI18n?: string;
+  /** 工作流标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  workFolwId?: string;
 }
 
 export interface Get_postgraduate_major_infoHeaderRequest {
@@ -1110,12 +1390,27 @@ export interface Get_postgraduate_major_infoHeaderRequest {
 }
 
 export interface Get_postgraduate_major_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_postgraduate_major_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_postgraduate_major_info200ResponseDataItem {
+  /** 序号 */
+  id?: string;
+  /** 专业名称 */
+  majorName?: string;
+  /** 硕士点批准时间 */
+  masterTime?: string;
+  /** 是否国家重点学科：1，是；0，否 */
+  nationImportant?: string;
+  /** 自设专业标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  selfMajor?: string;
+  /** 是否在用：1，在用；0，不在用 */
+  status?: string;
   /** 二级学科校标代码 */
   SecondLevelDisciplineSchoolCode?: string;
   /** 专业类型 */
@@ -1132,21 +1427,10 @@ export interface Get_postgraduate_major_info200ResponseDataItem {
   firstLevelDisciplineName?: string;
   /** 一级学科校标代码 */
   firstLevelDisciplineSchoolCode?: string;
-  /** 序号 */
-  id?: string;
   /** 专业代码 */
   majorCode?: string;
   /** 专业英文名称 */
   majorEnName?: string;
-  /** 专业名称 */
-  majorName?: string;
-  /** 硕士点批准时间 */
-  masterTime?: string;
-  /** 是否国家重点学科：1，是；0，否 */
-  nationImportant?: string;
-  selfMajor?: string;
-  /** 是否在用：1，在用；0，不在用 */
-  status?: string;
 }
 
 export interface Get_advanced_lecture_countQueryRequest {
@@ -1160,21 +1444,33 @@ export interface Get_advanced_lecture_countHeaderRequest {
 }
 
 export interface Get_advanced_lecture_count200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_advanced_lecture_count200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_advanced_lecture_count200ResponseData {
-  theCollegeNumShould?: number;
+  /** 学院讲座已完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   collegeNumHave?: number;
+  /** 学院讲座应完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   collegeNumShould?: number;
+  /** 最近年级信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   lastGrade?: string;
+  /** 慕课已完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   moocNumHave?: number;
+  /** 慕课应完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   moocNumShould?: number;
+  /** 校级讲座已完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   schoolNumHave?: number;
+  /** 校级讲座应完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   schoolNumShould?: number;
+  /** 本学院讲座已完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   theCollegeNumHave?: number;
+  /** 本学院讲座应完成数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  theCollegeNumShould?: number;
 }
 
 export interface Postgraduate_scoreQueryRequest {
@@ -1190,154 +1486,201 @@ export interface Postgraduate_scoreHeaderRequest {
 }
 
 export interface Postgraduate_score200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Postgraduate_score200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Postgraduate_score200ResponseData {
-  size?: number;
-  endRow?: number;
-  firstPage?: number;
-  hasNextPage?: boolean;
-  hasPreviousPage?: boolean;
-  isFirstPage?: boolean;
-  isLastPage?: boolean;
-  lastPage?: number;
+  /** 业务记录列表。 */
   list?: Postgraduate_score200ResponseDataListItem[];
+  /** 末行位置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  endRow?: number;
+  /** 首页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  firstPage?: number;
+  /** 是否有下一页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  hasNextPage?: boolean;
+  /** 是否有上一页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  hasPreviousPage?: boolean;
+  /** 是否首页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  isFirstPage?: boolean;
+  /** 是否末页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  isLastPage?: boolean;
+  /** 末页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  lastPage?: number;
+  /** 导航起始页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   navigateFirstPage?: number;
+  /** 导航结束页（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   navigateLastPage?: number;
+  /** 导航页数量（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   navigatePages?: number;
+  /** 导航页码列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   navigatepageNums?: number[];
+  /** 下一页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   nextPage?: number;
+  /** 当前页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   pageNum?: number;
+  /** 每页记录数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   pageSize?: number;
+  /** 总页数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   pages?: number;
+  /** 上一页页码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   prePage?: number;
+  /** 当前页记录数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  size?: number;
+  /** 起始行位置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   startRow?: number;
+  /** 记录总数（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   total?: number;
 }
 
 export interface Postgraduate_score200ResponseDataListItem {
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 附加成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   addScore?: string;
+  /** 学期信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   calendar?: string;
+  /** 学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   calendarId?: number;
+  /** 课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseCredit?: string;
+  /** 课程分类（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseLabel?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseLabelId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 分类名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseLabelName?: string;
+  /** 课程名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 课程英文名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseNameEn?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 课程性质（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseNature?: string;
+  /** 课程性质显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseNatureI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 课程编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseNum?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   createAt?: string;
+  /** 学分（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   credit?: number;
+  /** 平时成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   dailyScore?: string | null;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 成绩录入人（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   enterPerson?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 成绩录入时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   enterTime?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试方式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examMode?: string;
+  /** 考试方式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examModeI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试成绩一（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examScore1?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试成绩二（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examScore2?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试成绩一名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examScoreName1?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 考试成绩二名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examScoreName2?: string;
+  /** 考试类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examType?: string;
+  /** 考试类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   examTypeI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 院系信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   faculty?: string;
+  /** 院系显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   facultyI18n?: string;
+  /** 最终成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   finalScore?: string | null;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 学习形式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   formLearning?: string;
+  /** 学习形式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   formLearningI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 绩点（上游字段拼写为 greadePoint）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   greadePoint?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 互选标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   huxuan?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   id?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 是否学位课程（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isDegreeCourse?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 选课标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isElcCourse?: string;
+  /** 是否通过（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isPass?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 是否通过的中文说明（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isPassCn?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 是否展示（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isShow?: string;
+  /** 修读类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   learnType?: string;
+  /** 修读类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   learnTypeI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 补考成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   makeupScore?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 管理部门标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   managerDeptId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 期中考试类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   midtermExamType?: string;
+  /** 期中成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   midtermScore?: string | null;
+  /** 新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   newCourseCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 新课程编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   newCourseNum?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 学时（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   period?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 项目标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   projId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 记录类型（沿用上游拼写）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   recoredType?: string;
+  /** 记录类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   recoredTypeI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 发布时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   releaseAt?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 发布类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   releaseType?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remark?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 排课备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remarkPk?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 成绩来源（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   scoreSource?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 成绩类型列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   scoreTypeList?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 展示时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   showAt?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 缓考成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   slowScore?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 特殊成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   specialScore?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 标准成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   standardScore?: string;
+  /** 学生学号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   studentId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 学生姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   studentName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 教师工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teacherId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 教师姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teacherName?: string;
+  /** 教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingClassId?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 新教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingClassIdNew?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 教学班名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingClassName?: string;
+  /** 总评成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   totalMarkScore?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 培养层次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   trainingLevel?: string;
+  /** 培养层次显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   trainingLevelI18n?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updateTime?: string;
 }
 
@@ -1347,79 +1690,135 @@ export interface Get_all_term_calendarHeaderRequest {
 }
 
 export interface Get_all_term_calendar200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_all_term_calendar200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_all_term_calendar200ResponseDataItem {
-  beginDay?: number;
-  classTimeId?: number;
-  createdAt?: string;
-  currentTermFlag?: boolean;
-  deleteFlag?: number | null;
-  endDay?: number;
-  examWeekEnd?: number;
-  examWeekStart?: number;
-  fullName?: string;
-  gradePartOne?: string;
-  gradePartTwo?: string;
+  /** 学期记录ID。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   id?: number;
+  /** 学期开始日期（Unix 时间戳，毫秒）。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  beginDay?: number;
+  /** 作息时间表标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  classTimeId?: number;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createdAt?: string;
+  /** 是否为当前学期标识，true 表示是。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  currentTermFlag?: boolean;
+  /** 删除标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  deleteFlag?: number | null;
+  /** 学期结束日期（Unix 时间戳，毫秒）。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  endDay?: number;
+  /** 考试结束周次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  examWeekEnd?: number;
+  /** 考试开始周次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  examWeekStart?: number;
+  /** 学期完整名称，例如 2021-2022学年第2学期。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  fullName?: string;
+  /** 学年第一部分，例如 2021。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  gradePartOne?: string;
+  /** 学年第二部分，例如 2022。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  gradePartTwo?: string;
+  /** 标识集合（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   ids?: string | null;
+  /** 是否为下一学期标识，false 表示否。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   nextTermFlag?: boolean;
+  /** 工作日作息时间列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   noWeekendWorkTimes?: Get_all_term_calendar200ResponseDataItemNoWeekendWorkTimesItem[];
+  /** 学期部分名称，例如 第2学期。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   perTerm?: string;
+  /** 学年部分名称，例如 2021-2022学年。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   perYear?: string;
+  /** 教学结束周次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingWeekEnd?: number;
+  /** 教学开始周次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingWeekStart?: number;
+  /** 学期编号，1 表示第一学期，2 表示第二学期。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   term?: number;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updatedAt?: string;
+  /** 每周起始日（1=周日，2=周一）。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   weekBenginDay?: number;
+  /** 该学期包含的教学周数。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   weekNum?: number;
+  /** 周末作息时间列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   weekendWorkTimes?: Get_all_term_calendar200ResponseDataItemWeekendWorkTimesItem[];
+  /** 作息分组配置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   workTimeGroupConfig?: Get_all_term_calendar200ResponseDataItemWorkTimeGroupConfig;
+  /** 学年起始年份。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   year?: number;
+  /** 第零周日期信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   zerothWeekDay?: number;
 }
 
 export interface Get_all_term_calendar200ResponseDataItemNoWeekendWorkTimesItem {
+  /** 开始时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   beginTime?: string;
+  /** 节次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   classNode?: string;
+  /** 节次显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   classNodeI18n?: string;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   createdAt?: string;
+  /** 结束时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   endTime?: string;
+  /** 学期记录ID。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   id?: number;
+  /** 是否周末（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isWeekend?: number;
+  /** 节次标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   nodeId?: number;
+  /** 备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remark?: string | null;
+  /** 英文备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remarkEn?: string | null;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 标签标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   tagId?: string;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updatedAt?: string;
 }
 
 export interface Get_all_term_calendar200ResponseDataItemWeekendWorkTimesItem {
-  beginTime?: string;
-  classNode?: string;
-  classNodeI18n?: string;
-  createdAt?: string;
-  endTime?: string;
+  /** 学期记录ID。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   id?: number;
+  /** 开始时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  beginTime?: string;
+  /** 节次（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  classNode?: string;
+  /** 节次显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  classNodeI18n?: string;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createdAt?: string;
+  /** 结束时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  endTime?: string;
+  /** 是否周末（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isWeekend?: number;
+  /** 节次标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   nodeId?: number;
+  /** 备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remark?: string | null;
+  /** 英文备注（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   remarkEn?: string | null;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 标签标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   tagId?: string;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updatedAt?: string;
 }
 
 export interface Get_all_term_calendar200ResponseDataItemWorkTimeGroupConfig {
+  /** 作息时间表标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   classTimeId?: number;
+  /** 颜色配置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   color?: string[];
+  /** 禁用时间配置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   disableTime?: number[];
-  /** 时间分组。实际响应为二维整数数组（integer[][]）；因导入平台不支持嵌套数组 schema，此处不约束数组元素类型，消费方应按二维整数数组解析。 */
+  /** 时间分组（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   timeGroup?: string[];
+  /** 时间分隔配置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   timeSplit?: number[];
 }
 
@@ -1429,41 +1828,65 @@ export interface Get_current_term_calendarHeaderRequest {
 }
 
 export interface Get_current_term_calendar200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_current_term_calendar200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_current_term_calendar200ResponseData {
+  /** 当前学期的完整描述，包含日期与周数。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   name?: string;
+  /** 当前日期所在的月份描述，例如 2022年5月。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   now?: string;
+  /** 学期日历对象（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   schoolCalendar?: Get_current_term_calendar200ResponseDataSchoolCalendar;
+  /** 学期简称，例如 2021-2022学年度第2学期。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   simpleName?: string;
+  /** 当前所处的教学周序号。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   week?: number;
 }
 
 export interface Get_current_term_calendar200ResponseDataSchoolCalendar {
-  beginDay?: number;
-  classTimeId?: number;
-  createdAt?: string | null;
-  deleteFlag?: number | null;
-  id?: number;
-  endDay?: number;
-  examWeekEnd?: number;
-  examWeekStart?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  noWeekendWorkTimes?: string;
-  teachingWeekEnd?: number;
-  teachingWeekStart?: number;
+  /** 学期序号，1 表示第一学期，2 表示第二学期。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   term?: number;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updatedAt?: string | null;
+  /** 当前学期开始日期的时间戳。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  beginDay?: number;
+  /** 作息时间表标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  classTimeId?: number;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createdAt?: string | null;
+  /** 删除标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  deleteFlag?: number | null;
+  /** 当前学期结束日期的时间戳。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  endDay?: number;
+  /** 考试周结束周次。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  examWeekEnd?: number;
+  /** 考试周开始周次。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  examWeekStart?: number;
+  /** 记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  id?: number;
+  /** 工作日作息时间列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  noWeekendWorkTimes?: string;
+  /** 教学周结束周次。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  teachingWeekEnd?: number;
+  /** 教学周开始周次。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  teachingWeekStart?: number;
+  /** 每周起始日（沿用上游拼写）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   weekBenginDay?: number;
+  /** 该学期包含的教学周数。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   weekNum?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 周末作息时间列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   weekendWorkTimes?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 作息分组配置（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   workTimeGroupConfig?: string;
+  /** 学年年份。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   year?: number;
+  /** 第零周日期信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   zerothWeekDay?: number;
 }
 
@@ -1480,78 +1903,139 @@ export interface Student_timetableHeaderRequest {
 }
 
 export interface Student_timetable200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Student_timetable200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Student_timetable200ResponseDataItem {
-  campus?: string;
-  assessmentMode?: string | null;
-  assessmentModeI18n?: string;
-  campusI18n?: string;
-  classCode?: string;
-  className?: string;
-  classRoom?: string;
-  classRoomI18n?: string;
-  classRoomName?: string | null;
-  classRoomPractice?: string | null;
-  classTime?: string;
-  classType?: string;
-  cloudCourseType?: string | null;
-  compulsory?: string | null;
-  courseCode?: string;
-  courseName?: string;
-  courseTakeType?: number;
+  /** 课程学分。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   credits?: number;
+  /** 考核方式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  assessmentMode?: string | null;
+  /** 课程考核方式文本，例如考查或考试。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  assessmentModeI18n?: string;
+  /** 校区（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  campus?: string;
+  /** 校区显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  campusI18n?: string;
+  /** 教学班级编号或选课代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  classCode?: string;
+  /** 班级名称，例如 01班。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  className?: string;
+  /** 原始教室代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  classRoom?: string;
+  /** 课程主教室名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  classRoomI18n?: string;
+  /** 教室名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  classRoomName?: string | null;
+  /** 实践地点分类，例如校内或校外。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  classRoomPractice?: string | null;
+  /** 上课时间概要或汇总上课时间文本，适合列表直接展示。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  classTime?: string;
+  /** 班级类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  classType?: string;
+  /** 云课程类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  cloudCourseType?: string | null;
+  /** 必修标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  compulsory?: string | null;
+  /** 课程代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  courseCode?: string;
+  /** 课程名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  courseName?: string;
+  /** 选课类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseTakeType?: number;
+  /** 是否免修课程（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   isExemptionCourse?: string | null;
+  /** 新教学班代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   newClassCode?: string;
+  /** 新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   newCourseCode?: string;
+  /** 非公开云课程地址（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   nonpubCloudCourseAddr?: string | null;
+  /** 课程备注信息，有值时可展示。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   remark?: string | null;
+  /** 教室类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   roomCategory?: string | null;
+  /** 教室标签（沿用上游拼写）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   roomLable?: string | null;
+  /** 教学模式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachMode?: string | null;
+  /** 教学模式显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachModeI18n?: string;
+  /** 授课教师姓名。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   teacherName?: string;
+  /** 教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingClassId?: number;
+  /** 授课方式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingWay?: string;
+  /** 课程授课方式文本，例如线下授课或线上。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   teachingWayI18n?: string;
+  /** 结构化课表细则数组，用于渲染日历或格子课表。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   timeTableList?: Student_timetable200ResponseDataItemTimeTableListItem[];
 }
 
 export interface Student_timetable200ResponseDataItemTimeTableListItem {
-  /**  当前资料仅有null值，非空类型未确认。 */
-  calendarId?: string;
-  campus?: string;
-  campusI18n?: string;
-  classCode?: string;
-  className?: string;
-  courseCode?: string;
-  courseName?: string;
-  dayOfWeek?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  endDate?: string;
-  newClassCode?: string;
-  newCourseCode?: string;
-  newPopover?: string;
-  popover?: string;
-  roomCategory?: string | null;
+  /** 教室标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   roomId?: string;
+  /** 本次查询指定的学期编号。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  calendarId?: string;
+  /** 校区（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  campus?: string;
+  /** 校区显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  campusI18n?: string;
+  /** 教学班级编号或选课代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  classCode?: string;
+  /** 班级名称，例如 01班。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  className?: string;
+  /** 课程代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  courseCode?: string;
+  /** 课程名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  courseName?: string;
+  /** 星期几，数字 1-7，用于在日历或格子课表中定位列。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  dayOfWeek?: number;
+  /** 结束日期（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  endDate?: string;
+  /** 新教学班代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newClassCode?: string;
+  /** 新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newCourseCode?: string;
+  /** 新的课程提示文本（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newPopover?: string;
+  /** 鼠标悬停或点击课程时可展示的弹窗文本。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  popover?: string;
+  /** 教室类别（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  roomCategory?: string | null;
+  /** 本次上课的教室名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   roomIdI18n?: string;
+  /** 教室标签（沿用上游拼写）（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   roomLable?: string | null;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 开始日期（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   startDate?: string;
+  /** 教师工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teacherCode?: string;
+  /** 授课教师姓名。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   teacherName?: string;
+  /** 教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   teachingClassId?: number;
+  /** 时间地点信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   timeAndRoom?: string;
+  /** 本次上课的结束节次。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   timeEnd?: number;
+  /** 课时标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   timeId?: string | null;
+  /** 本次上课的开始节次。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   timeStart?: number;
+  /** 课时分组信息（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   timeTab?: string;
+  /** 本次上课的周次范围文本。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   weekNum?: string;
+  /** 本次排课实际发生的具体上课周次列表。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   weeks?: number[];
+  /** 本次上课的星期文本。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   weekstr?: string;
 }
 
@@ -1568,76 +2052,119 @@ export interface Undergraduate_scoreHeaderRequest {
 }
 
 export interface Undergraduate_score200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Undergraduate_score200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Undergraduate_score200ResponseData {
-  totalGradePoint?: string;
+  /** 全部学期已修总学分。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   actualCredit?: string;
+  /** 全部学期不及格课程总数量。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   failingCourseCount?: string;
+  /** 全部学期不及格课程总学分。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   failingCredits?: string;
+  /** 按学期分组的成绩数据。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   term?: Undergraduate_score200ResponseDataTermItem[];
+  /** 全部学期平均绩点。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  totalGradePoint?: string;
 }
 
 export interface Undergraduate_score200ResponseDataTermItem {
-  termName?: string;
-  termcode?: string;
+  /** 本学期平均绩点。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   averagePoint?: string;
+  /** 学期名称或编号。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   calName?: string;
+  /** 本学期课程成绩列表。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   creditInfo?: Undergraduate_score200ResponseDataTermItemCreditInfoItem[];
+  /** 学期完整名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  termName?: string;
+  /** 学期代码，可作为 calendarId 使用。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  termcode?: string;
 }
 
 export interface Undergraduate_score200ResponseDataTermItemCreditInfoItem {
-  score?: string;
-  scoreEaxmType?: number;
-  scoreEaxmTypeI18n?: string;
-  scoreLabel?: string;
-  scoreName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  scoreNatureName?: string;
-  scoreRecordType?: number;
-  courseType?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  createdPerson?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  createdTime?: string;
-  credit?: number;
-  examMode?: string;
-  gradePoint?: number;
-  id?: number;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  importUserCode?: string;
-  isPass?: number;
-  isPassName?: string;
-  keepField?: string;
-  newCourseCode?: string;
-  oldData?: number;
-  publicCoursesName?: string;
-  publicCoursesType?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  realAgainExamScore?: string;
-  scoreSourrce?: number;
-  studentId?: string;
-  studentName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
-  teachingClassId?: string;
-  term?: number;
-  updateTime?: string;
-  year?: string;
+  /** 学期名称或编号。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   calName?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 本次查询指定的学期编号。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   calendarId?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 课程类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   couresType?: string;
+  /** 课程代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   courseCode?: string;
-  /**  当前资料仅有null值，非空类型未确认。 */
+  /** 分类名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseLabName?: string;
+  /** 课程分类（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseLabel?: string | null;
+  /** 课程名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   courseName?: string;
+  /** 课程性质（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseNature?: string | null;
+  /** 课程编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   courseNum?: string;
+  /** 课程类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  courseType?: string;
+  /** 创建人（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createdPerson?: string;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  createdTime?: string;
+  /** 课程学分。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  credit?: number;
+  /** 考试方式（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  examMode?: string;
+  /** 课程绩点。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  gradePoint?: number;
+  /** 记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  id?: number;
+  /** 成绩导入人员代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  importUserCode?: string;
+  /** 是否及格，1 表示及格。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  isPass?: number;
+  /** 是否及格的文字说明。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  isPassName?: string;
+  /** 保留字段（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  keepField?: string;
+  /** 新课程代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  newCourseCode?: string;
+  /** 旧数据标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  oldData?: number;
+  /** 课程类型，例如必修。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  publicCoursesName?: string;
+  /** 公共课程类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  publicCoursesType?: string;
+  /** 重考实际成绩（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  realAgainExamScore?: string;
+  /** 课程成绩等级。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  score?: string;
+  /** 考试类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  scoreEaxmType?: number;
+  /** 考试类型显示名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  scoreEaxmTypeI18n?: string;
+  /** 成绩分类标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  scoreLabel?: string;
+  /** 课程成绩名称。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  scoreName?: string;
+  /** 成绩性质名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  scoreNatureName?: string;
+  /** 成绩记录类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  scoreRecordType?: number;
+  /** 成绩来源（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  scoreSourrce?: number;
+  /** 学生学号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  studentId?: string;
+  /** 学生姓名（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  studentName?: string;
+  /** 教学班标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  teachingClassId?: string;
+  /** 按学期分组的成绩数据。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  term?: number;
+  /** 成绩记录更新时间。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  updateTime?: string;
+  /** 成绩所属学年。（沿用现有工具定义；官网未提供该字段的明确说明。） */
+  year?: string;
 }
 
 export interface Get_research_patentQueryRequest {
@@ -1653,29 +2180,22 @@ export interface Get_research_patentHeaderRequest {
 }
 
 export interface Get_research_patent200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_research_patent200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_research_patent200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 专利记录列表（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   infos?: Get_research_patent200ResponseDataInfosItem[];
 }
 
 export interface Get_research_patent200ResponseDataInfosItem {
-  /** 专利所属学院代码 */
-  patentDeptCode?: string;
-  /** 专利所属学院名称 */
-  patentDeptName?: string;
-  /** 专利名称 */
-  patentTitle?: string;
-  /** 授权公告日 */
-  regPublishDate?: string;
-  /** 案件状态代码 */
-  statusCode?: string;
-  /** 案件状态名称 */
-  statusName?: string;
   /** 所有发明人姓名 */
   allInventorName?: string;
   /** 所有发明人学工号 */
@@ -1692,6 +2212,18 @@ export interface Get_research_patent200ResponseDataInfosItem {
   countryName?: string;
   /** 发明人总数 */
   inventorCount?: number;
+  /** 专利所属学院代码 */
+  patentDeptCode?: string;
+  /** 专利所属学院名称 */
+  patentDeptName?: string;
+  /** 专利名称 */
+  patentTitle?: string;
+  /** 授权公告日 */
+  regPublishDate?: string;
+  /** 案件状态代码 */
+  statusCode?: string;
+  /** 案件状态名称 */
+  statusName?: string;
 }
 
 export interface Get_final_exam_infoQueryRequest {
@@ -1709,16 +2241,38 @@ export interface Get_final_exam_infoHeaderRequest {
 }
 
 export interface Get_final_exam_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_final_exam_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_final_exam_info200ResponseDataItem {
+  /** 本科排考管理表 备注 */
+  remark?: string | null;
+  /** 考场代码 */
+  roomId?: number | null;
+  /** 考场名称 */
+  roomName?: string | null;
+  /** 任课教师，格式为：姓名（工号），姓名（工号），姓名（工号） */
+  teacherStr?: string;
+  /** 课程序号 */
+  teachingClassCode?: string;
+  /** 教学班表ID */
+  teachingClassId?: number;
+  /** 学号 */
+  userId?: string;
+  /** 星期几 */
+  weekDay?: number | null;
+  /** 第几周 */
+  weekNumber?: number | null;
   /** 审核状态，期末考该字段为空 */
   applyStatus?: string | null;
   /** 考核方式 1考试/2考查 */
   assessmentMode?: string;
+  /** 学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   calendarId?: number;
   /** 课程所在学期 */
   classCalendarId?: number;
@@ -1766,24 +2320,6 @@ export interface Get_final_exam_info200ResponseDataItem {
   name?: string;
   /** 缓考备注 期末考该字段为空 */
   reExamRemark?: string | null;
-  /** 本科排考管理表 备注 */
-  remark?: string | null;
-  /** 考场代码 */
-  roomId?: number | null;
-  /** 考场名称 */
-  roomName?: string | null;
-  /** 任课教师，格式为：姓名（工号），姓名（工号），姓名（工号） */
-  teacherStr?: string;
-  /** 课程序号 */
-  teachingClassCode?: string;
-  /** 教学班表ID */
-  teachingClassId?: number;
-  /** 学号 */
-  userId?: string;
-  /** 星期几 */
-  weekDay?: number | null;
-  /** 第几周 */
-  weekNumber?: number | null;
 }
 
 export interface Get_deferred_exam_infoQueryRequest {
@@ -1801,37 +2337,15 @@ export interface Get_deferred_exam_infoHeaderRequest {
 }
 
 export interface Get_deferred_exam_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_deferred_exam_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_deferred_exam_info200ResponseDataItem {
-  /** 星期几 */
-  weekDay?: number | null;
-  /** 第几周 */
-  weekNumber?: number | null;
-  /** 审核状态 期末考该字段为空 */
-  applyStatus?: number;
-  /** 考核方式 1考试/2考查 */
-  assessmentMode?: string;
-  calendarId?: string;
-  /** 课程所在学期 */
-  classCalendarId?: string;
-  /** 开课学院 */
-  college?: string;
-  /** 课程代码 */
-  courseCode?: string;
-  /** 课程名称 */
-  courseName?: string;
-  /** 是否缺考 1 是 0 否 默认否 */
-  defect?: number | null;
-  /** 学院 */
-  deptCode?: string;
-  /** 考试学期 */
-  examCalendarId?: string;
-  /** 排考具体日期 */
-  examDate?: string | null;
   /** 结束时间 */
   examEndTime?: string | null;
   /** 本科排考管理表ID */
@@ -1876,6 +2390,32 @@ export interface Get_deferred_exam_info200ResponseDataItem {
   teachingClassId?: number;
   /** 学号 */
   userId?: string;
+  /** 星期几 */
+  weekDay?: number | null;
+  /** 第几周 */
+  weekNumber?: number | null;
+  /** 审核状态 期末考该字段为空 */
+  applyStatus?: number;
+  /** 考核方式 1考试/2考查 */
+  assessmentMode?: string;
+  /** 学期编号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  calendarId?: string;
+  /** 课程所在学期 */
+  classCalendarId?: string;
+  /** 开课学院 */
+  college?: string;
+  /** 课程代码 */
+  courseCode?: string;
+  /** 课程名称 */
+  courseName?: string;
+  /** 是否缺考 1 是 0 否 默认否 */
+  defect?: number | null;
+  /** 学院 */
+  deptCode?: string;
+  /** 考试学期 */
+  examCalendarId?: string;
+  /** 排考具体日期 */
+  examDate?: string | null;
 }
 
 export interface Get_undergraduate_summarized_gradesQueryRequest {
@@ -1889,16 +2429,24 @@ export interface Get_undergraduate_summarized_gradesHeaderRequest {
 }
 
 export interface Get_undergraduate_summarized_grades200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_undergraduate_summarized_grades200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_undergraduate_summarized_grades200ResponseDataItem {
+  /** 绩点 */
   GPA?: number;
+  /** 实修学分 */
   completedCredit?: string;
+  /** 百分制成绩 */
   hundredMarkScore?: number;
+  /** 修读学分 */
   requiredCredit?: number;
+  /** 学号 */
   userId?: string;
 }
 
@@ -1912,18 +2460,19 @@ export interface Get_student_detailed_infoBodyRequest {
 }
 
 export interface Get_student_detailed_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_student_detailed_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_student_detailed_info200ResponseDataItem {
-  /** 出生日期 */
-  birthday?: string;
-  /** 姓名 */
-  name?: string;
   /** 实际毕业时间 */
   actualGraduationDate?: string;
+  /** 出生日期 */
+  birthday?: string;
   /** 出生地 */
   brithplace?: string;
   /** 出生地代码 */
@@ -1944,6 +2493,7 @@ export interface Get_student_detailed_info200ResponseDataItem {
   cultureProfession?: string;
   /** 培养专业代码 */
   cultureProfessionCode?: string;
+  /** 培养专业学校代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   cultureProfessionSchoolCode?: string;
   /** 当前年级 */
   currentGrade?: number;
@@ -2029,6 +2579,8 @@ export interface Get_student_detailed_info200ResponseDataItem {
   maritalStatusCode?: string;
   /** 病史 */
   medicalHistory?: string;
+  /** 姓名 */
+  name?: string;
   /** 姓名拼音 */
   nameSpelling?: string;
   /** 民族 */
@@ -2144,16 +2696,22 @@ export interface Get_tongji_email_infoHeaderRequest {
 }
 
 export interface Get_tongji_email_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_tongji_email_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_tongji_email_info200ResponseDataItem {
-  /** 删除标识 */
+  /** 删除标识；码表：1-正常，0-失效，2-删除，3-锁定 */
   delFlag?: string;
+  /** 邮箱地址（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   email?: string;
+  /** 邮箱类型（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   type?: string;
+  /** 学工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   userId?: string;
 }
 
@@ -2168,19 +2726,30 @@ export interface Get_user_single_infoHeaderRequest {
 }
 
 export interface Get_user_single_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_user_single_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_user_single_info200ResponseDataItem {
+  /** 部门代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   deptCode?: string;
+  /** 部门名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   deptName?: string;
+  /** 姓名或记录名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   name?: string;
+  /** 状态代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   statusCode?: string;
+  /** 状态名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   statusName?: string;
+  /** 学工号（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   userId?: string;
+  /** 人员类型代码（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   userTypeCode?: string;
+  /** 人员类型名称（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   userTypeName?: string;
 }
 
@@ -2195,42 +2764,75 @@ export interface Get_book_lend_infoHeaderRequest {
 }
 
 export interface Get_book_lend_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_book_lend_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_book_lend_info200ResponseDataItem {
-  author?: string;
-  callNo?: string;
-  callNoName?: string;
+  /** 书籍国别代码 */
   countryCode?: string;
-  countryName?: string;
-  debtFlag?: string;
-  deptCode?: string;
-  deptName?: string;
-  docTypeCode?: string;
-  docTypeName?: string;
-  isJournal?: string;
-  isbn?: string;
-  langCode?: string;
-  langName?: string;
-  lendDate?: string;
-  locationCode?: string;
-  locationName?: string;
-  name?: string;
-  propNo?: string;
-  pubYear?: string;
-  publisher?: string;
-  renewDate?: string;
-  renewTimes?: string;
-  retDate?: string;
-  title?: string;
-  totalLendQty?: string;
-  userId?: string;
-  voltFlag?: string;
+  /** 催还日期 */
   asbackDate?: string;
+  /** 催还次数 */
   asbackTimes?: string;
+  /** 责任者(作者) */
+  author?: string;
+  /** 图书类别代码 */
+  callNo?: string;
+  /** 图书类别名称 */
+  callNoName?: string;
+  /** 书籍国别 */
+  countryName?: string;
+  /** 欠款状态标识 */
+  debtFlag?: string;
+  /** 单位代码 */
+  deptCode?: string;
+  /** 单位名称 */
+  deptName?: string;
+  /** 文献类型代码 */
+  docTypeCode?: string;
+  /** 文献类型 */
+  docTypeName?: string;
+  /** 暂无描述 */
+  isJournal?: string;
+  /** ISBN编号 */
+  isbn?: string;
+  /** 书籍语种代码 */
+  langCode?: string;
+  /** 书籍语种 */
+  langName?: string;
+  /** 借出日期 */
+  lendDate?: string;
+  /** 馆藏地代码 */
+  locationCode?: string;
+  /** 名称 */
+  locationName?: string;
+  /** 姓名 */
+  name?: string;
+  /** 财产号 */
+  propNo?: string;
+  /** 出版年 */
+  pubYear?: string;
+  /** 出版社 */
+  publisher?: string;
+  /** 续借日期 */
+  renewDate?: string;
+  /** 续借次数 */
+  renewTimes?: string;
+  /** 实际还书时间 */
+  retDate?: string;
+  /** 题名(书名) */
+  title?: string;
+  /** 累计借书次数 */
+  totalLendQty?: string;
+  /** 学工号 */
+  userId?: string;
+  /** 违章状态标识 */
+  voltFlag?: string;
 }
 
 export interface Student_accommodation_infoQueryRequest {
@@ -2248,19 +2850,29 @@ export interface Student_accommodation_infoHeaderRequest {
 }
 
 export interface Student_accommodation_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Student_accommodation_info200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Student_accommodation_info200ResponseData {
-  sinceUserId?: string;
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Student_accommodation_info200ResponseDataListItem[];
+  /** 后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  sinceUserId?: string;
 }
 
 export interface Student_accommodation_info200ResponseDataListItem {
-  /** 宿舍区 */
+  /** 宿舍楼；码表：types */
+  accomBuildingCode?: string;
+  /** 宿舍楼名称 */
+  accomBuildingName?: string;
+  /** 宿舍区；码表：types */
   accomRegionCode?: string;
   /** 宿舍区名称 */
   accomRegionName?: string;
@@ -2278,19 +2890,18 @@ export interface Student_accommodation_info200ResponseDataListItem {
   schoolCode?: string | null;
   /** 学堂名称 */
   schoolName?: string | null;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updateTime?: string;
   /** 学号 */
   userId?: string;
-  /** 人员类型代码 */
+  /** 人员类型代码；码表：types */
   userTypeCode?: string;
   /** 人员类型名称 */
   userTypeName?: string;
+  /** 人员类型代码。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   usertypeCode?: string;
+  /** 人员类型名称，例如硕士研究生。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   usertypeName?: string;
-  /** 宿舍楼 */
-  accomBuildingCode?: string;
-  /** 宿舍楼名称 */
-  accomBuildingName?: string;
 }
 
 export interface Get_teacher_title_infoQueryRequest {
@@ -2308,36 +2919,37 @@ export interface Get_teacher_title_infoHeaderRequest {
 }
 
 export interface Get_teacher_title_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_teacher_title_info200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_teacher_title_info200ResponseData {
+  /** 后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   sinceUserId?: string;
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Get_teacher_title_info200ResponseDataListItem[];
 }
 
 export interface Get_teacher_title_info200ResponseDataListItem {
-  /** 聘任专业技术职务名称 */
-  titleName?: string;
-  updateTime?: string;
-  /** 工号 */
-  userId?: string;
   /** 部门/学院代码 */
   deptCode?: string;
   /** 部门/学院名称 */
   deptName?: string;
   /** 初次聘任职称级别时间 */
   firstTitleDate?: string;
-  /** 岗位等级代码 */
+  /** 岗位等级代码；码表：tech_post_level_code */
   jobLevelCode?: string;
   /** 岗位等级名称 */
   jobLevelName?: string;
   /** 岗位聘任时间 */
   jobOfferDate?: string;
-  /** 岗位类别代码 */
+  /** 岗位类别代码；码表：types */
   jobTypeCode?: string;
   /** 岗位类别名称 */
   jobTypeName?: string;
@@ -2353,7 +2965,7 @@ export interface Get_teacher_title_info200ResponseDataListItem {
   partyJobDate?: string;
   /** 党政职务级别初任时间 */
   partyJobFirstDate?: string;
-  /** 专业技术职务级别代码 */
+  /** 专业技术职务级别代码；码表：types */
   techJobLevelCode?: string;
   /** 专业技术职务级别名称 */
   techJobLevelName?: string;
@@ -2361,7 +2973,7 @@ export interface Get_teacher_title_info200ResponseDataListItem {
   techJobTypeCode?: string;
   /** 专技岗分类名称 */
   techJobTypeName?: string | null;
-  /** 工人技术等级代码 */
+  /** 工人技术等级代码；码表：types */
   techLevelOfWorkersCode?: string;
   /** 工人技术等级名称 */
   techLevelOfWorkersName?: string | null;
@@ -2373,10 +2985,16 @@ export interface Get_teacher_title_info200ResponseDataListItem {
   tenurePositionName?: string | null;
   /** 长聘协议开始时间 */
   tenureStartTime?: string;
-  /** 聘任专业技术职务代码 */
+  /** 聘任专业技术职务代码；码表：types */
   titleCode?: string;
   /** 聘任专业技术职务年月 */
   titleDate?: string;
+  /** 聘任专业技术职务名称 */
+  titleName?: string;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  updateTime?: string;
+  /** 工号 */
+  userId?: string;
 }
 
 export interface Get_competition_prizesQueryRequest {
@@ -2392,15 +3010,21 @@ export interface Get_competition_prizesHeaderRequest {
 }
 
 export interface Get_competition_prizes200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_competition_prizes200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_competition_prizes200ResponseData {
-  count?: number;
-  list?: Get_competition_prizes200ResponseDataListItem[] | null;
+  /** 后续增量查询使用的记录游标。 */
   sinceId?: string;
+  /** 返回记录数量。 */
+  count?: number;
+  /** 业务记录列表。 */
+  list?: Get_competition_prizes200ResponseDataListItem[] | null;
 }
 
 export interface Get_competition_prizes200ResponseDataListItem {
@@ -2447,29 +3071,24 @@ export interface Student_honorary_titleHeaderRequest {
 }
 
 export interface Student_honorary_title200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Student_honorary_title200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Student_honorary_title200ResponseData {
-  sinceWid?: string;
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Student_honorary_title200ResponseDataListItem[] | null;
+  /** 后续查询使用的记录标识游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  sinceWid?: string;
 }
 
 export interface Student_honorary_title200ResponseDataListItem {
-  /** 评定学期 */
-  ratingTerm?: string | null;
-  /** 评定学年 */
-  ratingYear?: string;
-  /** 奖励级别 */
-  rewardLevel?: string | null;
-  updateTime?: string;
-  /** 获得荣誉称号学生学号 */
-  userId?: string;
-  /** wid */
-  wid?: string;
   /** 所属学院代码 */
   deptCode?: string;
   /** 所属学院名称 */
@@ -2478,6 +3097,18 @@ export interface Student_honorary_title200ResponseDataListItem {
   honorTitle?: string;
   /** 获得荣誉称号学生姓名 */
   name?: string;
+  /** 评定学期 */
+  ratingTerm?: string | null;
+  /** 评定学年 */
+  ratingYear?: string;
+  /** 奖励级别 */
+  rewardLevel?: string | null;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  updateTime?: string;
+  /** 获得荣誉称号学生学号 */
+  userId?: string;
+  /** wid */
+  wid?: string;
 }
 
 export interface Get_scholarship_infoQueryRequest {
@@ -2495,18 +3126,28 @@ export interface Get_scholarship_infoHeaderRequest {
 }
 
 export interface Get_scholarship_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_scholarship_info200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_scholarship_info200ResponseData {
-  count?: number;
-  list?: Get_scholarship_info200ResponseDataListItem[] | null;
+  /** 后续查询使用的记录标识游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   sinceWid?: string;
+  /** 返回记录数量。 */
+  count?: number;
+  /** 业务记录列表。 */
+  list?: Get_scholarship_info200ResponseDataListItem[] | null;
 }
 
 export interface Get_scholarship_info200ResponseDataListItem {
+  /** 获得奖学金学生学号 */
+  userId?: string;
+  /** wid */
+  wid?: string;
   /** 金额 */
   amount?: string;
   /** 所属学院代码 */
@@ -2523,11 +3164,8 @@ export interface Get_scholarship_info200ResponseDataListItem {
   scholarshipLevel?: string;
   /** 奖学金名称 */
   scholarshipName?: string;
+  /** 奖学金记录更新时间。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   updateTime?: string;
-  /** 获得奖学金学生学号 */
-  userId?: string;
-  /** wid */
-  wid?: string;
 }
 
 export interface Get_stipendQueryRequest {
@@ -2545,15 +3183,21 @@ export interface Get_stipendHeaderRequest {
 }
 
 export interface Get_stipend200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_stipend200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_stipend200ResponseData {
-  list?: Get_stipend200ResponseDataListItem[] | null;
-  sinceWid?: string;
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
+  list?: Get_stipend200ResponseDataListItem[] | null;
+  /** 后续查询使用的记录标识游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  sinceWid?: string;
 }
 
 export interface Get_stipend200ResponseDataListItem {
@@ -2575,6 +3219,7 @@ export interface Get_stipend200ResponseDataListItem {
   stipendName?: string;
   /** 单位简称 */
   unitAbbreviation?: string;
+  /** 记录更新时间。（沿用现有工具定义；官网未提供该字段的明确说明。） */
   updateTime?: string;
   /** 获得助学金学生学号 */
   userId?: string;
@@ -2595,20 +3240,24 @@ export interface Get_student_counselor_infoHeaderRequest {
 }
 
 export interface Get_student_counselor_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_student_counselor_info200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_student_counselor_info200ResponseData {
-  sinceUserId?: string;
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Get_student_counselor_info200ResponseDataListItem[];
+  /** 后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
+  sinceUserId?: string;
 }
 
 export interface Get_student_counselor_info200ResponseDataListItem {
-  /** 学号 */
-  userId?: string;
   /** 班级代码 */
   classCode?: string;
   /** 班级名称 */
@@ -2627,6 +3276,8 @@ export interface Get_student_counselor_info200ResponseDataListItem {
   headTeacherName?: string;
   /** 姓名 */
   name?: string;
+  /** 学号 */
+  userId?: string;
 }
 
 export interface Get_student_tencent_meeting_courseQueryRequest {
@@ -2644,20 +3295,27 @@ export interface Get_student_tencent_meeting_courseHeaderRequest {
 }
 
 export interface Get_student_tencent_meeting_course200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_student_tencent_meeting_course200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_student_tencent_meeting_course200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Get_student_tencent_meeting_course200ResponseDataListItem[] | null;
+  /** 后续增量查询使用的记录游标。 */
   sinceId?: string;
 }
 
 export interface Get_student_tencent_meeting_course200ResponseDataListItem {
   /** 课程编号 */
   courseNo?: string;
+  /** 记录标识（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   id?: string;
   /** 腾讯会议号 */
   meetingNo?: string;
@@ -2665,6 +3323,7 @@ export interface Get_student_tencent_meeting_course200ResponseDataListItem {
   meetingPwd?: string;
   /** 腾讯会议地址 */
   meetingUrl?: string;
+  /** 更新时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   updateTime?: string;
   /** 学号 */
   userId?: string;
@@ -2705,19 +3364,27 @@ export interface Get_student_basic_infoHeaderRequest {
 }
 
 export interface Get_student_basic_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_student_basic_info200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_student_basic_info200ResponseData {
+  /** 后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   sinceUserId?: string;
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Get_student_basic_info200ResponseDataListItem[];
 }
 
 export interface Get_student_basic_info200ResponseDataListItem {
-  /** 学籍状态，针对本科生 */
+  /** 培养类别；码表：training_category_code */
+  trainingCategoryCode?: string;
+  /** 学籍状态，针对本科生；码表：registration_status_code */
   registrationStatusCode?: string;
   /** 学籍状态名称，针对本科生 */
   registrationStatusName?: string | null;
@@ -2725,7 +3392,7 @@ export interface Get_student_basic_info200ResponseDataListItem {
   schoolCode?: string | null;
   /** 学堂名称 */
   schoolName?: string | null;
-  /** 培养专业 */
+  /** 培养专业；码表：second_dept_code */
   secondDeptCode?: string;
   /** 培养专业名称 */
   secondDeptName?: string;
@@ -2743,11 +3410,9 @@ export interface Get_student_basic_info200ResponseDataListItem {
   studyFormName?: string;
   /** 导师工号 */
   teacherId?: string;
-  /** 培养类别 */
-  trainingCategoryCode?: string;
   /** 培养类别名称 */
   trainingCategoryName?: string;
-  /** 培养层次 */
+  /** 培养层次；码表：training_level_code */
   trainingLevelCode?: string;
   /** 培养层次名称 */
   trainingLevelName?: string;
@@ -2755,7 +3420,7 @@ export interface Get_student_basic_info200ResponseDataListItem {
   updateTime?: string;
   /** 学工号 */
   userId?: string;
-  /** 人员类型代码 */
+  /** 人员类型代码；码表：types */
   userTypeCode?: string;
   /** 人员类型名称 */
   userTypeName?: string;
@@ -2765,6 +3430,7 @@ export interface Get_student_basic_info200ResponseDataListItem {
   campusCode?: string;
   /** 校区名称 */
   campusName?: string | null;
+  /** 创建时间（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   createTime?: string;
   /** 当前年级 */
   currentGrade?: number;
@@ -2788,7 +3454,7 @@ export interface Get_student_basic_info200ResponseDataListItem {
   isOverseasCode?: string;
   /** 是否留学生名称 */
   isOverseasName?: string;
-  /** 在校状态,针对研究生 */
+  /** 在校状态,针对研究生；码表：leave_school_code */
   leaveSchoolCode?: string;
   /** 在校状态名,针对研究生称 */
   leaveSchoolName?: string;
@@ -2802,7 +3468,7 @@ export interface Get_student_basic_info200ResponseDataListItem {
   name?: string;
   /** 离校时间 */
   offSchool?: string;
-  /** 政治面貌 */
+  /** 政治面貌；码表：来源：学工系统 */
   politicalStatusCode?: string;
   /** 政治面貌名称 */
   politicalStatusName?: string;
@@ -2821,24 +3487,15 @@ export interface Get_statistics_info_by_yearHeaderRequest {
 }
 
 export interface Get_statistics_info_by_year200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_statistics_info_by_year200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_statistics_info_by_year200ResponseDataItem {
-  /** 人员类型代码 */
-  userTypeCode?: string;
-  /** 平均每周出校门的次数 */
-  weeklyExitAvg?: string;
-  /** 年份 */
-  year?: string;
-  /** 一年中的总借书数是全校师生的前X% */
-  annualBorrowedTopPct?: string;
-  /** 平均每次消费金额（食堂里），单位：元 */
-  avgDailySpending?: string;
-  /** 一年中的总借书数 */
-  booksCount?: string;
   /** 食堂总消费金额超过于全校老师/学生的X% */
   canteenSpendingPct?: string;
   /** 学院代码 */
@@ -2891,6 +3548,18 @@ export interface Get_statistics_info_by_year200ResponseDataItem {
   totalSpendingCanteen?: string;
   /** 学工号 */
   userId?: string;
+  /** 一年中的总借书数是全校师生的前X% */
+  annualBorrowedTopPct?: string;
+  /** 平均每次消费金额（食堂里），单位：元 */
+  avgDailySpending?: string;
+  /** 一年中的总借书数 */
+  booksCount?: string;
+  /** 人员类型代码；码表：types */
+  userTypeCode?: string;
+  /** 平均每周出校门的次数 */
+  weeklyExitAvg?: string;
+  /** 年份 */
+  year?: string;
 }
 
 export interface Get_statistics_infoQueryRequest {
@@ -2904,12 +3573,39 @@ export interface Get_statistics_infoHeaderRequest {
 }
 
 export interface Get_statistics_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_statistics_info200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_statistics_info200ResponseDataItem {
+  /** 最喜欢的主题 */
+  bookCategory?: string | null;
+  /** 借了X本书 */
+  bookCoun?: number;
+  /** 借阅的第一本书 */
+  bookFirst?: string | null;
+  /** 食堂总消费 */
+  canteenAmount?: string;
+  /** 超过X%的同济人（用总消费算） */
+  canteenAmtPercentileRank?: string;
+  /** 在食堂累计消费X次 */
+  canteenCoun?: number;
+  /** 对X食堂情有独钟 */
+  canteenOften?: string | null;
+  /** 属于你X%的美味时光在此度过 */
+  canteenOftenPercentileRank?: string;
+  /** 补卡次数 */
+  cardPelaceCoun?: number;
+  /** 学院 */
+  college?: string;
+  /** 这一天一共花了￥ 元 */
+  consumMostAmount?: string;
+  /** 最大的一笔消费发生在 年 月 日 */
+  consumMostTime?: string | null;
   /** 你最常光顾X（即最多次的消费场所） */
   consumePlaceOften?: string | null;
   /** 累计消费￥ 元（所有消费） */
@@ -2950,30 +3646,6 @@ export interface Get_statistics_info200ResponseDataItem {
   stuLevel?: string;
   /** 学工号 */
   userId?: string;
-  /** 最喜欢的主题 */
-  bookCategory?: string | null;
-  /** 借了X本书 */
-  bookCoun?: number;
-  /** 借阅的第一本书 */
-  bookFirst?: string | null;
-  /** 食堂总消费 */
-  canteenAmount?: string;
-  /** 超过X%的同济人（用总消费算） */
-  canteenAmtPercentileRank?: string;
-  /** 在食堂累计消费X次 */
-  canteenCoun?: number;
-  /** 对X食堂情有独钟 */
-  canteenOften?: string | null;
-  /** 属于你X%的美味时光在此度过 */
-  canteenOftenPercentileRank?: string;
-  /** 补卡次数 */
-  cardPelaceCoun?: number;
-  /** 学院 */
-  college?: string;
-  /** 这一天一共花了￥ 元 */
-  consumMostAmount?: string;
-  /** 最大的一笔消费发生在 年 月 日 */
-  consumMostTime?: string | null;
 }
 
 export interface Get_postgraduate_completed_creditQueryRequest {
@@ -2987,8 +3659,11 @@ export interface Get_postgraduate_completed_creditHeaderRequest {
 }
 
 export interface Get_postgraduate_completed_credit200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_postgraduate_completed_credit200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
@@ -3010,8 +3685,11 @@ export interface Get_postgraduate_degree_course_creditHeaderRequest {
 }
 
 export interface Get_postgraduate_degree_course_credit200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_postgraduate_degree_course_credit200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
@@ -3033,8 +3711,11 @@ export interface Get_postgraduate_degree_course_msHeaderRequest {
 }
 
 export interface Get_postgraduate_degree_course_ms200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_postgraduate_degree_course_ms200ResponseDataItem[];
+  /** 业务结果消息。 */
   msg?: string;
 }
 
@@ -3043,6 +3724,60 @@ export interface Get_postgraduate_degree_course_ms200ResponseDataItem {
   degreeCourseMS?: number | null;
   /** 学号 */
   userId?: string | null;
+}
+
+export interface Get_postgraduate_gpa_and_msQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_gpa_and_msHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_postgraduate_gpa_and_ms200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
+  code?: string;
+  /** 业务响应数据。 */
+  data?: Get_postgraduate_gpa_and_ms200ResponseDataItem[];
+  /** 业务结果消息。 */
+  msg?: string;
+}
+
+export interface Get_postgraduate_gpa_and_ms200ResponseDataItem {
+  /** 平均绩点 */
+  GPA?: number;
+  /** 平均成绩 */
+  MS?: number;
+  /** 学号 */
+  userId?: string;
+}
+
+export interface Get_postgraduate_required_creditQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_required_creditHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_postgraduate_required_credit200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
+  code?: string;
+  /** 业务响应数据。 */
+  data?: Get_postgraduate_required_credit200ResponseDataItem[];
+  /** 业务结果消息。 */
+  msg?: string;
+}
+
+export interface Get_postgraduate_required_credit200ResponseDataItem {
+  /** 应修学分 */
+  requiredCredit?: number;
+  /** 学号 */
+  userId?: string;
 }
 
 export interface Get_user_basic_infoQueryRequest {
@@ -3068,15 +3803,22 @@ export interface Get_user_basic_infoHeaderRequest {
 }
 
 export interface Get_user_basic_info200Response {
+  /** 业务状态码；A00000 表示操作成功。 */
   code?: string;
+  /** 业务响应数据。 */
   data?: Get_user_basic_info200ResponseData;
+  /** 业务结果消息。 */
   msg?: string;
 }
 
 export interface Get_user_basic_info200ResponseData {
+  /** 返回记录数量。 */
   count?: number;
+  /** 业务记录列表。 */
   list?: Get_user_basic_info200ResponseDataListItem[];
+  /** 后续查询使用的人员标识游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   sincePid?: string;
+  /** 后续查询使用的学工号游标（依据字段名及返回示例解释；官网未明确说明，具体单位和枚举以接口为准。） */
   sinceUserId?: string;
 }
 
@@ -3089,7 +3831,7 @@ export interface Get_user_basic_info200ResponseDataListItem {
   deptName?: string;
   /** 姓名 */
   name?: string;
-  /** 状态，全部取自人员状态 */
+  /** 状态，全部取自人员状态；码表：status */
   statusCode?: string;
   /** 状态名称 */
   statusName?: string;
@@ -3097,7 +3839,7 @@ export interface Get_user_basic_info200ResponseDataListItem {
   updateTime?: string;
   /** 学工号 */
   userId?: string;
-  /** 人员类型代码 */
+  /** 人员类型代码；码表：types */
   userTypeCode?: string;
   /** 人员类型名称 */
   userTypeName?: string;

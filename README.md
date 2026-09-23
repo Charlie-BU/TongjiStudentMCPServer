@@ -119,8 +119,9 @@ X-Tongji-Access-Token: <service_access_token>
 X-Tongji-User-Id: <本轮用户 userId>
 ```
 
-未提供 token 时，工具会返回 `unauthorized`；授权失效或上游服务不可用时，也会在工具
-结果中返回对应的结构化错误。不要将有效 token 复制到截图、提交记录或日志中。
+Inspector 的 Server Settings → Custom Headers 支持直接配置上述两个请求头。无需配置 OAuth 或动态客户端注册。服务 token 必须由客户端凭据模式申请，不能使用前端用户 token；userId 填实际用户身份。
+
+未提供完整身份时可连接和查看工具列表，调用校园工具返回 `unauthorized`。服务 token 校验失败时返回 HTTP 403 和 `invalid_service_credential`，不触发 Inspector 的 OAuth `/register` 流程；检查 token 是否过期、服务账号身份是否匹配及上游是否可用。不要将有效 token 复制到截图、提交记录或日志中。
 
 ### Agent 调用上下文
 

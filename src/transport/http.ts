@@ -60,7 +60,11 @@ export const createHttpServer = () => {
             const invocation = readToolInvocationContext(request.headers);
             const body = await readJSONBody(request);
             if (invocation.accessToken && !await validateServiceCredential(invocation)) {
-                sendJSON(response, 401, { error: "invalid service credential" });
+                // 自定义服务凭据不走 OAuth；401 会让 Inspector 自动发起 OAuth 注册。
+                sendJSON(response, 403, {
+                    error: "invalid_service_credential",
+                    message: "服务凭据校验失败，请检查 X-Tongji-Access-Token 是否为有效的客户端模式服务 token，以及上游身份校验服务是否可用。",
+                });
                 return;
             }
             const transport = new StreamableHTTPServerTransport({

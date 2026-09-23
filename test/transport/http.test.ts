@@ -144,7 +144,9 @@ it('authenticates the service credential and forwards the human ID without accep
   assert.deepEqual(identities,['00001','student-a']);
   reject=true;
   const denied=await fetch(baseURL+'/mcp',{method:'POST',headers,body});
-  assert.equal(denied.status,401);
+  assert.equal(denied.status,403);
+  assert.equal(denied.headers.get('www-authenticate'),null);
+  assert.equal((await denied.json() as {error:string}).error,'invalid_service_credential');
   assert.deepEqual(identities,['00001','student-a','00001']);
  });}finally{axios.defaults.adapter=previous;}
 });

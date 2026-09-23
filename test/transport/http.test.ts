@@ -137,7 +137,7 @@ it('authenticates the service credential and forwards the human ID without accep
  };
  try{await withHttpServer(async baseURL=>{
   const headers={'content-type':'application/json',accept:'application/json, text/event-stream','x-tongji-access-token':'service-token','x-tongji-user-id':'student-a'};
-  const body=JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'tongji.card.balance',arguments:{}}});
+  const body=JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'tongji.user.card_balance',arguments:{}}});
   const result=await fetch(baseURL+'/mcp',{method:'POST',headers,body});
   assert.equal(result.status,200);
   assert.match(await result.text(),/12/);

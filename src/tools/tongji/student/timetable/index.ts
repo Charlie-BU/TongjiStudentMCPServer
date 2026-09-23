@@ -8,6 +8,7 @@ import type { StudentTimetableCourse, StudentTimetableData, TimetableSchedule, }
 export const STUDENT_TIMETABLE_TOOL_NAME = "tongji.student.timetable";
 // registerStudentTimetableTool 注册学生课表查询工具。
 export const registerStudentTimetableTool = campusTool({
+    audience: "student",
     name: STUDENT_TIMETABLE_TOOL_NAME,
     title: "查询学生课表",
     description: "查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。",

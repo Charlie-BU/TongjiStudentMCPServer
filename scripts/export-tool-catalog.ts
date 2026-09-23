@@ -18,7 +18,7 @@ async function main() {
             "- 框架在 HTTP 入口验证服务凭据，用户身份取自 X-Tongji-User-Id，不能从服务账号推断。",
             "- YourTJ 公开课程、本地历史评价及瑞幸短信验证码工具可匿名调用；个人校园数据和瑞幸账号工具要求可信身份。",
             "- 同济工具的正常结果使用 status/data/source；错误使用 isError 和脱敏 status/message。瑞幸 check 使用 valid/message。",
-            "- 更新联系方式、创建会议为写操作，不自动重试。调用前须有用户明确的操作意图。",
+            "- 更新联系方式为写操作，不自动重试。调用前须有用户明确的操作意图。",
             "- CAM 接口覆盖、分页与兼容说明见 [同济 API 迁移](TONGJI_API.md)。", "", "## 工具目录", "", "| Tool | 标题 | 数据源 |", "| --- | --- | --- |",
             ...tools.map(tool => `| \`${tool.name}\` | ${tool.title ?? ""} | ${source(tool.name)} |`), ""];
         for (const tool of tools) {

@@ -4,7 +4,7 @@
 `TongjiStudentAgent` 提供受控的校园工具；它不保存对话历史、不调用模型、也不决定
 Agent 的工具选择或回答内容。
 
-当前注册 **60 个工具**：43 个同济校园工具、6 个公开课程/历史评价工具、11 个瑞幸工具。接口覆盖矩阵、身份协议和兼容变化见 [同济 API 迁移](docs/TONGJI_API.md)。CAM 文件保持自动生成。
+当前注册 **59 个工具**：42 个同济校园工具、6 个公开课程/历史评价工具、11 个瑞幸工具。接口覆盖矩阵、身份协议和兼容变化见 [同济 API 迁移](docs/TONGJI_API.md)。CAM 文件保持自动生成。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
@@ -84,7 +84,7 @@ PORT=3100 pnpm start
 curl http://localhost:3000/health
 ```
 
-MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。完整工具见 [目录](docs/TOOLS.md)。例如 `tongji.student.score` 查询本科生成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
+MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。完整工具见 [目录](docs/TOOLS.md)。例如 `tongji.bachelor.score` 查询本科生成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
 
 `/health` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
 
@@ -103,7 +103,7 @@ http://localhost:3000/mcp
 ```
 
 通过 Inspector 的 `Tools` 页面执行工具发现，确认可看到
-`tongji.student.score`。随后选择该工具进行调用：不传参数即可查询当前学期；也可传入
+`tongji.bachelor.score`。随后选择该工具进行调用：不传参数即可查询当前学期；也可传入
 指定学期，例如：
 
 ```json
@@ -160,7 +160,7 @@ pnpm cam update
 
 ## 下一步
 
-当前已完成 `tongji.student.score` 业务闭环，并覆盖：调用上下文中的
+当前已完成 `tongji.bachelor.score` 业务闭环，并覆盖：调用上下文中的
 access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上游不可用错误归一，以及结构化脱敏结果。
 
 后续新增校园工具时，应复用相同模式：先在手写适配层封装上游调用，再补齐错误归一、字段白名单与离线测试。`campus.schedule.get_term` 可以作为下一个优先接入的闭环，但不应绕过现有的上下文传递、适配器封装与脱敏约束。

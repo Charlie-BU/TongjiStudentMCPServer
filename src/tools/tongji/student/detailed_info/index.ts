@@ -8,6 +8,7 @@ import type { StudentDetailedInfo, StudentDetailedInfoData, } from "./types";
 export const STUDENT_DETAILED_INFO_TOOL_NAME = "tongji.student.detailed_info";
 // registerStudentDetailedInfoTool 注册学生详细学籍信息查询工具。
 export const registerStudentDetailedInfoTool = campusTool({
+    audience: "student",
     name: STUDENT_DETAILED_INFO_TOOL_NAME,
     title: "查询学生详细学籍信息",
     description: "查询当前已授权学生的教务系统详细学籍信息。",

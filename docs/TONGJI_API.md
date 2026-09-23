@@ -15,7 +15,7 @@ MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断
 
 ## 已有工具兼容变化
 
-- 17 个既有同济工具名称保持不变。个人查询固定本轮 userId，学生详情和瑞幸工具不再用服务 token 反查用户身份。
+- 17 个既有同济工具保留业务契约，名称按使用人群调整。个人查询固定本轮 userId，学生详情和瑞幸工具不再用服务 token 反查用户身份。
 - 本科成绩、学生课表接受数字或数字字符串学期编号，发送给 CAM 时转为数字；成绩的 -1 表示全部学期。其他非数字字符串被拒绝。
 - 校门通行使用 `/v1/rt/door/campus_access_control`，端口使用 1/2；旧“入门/出门”映射到 1/2。响应 recordTime 映射到既有 dataTime 字段。
 - 图书馆通行使用 `/v1/rt/lib/lib_access`，优先使用 dataStartTime/dataEndTime；旧 visitStartTime/visitEndTime 仍兼容并映射到新参数，新旧参数同时传入且冲突则拒绝。
@@ -23,36 +23,35 @@ MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断
 - 住宿、竞赛、荣誉、奖学金和助学金接收 CAM 定义的游标/更新时间，响应通过 pagination 保留下一页元数据。翻页始终固定本轮 userId，不能用游标扩大到其他用户。
 - 既有工具输入改为严格对象，未知字段（包括 userId/accessToken/Authorization）会被拒绝。
 
-## 新增 26 个工具
+## 新增 25 个工具
 
-新增能力包括研究生成绩/学分/培养计划、考试安排、本科绩点汇总、一卡通余额/消费汇总、科研项目/著作/专利、困难补助/贷款/勤工助学、教职工课表/岗位、联系方式/邮箱及辅导员。详见下方映射和 [实际 MCP Schema](TOOLS.md)。
+新增能力包括研究生成绩/学分/培养计划、考试安排、本科绩点汇总、一卡通余额、科研项目/著作/专利、困难补助/贷款/勤工助学、教职工课表/岗位、联系方式/邮箱及辅导员。详见下方映射和 [实际 MCP Schema](TOOLS.md)。
 
 `tongji.user.update_contact_info` 是写操作，readOnlyHint=false、idempotentHint=false；须有用户明确操作意图，至少提供手机号或邮箱，超时或异常不自动重试。仅在内层 `data.code=A00000` 且 `effectRows` 为正安全整数时报告成功；内层失败、零更新、空值或字段缺失均返回“结果尚未确认，请先核实，不要自动重试”。其他新增工具只读。
 
-消费汇总 cycle=week/month 时 n 必填且为正整数；date 模式沿用上游时间范围默认规则。期末考试和重缓考必须提供学期编号。
+期末考试和重缓考必须提供学期编号。
 
 新增工具使用显式响应字段白名单，未知字段和敏感凭据被裁剪。
 
 ## 工具裁剪
 
-已移除 9 个工具，当前 MCP 和 Agent allowlist 均为 60 个工具。腾讯会议课表、云会议创建、课程学期列表、当日实时流水、逐日校历、高等讲堂完成情况的手写调用链已删除，保留 CAM 自动生成代码。本人学籍基础信息、本人基本档案、人员基础信息仅删除工具层；底层接口保留，人员基础信息仍供服务凭据校验使用。学生学期日历编号查询保留。
+已移除 10 个工具，当前 MCP 和 Agent allowlist 均为 59 个工具。一卡通消费汇总、腾讯会议课表、云会议创建、课程学期列表、当日实时流水、逐日校历、高等讲堂完成情况的手写调用链已删除，保留 CAM 自动生成代码。本人学籍基础信息、本人基本档案、人员基础信息仅删除工具层；底层接口保留，人员基础信息仍供服务凭据校验使用。学生学期日历编号查询保留。
 
 ## CAM 覆盖矩阵
 
-56 个 CAM 接口均已核对：43 个独立能力注册工具，5 个 v1 重复查询沿用对应 v2 工具，其余 8 个不暴露工具。以下路径和方法取自用户更新的 CAM 文件；没有修改生成代码。
+56 个 CAM 接口均已核对：42 个独立能力注册工具，5 个 v1 重复查询沿用对应 v2 工具，其余 9 个不暴露工具。以下路径和方法取自用户更新的 CAM 文件；没有修改生成代码。
 
 | CAM 方法 | 路径 | MCP 工具 | 说明 |
 | --- | --- | --- | --- |
-| `Get_card_spending_flowGET` | `/v1/dc/card/card_history_flow` | `tongji.student.card_spending_flow` | 已有工具 |
+| `Get_card_spending_flowGET` | `/v1/dc/card/card_history_flow` | `tongji.user.card_spending_flow` | 已有工具 |
 | `Get_postgraduate_gpa_and_msGET` | `/v2/rt/teaching_info/postgraduate_gpa_and_ms` | `tongji.postgraduate.gpa` | 新增 |
 | `Get_postgraduate_required_creditGET` | `/v2/rt/teaching_info/postgraduate_required_credit` | `tongji.postgraduate.required_credit` | 新增 |
-| `Get_card_spending_summaryGET` | `/v1/dc/card/week_or_month_sum` | `tongji.card.spending_summary` | 新增 |
-| `Get_book_lend_info_v1GET` | `/v1/dc/lib/lend_info_all` | `tongji.student.book-lend-info` | v1 重复，工具使用 v2 |
-| `Get_research_projectsGET` | `/v1/dc/research/longitudinal_project_for_PD` | `tongji.research.projects` | 新增 |
-| `Get_research_worksGET` | `/v1/dc/research/work` | `tongji.research.works` | 新增 |
+| `Get_book_lend_info_v1GET` | `/v1/dc/lib/lend_info_all` | `tongji.user.book-lend-info` | v1 重复，工具使用 v2 |
+| `Get_research_projectsGET` | `/v1/dc/research/longitudinal_project_for_PD` | `tongji.user.research_projects` | 新增 |
+| `Get_research_worksGET` | `/v1/dc/research/work` | `tongji.user.research_works` | 新增 |
 | `Get_user_contact_infoGET` | `/v1/dc/sep_auth/all_contact_info` | `tongji.user.contact_info` | 新增 |
 | `Update_user_contact_infoPOST` | `/v1/dc/sep_auth/update_contact_info` | `tongji.user.update_contact_info` | 新增 |
-| `Get_competition_prizes_v1GET` | `/v1/dc/student_work_info/competition_winners` | `tongji.student.competition_prize` | v1 重复，工具使用 v2 |
+| `Get_competition_prizes_v1GET` | `/v1/dc/student_work_info/competition_winners` | `tongji.bachelor.competition_prize` | v1 重复，工具使用 v2 |
 | `Get_hardship_allowanceGET` | `/v1/dc/student_work_info/hardship_allowance` | `tongji.student.hardship_allowance` | 新增 |
 | `Student_honorary_title_v1GET` | `/v1/dc/student_work_info/honorary_title` | `tongji.student.honorary_title` | v1 重复，工具使用 v2 |
 | `Get_scholarship_info_v1GET` | `/v1/dc/student_work_info/scholarship` | `tongji.student.scholarship_info` | v1 重复，工具使用 v2 |
@@ -61,10 +60,10 @@ MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断
 | `Get_work_studyGET` | `/v1/dc/student_work_info/work_study` | `tongji.student.work_study` | 新增 |
 | `Get_teacher_current_term_timetableGET` | `/v1/dc/teaching_info/teacher_timetable` | `tongji.teacher.timetable` | 新增 |
 | `Create_cloud_meetingPOST` | `/v1/infra/cloud_meeting/create` | — | 不暴露工具，仅保留 CAM／内部接口 |
-| `Get_card_balanceGET` | `/v1/rt/card/card_balance` | `tongji.card.balance` | 新增 |
+| `Get_card_balanceGET` | `/v1/rt/card/card_balance` | `tongji.user.card_balance` | 新增 |
 | `Get_card_current_actual_flowGET` | `/v1/rt/card/card_current_actual_flow` | — | 不暴露工具，仅保留 CAM／内部接口 |
-| `Get_school_accessGET` | `/v1/rt/door/campus_access_control` | `tongji.student.school_access` | 已有工具 |
-| `Get_library_accessGET` | `/v1/rt/lib/lib_access` | `tongji.student.library_access` | 已有工具 |
+| `Get_school_accessGET` | `/v1/rt/door/campus_access_control` | `tongji.user.school_access` | 已有工具 |
+| `Get_library_accessGET` | `/v1/rt/lib/lib_access` | `tongji.user.library_access` | 已有工具 |
 | `Get_school_calendarGET` | `/v1/rt/onetongji/calendar` | — | 不暴露工具，仅保留 CAM／内部接口 |
 | `Cet_scoreGET` | `/v1/rt/onetongji/cet_score` | `tongji.student.cet-score` | 已有工具 |
 | `Get_postgraduate_culture_plan_countGET` | `/v1/rt/onetongji/culture_plan/count` | `tongji.postgraduate.plan_progress` | 新增 |
@@ -72,29 +71,29 @@ MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断
 | `Get_postgraduate_major_infoGET` | `/v1/rt/onetongji/grad_major` | `tongji.postgraduate.majors` | 新增 |
 | `Get_advanced_lecture_countGET` | `/v1/rt/onetongji/lecture/count_advanced_lecture` | — | 不暴露工具，仅保留 CAM／内部接口 |
 | `Postgraduate_scoreGET` | `/v1/rt/onetongji/postgraduate_score` | `tongji.postgraduate.score` | 新增 |
-| `Get_all_term_calendarGET` | `/v1/rt/onetongji/school_calendar_all_term_calendar` | `tongji.student.term-calendar` | 已有工具 |
-| `Get_current_term_calendarGET` | `/v1/rt/onetongji/school_calendar_current_term_calendar` | `tongji.student.current-term-calendar` | 已有工具 |
+| `Get_all_term_calendarGET` | `/v1/rt/onetongji/school_calendar_all_term_calendar` | `tongji.user.term-calendar` | 已有工具 |
+| `Get_current_term_calendarGET` | `/v1/rt/onetongji/school_calendar_current_term_calendar` | `tongji.user.current-term-calendar` | 已有工具 |
 | `Student_timetableGET` | `/v1/rt/onetongji/student_timetable` | `tongji.student.timetable` | 已有工具 |
-| `Undergraduate_scoreGET` | `/v1/rt/onetongji/undergraduate_score` | `tongji.student.score` | 已有工具 |
-| `Get_research_patentGET` | `/v1/rt/research/patent` | `tongji.research.patents` | 新增 |
+| `Undergraduate_scoreGET` | `/v1/rt/onetongji/undergraduate_score` | `tongji.bachelor.score` | 已有工具 |
+| `Get_research_patentGET` | `/v1/rt/research/patent` | `tongji.user.research_patents` | 新增 |
 | `Get_final_exam_infoGET` | `/v1/rt/teaching_info/absent_examinfo` | `tongji.student.final_exams` | 新增 |
 | `Get_deferred_exam_infoGET` | `/v1/rt/teaching_info/deferred_examinfo` | `tongji.student.deferred_exams` | 新增 |
-| `Get_undergraduate_summarized_gradesGET` | `/v1/rt/teaching_info/undergraduate_summarized_grades` | `tongji.student.grade_summary` | 新增 |
+| `Get_undergraduate_summarized_gradesGET` | `/v1/rt/teaching_info/undergraduate_summarized_grades` | `tongji.bachelor.grade_summary` | 新增 |
 | `Get_student_detailed_infoPOST` | `/v1/rt/user/all_student` | `tongji.student.detailed_info` | 已有工具 |
 | `Get_tongji_email_infoGET` | `/v1/rt/user/coremail_info` | `tongji.user.email` | 新增 |
 | `Get_user_single_infoGET` | `/v1/rt/user/single_info` | — | 不暴露工具，仅保留 CAM／内部接口 |
-| `Get_book_lend_infoGET` | `/v2/dc/lib/lend_info_all` | `tongji.student.book-lend-info` | 已有工具 |
+| `Get_book_lend_infoGET` | `/v2/dc/lib/lend_info_all` | `tongji.user.book-lend-info` | 已有工具 |
 | `Student_accommodation_infoGET` | `/v2/dc/sep_auth/student_accommodation_info` | `tongji.student.accommodation-info` | 已有工具 |
 | `Get_teacher_title_infoGET` | `/v2/dc/sep_auth/teacher_title_info` | `tongji.teacher.title` | 新增 |
-| `Get_competition_prizesGET` | `/v2/dc/student_work_info/competition_winners` | `tongji.student.competition_prize` | 已有工具 |
+| `Get_competition_prizesGET` | `/v2/dc/student_work_info/competition_winners` | `tongji.bachelor.competition_prize` | 已有工具 |
 | `Student_honorary_titleGET` | `/v2/dc/student_work_info/honorary_title` | `tongji.student.honorary_title` | 已有工具 |
 | `Get_scholarship_infoGET` | `/v2/dc/student_work_info/scholarship` | `tongji.student.scholarship_info` | 已有工具 |
 | `Get_stipendGET` | `/v2/dc/student_work_info/stipend` | `tongji.student.stipend-info` | 已有工具 |
 | `Get_student_counselor_infoGET` | `/v2/dc/student_work_info/student_headteacher_counselor_info` | `tongji.student.counselor` | 新增 |
 | `Get_student_tencent_meeting_courseGET` | `/v2/dc/teaching_info/stu_tencent_meeting_course` | — | 不暴露工具，仅保留 CAM／内部接口 |
 | `Get_student_basic_infoGET` | `/v2/dc/user/student_infos` | — | 不暴露工具，仅保留 CAM／内部接口 |
-| `Get_statistics_info_by_yearGET` | `/v2/dc/user/user_annual_bill` | `tongji.student.annual_bill` | 已有工具 |
-| `Get_statistics_infoGET` | `/v2/dc/user/user_data_statistics` | `tongji.student.statistics-info` | 已有工具 |
+| `Get_statistics_info_by_yearGET` | `/v2/dc/user/user_annual_bill` | `tongji.user.annual_bill` | 已有工具 |
+| `Get_statistics_infoGET` | `/v2/dc/user/user_data_statistics` | `tongji.user.statistics-info` | 已有工具 |
 | `Get_postgraduate_completed_creditGET` | `/v2/rt/teaching_info/postgraduate_completed_credit` | `tongji.postgraduate.completed_credit` | 新增 |
 | `Get_postgraduate_degree_course_creditGET` | `/v2/rt/teaching_info/postgraduate_degree_course_credit` | `tongji.postgraduate.degree_credit` | 新增 |
 | `Get_postgraduate_degree_course_msGET` | `/v2/rt/teaching_info/postgraduate_degree_course_ms` | `tongji.postgraduate.degree_average` | 新增 |
@@ -102,7 +101,7 @@ MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断
 
 ## 部署与验证
 
-Agent 与 MCP 需配套部署。Agent 的服务 token 通过 TONGJI_MCP_CLIENT_ID / TONGJI_MCP_CLIENT_SECRET 申请，MCP 不保存这些客户端密钥。Agent 静态 allowlist 已同步为当前 60 个工具。
+Agent 与 MCP 需配套部署。Agent 的服务 token 通过 TONGJI_MCP_CLIENT_ID / TONGJI_MCP_CLIENT_SECRET 申请，MCP 不保存这些客户端密钥。Agent 静态 allowlist 已同步为当前 59 个工具。
 
 本地测试覆盖新工具逐项 CAM 请求契约、完整凭据/匿名/批量身份拒绝、模型身份注入拒绝、并发用户隔离、写操作参数与不重试、分页和响应裁剪。运行 pnpm test、pnpm test:typecheck、pnpm typecheck、pnpm build。pnpm docs:tools 从无凭据内存实例导出目录，不执行任何上游请求。
 
@@ -116,7 +115,7 @@ Agent 与 MCP 需配套部署。Agent 的服务 token 通过 TONGJI_MCP_CLIENT_I
 
 ### 校园工具公共执行层
 
-全部 43 个同济校园工具使用 `campusTool(...).register`，包括原有 17 个和新增 26 个。6 个 YourTJ／历史评价工具使用独立的数据源契约，不接入此执行层。
+全部 42 个同济校园工具使用 `campusTool(...).register`，包括原有 17 个和新增 25 个。6 个 YourTJ／历史评价工具使用独立的数据源契约，不接入此执行层。
 
 `campus-tool.ts` 统一处理严格输入 Schema、Agent 身份上下文检查、只读／写操作标记、业务参数验证、上游错误、响应 Schema 校验和 MCP 结果封装。工具自身只声明业务查询和数据转换，不读取请求头或接收模型生成的凭据。
 
@@ -124,8 +123,40 @@ Agent 与 MCP 需配套部署。Agent 的服务 token 通过 TONGJI_MCP_CLIENT_I
 
 ## 响应字段描述（2026-09-23）
 
-校园工具的业务响应字段与同济开放平台官网字段说明对齐；公共 status/data/pagination/source 也声明描述，实际 tools/list 中 43 个校园工具的 882 个响应属性均有说明。完整 schema 见 [工具目录](TOOLS.md)。
+校园工具的业务响应字段与同济开放平台官网字段说明对齐；公共 status/data/pagination/source 也声明描述，实际 tools/list 中 42 个校园工具的 响应属性均有说明。完整 schema 见 [工具目录](TOOLS.md)。
 
 官网有字段说明时以官网原文为准，包括单位和枚举；官网只有示例或没有明确释义时，描述中明确标注“官网未明确说明”或“沿用现有工具定义”，不将字段名推断当作官方承诺。官网目前未解释的字段仍需由开放平台确认。
 
 工具封装、查询参数回显和重命名字段按实际映射说明，例如校门 recordTime 映射为 dataTime、当前学期 schoolCalendar.id 映射为 calendarId。本次仅修改描述，字段类型、白名单、空值语义和注册工具集合不变；CAM 生成代码未修改。
+
+## 使用人群与命名
+
+`campusTool` 的必填 `audience` 标记统一生成 description 的使用范围。分类如下，所有工具仍需登录；标记不代替上游角色权限校验，也不是模型输入参数。
+
+| audience / 命名空间 | 使用范围 | 工具数 |
+| --- | --- | --- |
+| user / tongji.user.* | 全部已登录用户 | 15 |
+| teacher / tongji.teacher.* | 仅教师 | 2 |
+| student / tongji.student.* | 本科生及研究生 | 13 |
+| bachelor / tongji.bachelor.* | 仅本科生 | 3 |
+| postgraduate / tongji.postgraduate.* | 仅研究生 | 9 |
+
+目录与 `a.b.c` 名称逐段对应。以下重命名不保留旧别名，Agent allowlist、技能引用及 MCP 需同步部署：
+
+| 原名称 | 新名称 |
+| --- | --- |
+| `tongji.research.projects` | `tongji.user.research_projects` |
+| `tongji.research.works` | `tongji.user.research_works` |
+| `tongji.card.balance` | `tongji.user.card_balance` |
+| `tongji.research.patents` | `tongji.user.research_patents` |
+| `tongji.student.card_spending_flow` | `tongji.user.card_spending_flow` |
+| `tongji.student.term-calendar` | `tongji.user.term-calendar` |
+| `tongji.student.current-term-calendar` | `tongji.user.current-term-calendar` |
+| `tongji.student.annual_bill` | `tongji.user.annual_bill` |
+| `tongji.student.book-lend-info` | `tongji.user.book-lend-info` |
+| `tongji.student.statistics-info` | `tongji.user.statistics-info` |
+| `tongji.student.school_access` | `tongji.user.school_access` |
+| `tongji.student.library_access` | `tongji.user.library_access` |
+| `tongji.student.grade_summary` | `tongji.bachelor.grade_summary` |
+| `tongji.student.score` | `tongji.bachelor.score` |
+| `tongji.student.competition_prize` | `tongji.bachelor.competition_prize` |

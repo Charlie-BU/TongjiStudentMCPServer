@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerStudentCounselorTool = campusTool({
+    audience: "student",
     name: "tongji.student.counselor",
     title: "本人班主任与辅导员",
     description: "查本人班主任、辅导员姓名与工号；本接口不返回联系方式，不应承诺直接查询电话。",

@@ -8,6 +8,7 @@ import type { CetScoreRecord, CetScoreData, } from "./types";
 export const CET_SCORE_TOOL_NAME = "tongji.student.cet-score";
 // registerCetScoreTool 注册四六级成绩查询工具。
 export const registerCetScoreTool = campusTool({
+    audience: "student",
     name: CET_SCORE_TOOL_NAME,
     title: "查询四六级成绩",
     description: "查询当前已授权学生的全国大学英语四六级考试成绩（CET-4 / CET-6），返回考试科目、准考证号、笔试成绩、口语成绩和考试时间。",

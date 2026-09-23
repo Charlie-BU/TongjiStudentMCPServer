@@ -17,20 +17,7 @@ export const campusContracts = [
         "data": []
     },
     {
-        "name": "tongji.card.spending_summary",
-        "path": "/v1/dc/card/week_or_month_sum",
-        "method": "get",
-        "args": {
-            "cycle": "week",
-            "tradeStartTime": "value",
-            "tradeEndTime": "value",
-            "n": 2
-        },
-        "scoped": true,
-        "data": []
-    },
-    {
-        "name": "tongji.research.projects",
+        "name": "tongji.user.research_projects",
         "path": "/v1/dc/research/longitudinal_project_for_PD",
         "method": "get",
         "args": {
@@ -40,7 +27,7 @@ export const campusContracts = [
         "data": {}
     },
     {
-        "name": "tongji.research.works",
+        "name": "tongji.user.research_works",
         "path": "/v1/dc/research/work",
         "method": "get",
         "args": {},
@@ -66,7 +53,10 @@ export const campusContracts = [
             "phone": "13800000000"
         },
         "scoped": true,
-        "data": { "code": "A00000", "effectRows": 1 }
+        "data": {
+            "code": "A00000",
+            "effectRows": 1
+        }
     },
     {
         "name": "tongji.student.hardship_allowance",
@@ -101,7 +91,7 @@ export const campusContracts = [
         "data": {}
     },
     {
-        "name": "tongji.card.balance",
+        "name": "tongji.user.card_balance",
         "path": "/v1/rt/card/card_balance",
         "method": "get",
         "args": {},
@@ -143,7 +133,7 @@ export const campusContracts = [
         "data": {}
     },
     {
-        "name": "tongji.research.patents",
+        "name": "tongji.user.research_patents",
         "path": "/v1/rt/research/patent",
         "method": "get",
         "args": {
@@ -175,7 +165,7 @@ export const campusContracts = [
         "data": []
     },
     {
-        "name": "tongji.student.grade_summary",
+        "name": "tongji.bachelor.grade_summary",
         "path": "/v1/rt/teaching_info/undergraduate_summarized_grades",
         "method": "get",
         "args": {},

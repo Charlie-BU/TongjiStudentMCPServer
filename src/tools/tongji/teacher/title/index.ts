@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerTeacherTitleTool = campusTool({
+    audience: "teacher",
     name: "tongji.teacher.title",
     title: "教职工职称与岗位",
     description: "根据工号查询教职工职称与岗位信息",

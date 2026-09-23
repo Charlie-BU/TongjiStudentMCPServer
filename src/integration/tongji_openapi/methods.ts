@@ -205,14 +205,6 @@ export const getPostgraduateRequiredCredit = async (
     return adapter.service.Get_postgraduate_required_creditGET(adapter.withAuthorization(input));
 };
 
-// getCardSpendingSummary 一卡通消费汇总。
-export const getCardSpendingSummary = async (
-    config: TongjiOpenapiAdapterConfig,
-    input: Omit<Parameters<TongjiOpenapiAdapter["service"]["Get_card_spending_summaryGET"]>[0], "Authorization" | "userId">,
-): Promise<unknown> => {
-    const adapter = createTongjiOpenapiAdapter(config);
-    return adapter.service.Get_card_spending_summaryGET(adapter.withAuthorization(input));
-};
 
 // getResearchProjects 本人科研项目。
 export const getResearchProjects = async (

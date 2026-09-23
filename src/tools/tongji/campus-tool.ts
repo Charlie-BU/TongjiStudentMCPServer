@@ -35,9 +35,20 @@ const redactToken = (value: unknown, token: string): unknown => {
     return value;
 };
 
+// 适用人群是工具元数据，由开发者声明，不能由模型传入。
+export const campusAudienceDescriptions = {
+    user: "全部已登录用户均可使用（含教师、本科生和研究生）",
+    teacher: "仅限教师使用",
+    student: "仅限学生（本科生、研究生）使用",
+    bachelor: "仅限本科生使用",
+    postgraduate: "仅限研究生使用",
+} as const;
+export type CampusAudience = keyof typeof campusAudienceDescriptions;
+
 // campusTool 定义了同济校园平台工具的通用结构，包含请求和响应转换。
 export const campusTool = <S extends z.ZodRawShape, O extends z.AnyZodObject>(definition: {
     name: string;
+    audience: CampusAudience;
     title: string;
     description: string;
     input: z.ZodObject<S>;
@@ -57,7 +68,7 @@ export const campusTool = <S extends z.ZodRawShape, O extends z.AnyZodObject>(de
         const inputSchema = definition.input.strict();
         server.registerTool<typeof inputSchema, typeof output>(definition.name, {
             title: definition.title,
-            description: definition.description + " 仅操作当前登录用户；身份及凭据由 Agent 提供。" + (definition.write ? " 仅在用户明确要求执行该操作时调用；失败后先核实结果，不自动重试。" : ""),
+            description: `使用范围：${campusAudienceDescriptions[definition.audience]}。` + definition.description + (definition.write ? " 仅在用户明确要求执行该操作时调用；失败后先核实结果，不自动重试。" : ""),
             inputSchema,
             outputSchema: output,
             annotations: { readOnlyHint: !definition.write, destructiveHint: !!definition.write, idempotentHint: !definition.write, openWorldHint: true },

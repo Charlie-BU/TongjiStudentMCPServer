@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerStudentFinalExamsTool = campusTool({
+    audience: "student",
     name: "tongji.student.final_exams",
     title: "期末考试安排与缺考情况",
     description: "期末考试时间、地点、应考及缺考情况；userId和calendarId必填，defeat默认否，查询缺考需显式传1。",

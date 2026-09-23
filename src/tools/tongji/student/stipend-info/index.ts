@@ -8,6 +8,7 @@ import type { StipendRecord, StipendInfoData, } from "./types";
 export const STIPEND_INFO_TOOL_NAME = "tongji.student.stipend-info";
 // registerStipendInfoTool 注册助学金信息查询工具。
 export const registerStipendInfoTool = campusTool({
+    audience: "student",
     name: STIPEND_INFO_TOOL_NAME,
     title: "查询助学金信息",
     description: "查询当前已授权学生获得的助学金记录，返回助学金名称、金额、等级、评定学年及学期等信息。",

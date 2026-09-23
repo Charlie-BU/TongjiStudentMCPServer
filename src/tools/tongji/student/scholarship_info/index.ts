@@ -8,6 +8,7 @@ import type { ScholarshipInfo, ScholarshipInfoData, } from "./types";
 export const SCHOLARSHIP_INFO_TOOL_NAME = "tongji.student.scholarship_info";
 // registerScholarshipInfoTool 注册学生奖学金查询工具。
 export const registerScholarshipInfoTool = campusTool({
+    audience: "student",
     name: SCHOLARSHIP_INFO_TOOL_NAME,
     title: "查询学生奖学金记录",
     description: "查询当前已授权学生获得奖学金的情况信息。",

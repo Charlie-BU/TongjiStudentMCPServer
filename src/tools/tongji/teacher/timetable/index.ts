@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerTeacherTimetableTool = campusTool({
+    audience: "teacher",
     name: "tongji.teacher.timetable",
     title: "教职工本学期课表",
     description: "根据学工号查询教职工本学期课表情况",

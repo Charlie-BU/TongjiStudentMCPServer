@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerPostgraduateMajorsTool = campusTool({
+    audience: "postgraduate",
     name: "tongji.postgraduate.majors",
     title: "研究生学位专业目录",
     description: "获取1系统上的研究生学位专业信息",

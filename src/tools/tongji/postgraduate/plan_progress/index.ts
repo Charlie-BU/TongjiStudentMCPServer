@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerPostgraduatePlanProgressTool = campusTool({
+    audience: "postgraduate",
     name: "tongji.postgraduate.plan_progress",
     title: "研究生培养计划完成统计",
     description: "获取1tongji系统上研究生培养计划完成情况统计信息",

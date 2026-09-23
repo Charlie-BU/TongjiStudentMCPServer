@@ -8,6 +8,7 @@ import type { AccommodationRecord, AccommodationInfoData, } from "./types";
 export const ACCOMMODATION_INFO_TOOL_NAME = "tongji.student.accommodation-info";
 // registerAccommodationInfoTool 注册住宿信息查询工具。
 export const registerAccommodationInfoTool = campusTool({
+    audience: "student",
     name: ACCOMMODATION_INFO_TOOL_NAME,
     title: "查询住宿信息",
     description: "查询当前已授权学生的住宿信息，返回宿舍楼、宿舍区、楼层、房间号及所属学院等信息。",

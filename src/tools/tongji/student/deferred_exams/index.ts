@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerStudentDeferredExamsTool = campusTool({
+    audience: "student",
     name: "tongji.student.deferred_exams",
     title: "重缓考安排与状态",
     description: "重缓考时间、地点与状态；userId和calendarId必填，defeat不传查询所有类型。",

@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerPostgraduateGpaTool = campusTool({
+    audience: "postgraduate",
     name: "tongji.postgraduate.gpa",
     title: "研究生平均成绩与绩点",
     description: "根据学号查询研究生平均成绩与平均绩点",

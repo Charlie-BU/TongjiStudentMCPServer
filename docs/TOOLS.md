@@ -1,7 +1,7 @@
 # Tongji Student MCP Tool Catalog
 
 > 从 MCP tools/list 导出。服务：tongji-student-mcp-server，版本：0.1.0。
-> 当前注册 **60** 个工具。运行 `pnpm docs:tools` 可重新生成。
+> 当前注册 **59** 个工具。运行 `pnpm docs:tools` 可重新生成。
 
 ## 通用约定
 
@@ -9,7 +9,7 @@
 - 框架在 HTTP 入口验证服务凭据，用户身份取自 X-Tongji-User-Id，不能从服务账号推断。
 - YourTJ 公开课程、本地历史评价及瑞幸短信验证码工具可匿名调用；个人校园数据和瑞幸账号工具要求可信身份。
 - 同济工具的正常结果使用 status/data/source；错误使用 isError 和脱敏 status/message。瑞幸 check 使用 valid/message。
-- 更新联系方式、创建会议为写操作，不自动重试。调用前须有用户明确的操作意图。
+- 更新联系方式为写操作，不自动重试。调用前须有用户明确的操作意图。
 - CAM 接口覆盖、分页与兼容说明见 [同济 API 迁移](TONGJI_API.md)。
 
 ## 工具目录
@@ -19,47 +19,46 @@
 | `tongji.course.legacy-teacher-reviews` | 检索老师历史评价 | Local SQLite |
 | `tongji.postgraduate.gpa` | 研究生平均成绩与绩点 | Tongji Open Platform |
 | `tongji.postgraduate.required_credit` | 研究生应修学分 | Tongji Open Platform |
-| `tongji.card.spending_summary` | 一卡通消费汇总 | Tongji Open Platform |
-| `tongji.research.projects` | 本人科研项目 | Tongji Open Platform |
-| `tongji.research.works` | 本人科研著作 | Tongji Open Platform |
+| `tongji.user.research_projects` | 本人科研项目 | Tongji Open Platform |
+| `tongji.user.research_works` | 本人科研著作 | Tongji Open Platform |
 | `tongji.user.contact_info` | 本人联系方式 | Tongji Open Platform |
 | `tongji.user.update_contact_info` | 修改本人联系方式 | Tongji Open Platform |
 | `tongji.student.hardship_allowance` | 困难补助 | Tongji Open Platform |
 | `tongji.student.loan` | 助学贷款 | Tongji Open Platform |
 | `tongji.student.work_study` | 勤工助学 | Tongji Open Platform |
 | `tongji.teacher.timetable` | 教职工本学期课表 | Tongji Open Platform |
-| `tongji.card.balance` | 一卡通实时余额 | Tongji Open Platform |
+| `tongji.user.card_balance` | 一卡通实时余额 | Tongji Open Platform |
 | `tongji.postgraduate.plan_progress` | 研究生培养计划完成统计 | Tongji Open Platform |
 | `tongji.postgraduate.plan` | 研究生培养计划 | Tongji Open Platform |
 | `tongji.postgraduate.majors` | 研究生学位专业目录 | Tongji Open Platform |
 | `tongji.postgraduate.score` | 研究生成绩 | Tongji Open Platform |
-| `tongji.research.patents` | 本人科研专利 | Tongji Open Platform |
+| `tongji.user.research_patents` | 本人科研专利 | Tongji Open Platform |
 | `tongji.student.final_exams` | 期末考试安排与缺考情况 | Tongji Open Platform |
 | `tongji.student.deferred_exams` | 重缓考安排与状态 | Tongji Open Platform |
-| `tongji.student.grade_summary` | 本科生绩点与学分汇总 | Tongji Open Platform |
+| `tongji.bachelor.grade_summary` | 本科生绩点与学分汇总 | Tongji Open Platform |
 | `tongji.user.email` | 本人同济邮箱与别名 | Tongji Open Platform |
 | `tongji.teacher.title` | 教职工职称与岗位 | Tongji Open Platform |
 | `tongji.student.counselor` | 本人班主任与辅导员 | Tongji Open Platform |
 | `tongji.postgraduate.completed_credit` | 研究生已修学分 | Tongji Open Platform |
 | `tongji.postgraduate.degree_credit` | 研究生学位课总学分 | Tongji Open Platform |
 | `tongji.postgraduate.degree_average` | 研究生学位课平均分 | Tongji Open Platform |
-| `tongji.student.annual_bill` | 查询学生年度统计账单 | Tongji Open Platform |
-| `tongji.student.card_spending_flow` | 查询一卡通消费流水 | Tongji Open Platform |
+| `tongji.user.annual_bill` | 查询用户年度统计账单 | Tongji Open Platform |
+| `tongji.user.card_spending_flow` | 查询一卡通消费流水 | Tongji Open Platform |
 | `tongji.student.timetable` | 查询学生课表 | Tongji Open Platform |
 | `tongji.student.detailed_info` | 查询学生详细学籍信息 | Tongji Open Platform |
-| `tongji.student.score` | 查询本科生成绩 | Tongji Open Platform |
-| `tongji.student.term-calendar` | 查询学期日历 | Tongji Open Platform |
-| `tongji.student.current-term-calendar` | 查询当前学期日历 | Tongji Open Platform |
+| `tongji.bachelor.score` | 查询本科生成绩 | Tongji Open Platform |
+| `tongji.user.term-calendar` | 查询学期日历 | Tongji Open Platform |
+| `tongji.user.current-term-calendar` | 查询当前学期日历 | Tongji Open Platform |
 | `tongji.student.cet-score` | 查询四六级成绩 | Tongji Open Platform |
-| `tongji.student.book-lend-info` | 查询图书借阅信息 | Tongji Open Platform |
-| `tongji.student.statistics-info` | 查询个人统计数据 | Tongji Open Platform |
+| `tongji.user.book-lend-info` | 查询图书借阅信息 | Tongji Open Platform |
+| `tongji.user.statistics-info` | 查询个人统计数据 | Tongji Open Platform |
 | `tongji.student.stipend-info` | 查询助学金信息 | Tongji Open Platform |
 | `tongji.student.accommodation-info` | 查询住宿信息 | Tongji Open Platform |
-| `tongji.student.competition_prize` | 查询本科生竞赛奖励记录 | Tongji Open Platform |
+| `tongji.bachelor.competition_prize` | 查询本科生竞赛奖励记录 | Tongji Open Platform |
 | `tongji.student.honorary_title` | 查询学生荣誉称号记录 | Tongji Open Platform |
 | `tongji.student.scholarship_info` | 查询学生奖学金记录 | Tongji Open Platform |
-| `tongji.student.school_access` | 查询校门通行记录 | Tongji Open Platform |
-| `tongji.student.library_access` | 查询图书馆通行记录 | Tongji Open Platform |
+| `tongji.user.school_access` | 查询校门通行记录 | Tongji Open Platform |
+| `tongji.user.library_access` | 查询图书馆通行记录 | Tongji Open Platform |
 | `tongji.course.course-detail` | 查询课程详情 | YourTJ |
 | `tongji.course.course-related` | 查询课程关联 | YourTJ |
 | `tongji.course.reviews` | 查询课程评价 | YourTJ |
@@ -133,7 +132,7 @@
 
 ## tongji.postgraduate.gpa
 
-根据学号查询研究生平均成绩与平均绩点 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生平均成绩与平均绩点 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -224,7 +223,7 @@
 
 ## tongji.postgraduate.required_credit
 
-根据学号查询研究生应修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生应修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -306,144 +305,9 @@
 }
 ```
 
-## tongji.card.spending_summary
+## tongji.user.research_projects
 
-按日期区间、近n周或近n月返回消费总额，避免分页拉流水后在模型中计算；cycle为week/month时n必填。cycle=date时，起止时间均不传默认最近一个月；只传开始时间查询其后30天，只传结束时间查询其前30天；两者都传按指定区间，n不影响。 仅操作当前登录用户；身份及凭据由 Agent 提供。
-
-### Input Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "cycle": {
-      "type": "string",
-      "enum": [
-        "date",
-        "week",
-        "month"
-      ],
-      "description": "周期：date、week、month"
-    },
-    "tradeStartTime": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "开始时间"
-    },
-    "tradeEndTime": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "结束时间"
-    },
-    "n": {
-      "type": "integer",
-      "exclusiveMinimum": 0,
-      "description": "近n个自然周/月；cycle=week或month时必须提供。"
-    }
-  },
-  "required": [
-    "cycle"
-  ]
-}
-```
-
-### Output Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "status": {
-      "type": "string",
-      "enum": [
-        "ok",
-        "empty"
-      ],
-      "description": "查询状态；ok 表示有业务数据，empty 表示没有可返回的业务数据。"
-    },
-    "data": {
-      "anyOf": [
-        {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "last": {
-                    "type": [
-                      "number",
-                      "null"
-                    ],
-                    "description": "时间"
-                  },
-                  "note": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "description": "时间描述"
-                  },
-                  "tradeAmt": {
-                    "type": [
-                      "number",
-                      "null"
-                    ],
-                    "description": "金额总数"
-                  }
-                },
-                "additionalProperties": false
-              }
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "description": "本工具返回的业务数据；无数据时为 null。"
-    },
-    "pagination": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      },
-      "description": "分页游标信息；沿用上游返回的游标字段进行后续查询。"
-    },
-    "source": {
-      "type": "string",
-      "const": "Tongji Open Platform",
-      "description": "业务数据来源：同济大学开放平台。"
-    }
-  },
-  "required": [
-    "status",
-    "data",
-    "source"
-  ],
-  "additionalProperties": false
-}
-```
-
-### Annotations
-
-```json
-{
-  "readOnlyHint": true,
-  "destructiveHint": false,
-  "idempotentHint": true,
-  "openWorldHint": true
-}
-```
-
-## tongji.research.projects
-
-根据学工号查询以第一申请人申请科研项目情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询以第一申请人申请科研项目情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -699,9 +563,9 @@
 }
 ```
 
-## tongji.research.works
+## tongji.user.research_works
 
-根据学工号查询科研著作情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询科研著作情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -869,7 +733,7 @@
 
 ## tongji.user.contact_info
 
-根据学工号查询人员联系方式，包括电话号码和邮箱 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询人员联系方式，包括电话号码和邮箱 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -988,7 +852,7 @@
 
 ## tongji.user.update_contact_info
 
-通过学号修改用户联系方式 仅操作当前登录用户；身份及凭据由 Agent 提供。 仅在用户明确要求执行该操作时调用；失败后先核实结果，不自动重试。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。通过学号修改用户联系方式 仅操作当前登录用户；身份及凭据由 Agent 提供。 仅在用户明确要求执行该操作时调用；失败后先核实结果，不自动重试。
 
 ### Input Schema
 
@@ -1093,7 +957,7 @@
 
 ## tongji.student.hardship_allowance
 
-根据学号查询学生获得困难补助情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生获得困难补助情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -1247,7 +1111,7 @@
 
 ## tongji.student.loan
 
-根据学号查询学生获得助学贷款情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生获得助学贷款情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -1401,7 +1265,7 @@
 
 ## tongji.student.work_study
 
-根据学号查询学生勤功助学情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生勤功助学情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -1562,7 +1426,7 @@
 
 ## tongji.teacher.timetable
 
-根据学工号查询教职工本学期课表情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限教师使用。根据学工号查询教职工本学期课表情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -1643,9 +1507,9 @@
 }
 ```
 
-## tongji.card.balance
+## tongji.user.card_balance
 
-根据学工号查询人员一卡通实时余额 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询人员一卡通实时余额 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -1729,7 +1593,7 @@
 
 ## tongji.postgraduate.plan_progress
 
-获取1tongji系统上研究生培养计划完成情况统计信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1tongji系统上研究生培养计划完成情况统计信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -1883,7 +1747,7 @@
 
 ## tongji.postgraduate.plan
 
-获取1tongji系统上研究生的培养计划，根据学号查询培养计划 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1tongji系统上研究生的培养计划，根据学号查询培养计划 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -2629,7 +2493,7 @@
 
 ## tongji.postgraduate.majors
 
-获取1系统上的研究生学位专业信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1系统上的研究生学位专业信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -2818,7 +2682,7 @@
 
 ## tongji.postgraduate.score
 
-获取1tongji系统上研究生课程的成绩信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1tongji系统上研究生课程的成绩信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -3571,9 +3435,9 @@
 }
 ```
 
-## tongji.research.patents
+## tongji.user.research_patents
 
-根据学工号或专利号查询科研专利情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号或专利号查询科研专利情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -3776,7 +3640,7 @@
 
 ## tongji.student.final_exams
 
-期末考试时间、地点、应考及缺考情况；userId和calendarId必填，defeat默认否，查询缺考需显式传1。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。期末考试时间、地点、应考及缺考情况；userId和calendarId必填，defeat默认否，查询缺考需显式传1。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -4241,7 +4105,7 @@
 
 ## tongji.student.deferred_exams
 
-重缓考时间、地点与状态；userId和calendarId必填，defeat不传查询所有类型。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。重缓考时间、地点与状态；userId和calendarId必填，defeat不传查询所有类型。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -4690,9 +4554,9 @@
 }
 ```
 
-## tongji.student.grade_summary
+## tongji.bachelor.grade_summary
 
-根据学号查询本科生绩点、百分制成绩、修读学分、实修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限本科生使用。根据学号查询本科生绩点、百分制成绩、修读学分、实修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -4797,7 +4661,7 @@
 
 ## tongji.user.email
 
-查询本人同济邮箱及别名、状态；只传登录用户userId，不开放任意邮箱反查。官方支持userId/email二选一，本工具固定用登录用户userId。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询本人同济邮箱及别名、状态；只传登录用户userId，不开放任意邮箱反查。官方支持userId/email二选一，本工具固定用登录用户userId。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -4895,7 +4759,7 @@
 
 ## tongji.teacher.title
 
-根据工号查询教职工职称与岗位信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限教师使用。根据工号查询教职工职称与岗位信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -5237,7 +5101,7 @@
 
 ## tongji.student.counselor
 
-查本人班主任、辅导员姓名与工号；本接口不返回联系方式，不应承诺直接查询电话。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查本人班主任、辅导员姓名与工号；本接口不返回联系方式，不应承诺直接查询电话。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -5412,7 +5276,7 @@
 
 ## tongji.postgraduate.completed_credit
 
-根据学号查询研究生已修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生已修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -5496,7 +5360,7 @@
 
 ## tongji.postgraduate.degree_credit
 
-根据学号查询研究生学位课总学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生学位课总学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -5580,7 +5444,7 @@
 
 ## tongji.postgraduate.degree_average
 
-根据学号查询研究生学位课平均分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生学位课平均分 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -5669,9 +5533,9 @@
 }
 ```
 
-## tongji.student.annual_bill
+## tongji.user.annual_bill
 
-查询当前已授权学生指定年份的校园年度统计账单。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户指定年份的校园年度统计账单。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -5862,7 +5726,7 @@
             ],
             "additionalProperties": false
           },
-          "description": "当前授权学生的年度统计账单列表。"
+          "description": "当前授权用户的年度统计账单列表。"
         }
       },
       "required": [
@@ -5902,9 +5766,9 @@
 }
 ```
 
-## tongji.student.card_spending_flow
+## tongji.user.card_spending_flow
 
-查询当前已授权用户在指定时间范围内的一卡通历史消费流水信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的一卡通历史消费流水信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -6070,7 +5934,7 @@
 
 ## tongji.student.timetable
 
-查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -6352,7 +6216,7 @@
 
 ## tongji.student.detailed_info
 
-查询当前已授权学生的教务系统详细学籍信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的教务系统详细学籍信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -6705,9 +6569,9 @@
 }
 ```
 
-## tongji.student.score
+## tongji.bachelor.score
 
-查询当前已授权本科生在指定学期的成绩；不传 calendarId 时查询当前学期。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限本科生使用。查询当前已授权本科生在指定学期的成绩；不传 calendarId 时查询当前学期。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -6955,9 +6819,9 @@
 }
 ```
 
-## tongji.student.term-calendar
+## tongji.user.term-calendar
 
-查询同济大学所有学期的日历信息，返回学期ID、年份、学期编号、起止日期、周数、学年分段名称、学期完整名称及当前/下一学期标识。学期编号可用于查询课表、成绩等其他接口。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询同济大学所有学期的日历信息，返回学期ID、年份、学期编号、起止日期、周数、学年分段名称、学期完整名称及当前/下一学期标识。学期编号可用于查询课表、成绩等其他接口。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -7142,9 +7006,9 @@
 }
 ```
 
-## tongji.student.current-term-calendar
+## tongji.user.current-term-calendar
 
-查询同济大学当前学期的日历摘要，包含学年、学期、周数、当前所处教学周及学期描述。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询同济大学当前学期的日历摘要，包含学年、学期、周数、当前所处教学周及学期描述。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -7325,7 +7189,7 @@
 
 ## tongji.student.cet-score
 
-查询当前已授权学生的全国大学英语四六级考试成绩（CET-4 / CET-6），返回考试科目、准考证号、笔试成绩、口语成绩和考试时间。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的全国大学英语四六级考试成绩（CET-4 / CET-6），返回考试科目、准考证号、笔试成绩、口语成绩和考试时间。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -7478,9 +7342,9 @@
 }
 ```
 
-## tongji.student.book-lend-info
+## tongji.user.book-lend-info
 
-查询当前已授权学生的图书借阅记录，返回书名、作者、ISBN、借出日期、应还日期、馆藏地等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户的图书借阅记录，返回书名、作者、ISBN、借出日期、应还日期、馆藏地等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -7777,9 +7641,9 @@
 }
 ```
 
-## tongji.student.statistics-info
+## tongji.user.statistics-info
 
-查询当前已授权学生的校园生活统计数据，包括图书馆使用、食堂消费、校车乘坐、超市购物、奖学金及校园卡使用等维度。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户的校园生活统计数据，包括图书馆使用、食堂消费、校车乘坐、超市购物、奖学金及校园卡使用等维度。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -8110,7 +7974,7 @@
 
 ## tongji.student.stipend-info
 
-查询当前已授权学生获得的助学金记录，返回助学金名称、金额、等级、评定学年及学期等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得的助学金记录，返回助学金名称、金额、等级、评定学年及学期等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -8299,7 +8163,7 @@
 
 ## tongji.student.accommodation-info
 
-查询当前已授权学生的住宿信息，返回宿舍楼、宿舍区、楼层、房间号及所属学院等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的住宿信息，返回宿舍楼、宿舍区、楼层、房间号及所属学院等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -8486,9 +8350,9 @@
 }
 ```
 
-## tongji.student.competition_prize
+## tongji.bachelor.competition_prize
 
-查询当前已授权本科生的竞赛获奖与奖励记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限本科生使用。查询当前已授权本科生的竞赛获奖与奖励记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -8640,7 +8504,7 @@
 
 ## tongji.student.honorary_title
 
-查询当前已授权学生获得荣誉称号的情况信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得荣誉称号的情况信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -8765,7 +8629,7 @@
 
 ## tongji.student.scholarship_info
 
-查询当前已授权学生获得奖学金的情况信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得奖学金的情况信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -8920,9 +8784,9 @@
 }
 ```
 
-## tongji.student.school_access
+## tongji.user.school_access
 
-查询当前已授权学生在指定时间范围内的校门进出通行记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的校门进出通行记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -9049,7 +8913,7 @@
             ],
             "additionalProperties": false
           },
-          "description": "当前授权学生的校门通行记录列表。"
+          "description": "当前授权用户的校门通行记录列表。"
         }
       },
       "required": [
@@ -9101,9 +8965,9 @@
 }
 ```
 
-## tongji.student.library_access
+## tongji.user.library_access
 
-查询当前已授权学生在指定时间范围内的图书馆闸机进出记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的图书馆闸机进出记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
 
 ### Input Schema
 
@@ -9231,7 +9095,7 @@
             ],
             "additionalProperties": false
           },
-          "description": "当前授权学生的图书馆通行记录列表。"
+          "description": "当前授权用户的图书馆通行记录列表。"
         }
       },
       "required": [

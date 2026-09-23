@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerPostgraduateCompletedCreditTool = campusTool({
+    audience: "postgraduate",
     name: "tongji.postgraduate.completed_credit",
     title: "研究生已修学分",
     description: "根据学号查询研究生已修学分",

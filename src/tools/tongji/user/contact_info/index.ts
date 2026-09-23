@@ -4,6 +4,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerUserContactInfoTool = campusTool({
+    audience: "user",
     name: "tongji.user.contact_info",
     title: "本人联系方式",
     description: "根据学工号查询人员联系方式，包括电话号码和邮箱",

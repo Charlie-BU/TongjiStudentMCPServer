@@ -5,6 +5,7 @@ import * as response from "./schemas";
 import { campusTool } from "../../campus-tool";
 
 export const registerUserUpdateContactInfoTool = campusTool({
+    audience: "user",
     name: "tongji.user.update_contact_info",
     title: "修改本人联系方式",
     description: "通过学号修改用户联系方式",

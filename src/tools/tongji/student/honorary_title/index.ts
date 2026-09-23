@@ -8,6 +8,7 @@ import type { HonoraryTitle, HonoraryTitleData, } from "./types";
 export const HONORARY_TITLE_TOOL_NAME = "tongji.student.honorary_title";
 // registerHonoraryTitleTool 注册学生荣誉称号查询工具。
 export const registerHonoraryTitleTool = campusTool({
+    audience: "student",
     name: HONORARY_TITLE_TOOL_NAME,
     title: "查询学生荣誉称号记录",
     description: "查询当前已授权学生获得荣誉称号的情况信息。",

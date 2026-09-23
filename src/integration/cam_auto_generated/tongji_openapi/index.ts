@@ -4,140 +4,171 @@
 // @ts-nocheck
 
 import type {
-  Id_card_info_checkQueryRequest,
-  Id_card_info_checkHeaderRequest,
-  Person_info_by_pidQueryRequest,
-  Person_info_by_pidHeaderRequest,
-  Postgraduate_gpa_and_msQueryRequest,
-  Postgraduate_gpa_and_msHeaderRequest,
-  Undergraduate_summarized_gradesQueryRequest,
-  Undergraduate_summarized_gradesHeaderRequest,
-  Postgraduate_degree_course_creditQueryRequest,
-  Postgraduate_degree_course_creditHeaderRequest,
-  Postgraduate_degree_course_msQueryRequest,
-  Postgraduate_degree_course_msHeaderRequest,
-  Postgraduate_completed_creditQueryRequest,
-  Postgraduate_completed_creditHeaderRequest,
-  Postgraduate_required_creditQueryRequest,
-  Postgraduate_required_creditHeaderRequest,
-  CountQueryRequest,
-  CountHeaderRequest,
-  GetQueryRequest,
-  GetHeaderRequest,
-  Msg_detailHeaderRequest,
-  Msg_listHeaderRequest,
-  Grad_majorHeaderRequest,
-  Ugrd_majorQueryRequest,
-  Ugrd_majorHeaderRequest,
-  Library_current_borrowQueryRequest,
-  Library_current_borrowHeaderRequest,
-  Id_card_info_queryQueryRequest,
-  Id_card_info_queryHeaderRequest,
-  EducationQueryRequest,
-  EducationHeaderRequest,
-  School_rollQueryRequest,
-  School_rollHeaderRequest,
-  All_classroom_listQueryRequest,
-  All_classroom_listHeaderRequest,
-  Course_listQueryRequest,
-  Course_listHeaderRequest,
-  Get_classroom_by_towerQueryRequest,
-  Get_classroom_by_towerHeaderRequest,
-  Classroom_listQueryRequest,
-  Classroom_listHeaderRequest,
-  Student_evaluationQueryRequest,
-  Student_evaluationHeaderRequest,
-  Course_evaluationQueryRequest,
-  Course_evaluationHeaderRequest,
-  Scientific_paper_dataQueryRequest,
-  Scientific_paper_dataHeaderRequest,
-  Longitudinal_project_for_PDQueryRequest,
-  Longitudinal_project_for_PDHeaderRequest,
-  RewardQueryRequest,
-  RewardHeaderRequest,
-  Room_idQueryRequest,
-  Room_idHeaderRequest,
-  UserQueryRequest,
-  UserHeaderRequest,
-  Lib_accessQueryRequest,
-  Lib_accessHeaderRequest,
-  All_address_infoQueryRequest,
-  All_address_infoHeaderRequest,
-  Week_or_month_sumQueryRequest,
-  Week_or_month_sumHeaderRequest,
-  Card_balanceQueryRequest,
-  Card_balanceHeaderRequest,
-  Card_current_actual_flowQueryRequest,
-  Card_current_actual_flowHeaderRequest,
-  Dept_cadre_infoQueryRequest,
-  Dept_cadre_infoHeaderRequest,
-  RecordQueryRequest,
-  RecordHeaderRequest,
-  Cet_scoreHeaderRequest,
-  Get_book_lend_infoHeaderRequest,
-  Get_statistics_infoHeaderRequest,
-  Class_infoQueryRequest,
-  Class_infoHeaderRequest,
-  Student_headteacher_counselor_infoQueryRequest,
-  Student_headteacher_counselor_infoHeaderRequest,
-  Senior_talents_infoQueryRequest,
-  Senior_talents_infoHeaderRequest,
-  Absent_examinfoQueryRequest,
-  Absent_examinfoHeaderRequest,
-  Get_timetable_by_classroomQueryRequest,
-  Get_timetable_by_classroomHeaderRequest,
-  PageQueryRequest,
-  PageHeaderRequest,
-  Internship_course_schedulingQueryRequest,
-  Internship_course_schedulingHeaderRequest,
-  Teacher_by_coursenoQueryRequest,
-  Teacher_by_coursenoHeaderRequest,
-  Manual_arrangeQueryRequest,
-  Manual_arrangeHeaderRequest,
-  Undergraduate_top_scoreQueryRequest,
-  Undergraduate_top_scoreHeaderRequest,
-  Cardno_validateQueryRequest,
-  Cardno_validateHeaderRequest,
-  Person_info_by_cardnoQueryRequest,
-  Person_info_by_cardnoHeaderRequest,
-  All_contact_infoQueryRequest,
-  All_contact_infoHeaderRequest,
-  Student_infoQueryRequest,
-  Student_infoHeaderRequest,
-  Student_infosQueryRequest,
-  Student_infosHeaderRequest,
-  Student_loanQueryRequest,
-  Student_loanHeaderRequest,
-  Student_graduationQueryRequest,
-  Student_graduationHeaderRequest,
-  Hardship_allowanceQueryRequest,
-  Hardship_allowanceHeaderRequest,
-  Work_studyQueryRequest,
-  Work_studyHeaderRequest,
-  Undergraduate_scoreQueryRequest,
-  Undergraduate_scoreHeaderRequest,
-  Get_all_term_calendarHeaderRequest,
-  Get_current_term_calendarHeaderRequest,
-  Get_stipendHeaderRequest,
-  Student_accommodation_infoHeaderRequest,
-  Student_honorary_titleHeaderRequest,
-  Get_competition_prizesHeaderRequest,
-  Get_library_accessQueryRequest,
-  Get_library_accessHeaderRequest,
-  Get_scholarship_infoHeaderRequest,
-  Get_school_accessQueryRequest,
-  Get_school_accessHeaderRequest,
-  Student_timetableQueryRequest,
-  Student_timetableHeaderRequest,
-  Get_statistics_info_by_yearQueryRequest,
-  Get_statistics_info_by_yearHeaderRequest,
-  Get_user_basic_infoHeaderRequest,
   Get_card_spending_flowQueryRequest,
   Get_card_spending_flowHeaderRequest,
+  Get_card_spending_flow200Response,
+  Get_postgraduate_gpa_and_msQueryRequest,
+  Get_postgraduate_gpa_and_msHeaderRequest,
+  Get_postgraduate_gpa_and_ms200Response,
+  Get_postgraduate_required_creditQueryRequest,
+  Get_postgraduate_required_creditHeaderRequest,
+  Get_postgraduate_required_credit200Response,
+  Get_card_spending_summaryQueryRequest,
+  Get_card_spending_summaryHeaderRequest,
+  Get_card_spending_summary200Response,
+  Get_book_lend_info_v1QueryRequest,
+  Get_book_lend_info_v1HeaderRequest,
+  Get_book_lend_info_v1200Response,
+  Get_research_projectsQueryRequest,
+  Get_research_projectsHeaderRequest,
+  Get_research_projects200Response,
+  Get_research_worksQueryRequest,
+  Get_research_worksHeaderRequest,
+  Get_research_works200Response,
+  Get_user_contact_infoQueryRequest,
+  Get_user_contact_infoHeaderRequest,
+  Get_user_contact_info200Response,
+  Update_user_contact_infoBodyRequest,
+  Update_user_contact_infoHeaderRequest,
+  Update_user_contact_info200Response,
+  Get_competition_prizes_v1QueryRequest,
+  Get_competition_prizes_v1HeaderRequest,
+  Get_competition_prizes_v1200Response,
+  Get_hardship_allowanceQueryRequest,
+  Get_hardship_allowanceHeaderRequest,
+  Get_hardship_allowance200Response,
+  Student_honorary_title_v1QueryRequest,
+  Student_honorary_title_v1HeaderRequest,
+  Student_honorary_title_v1200Response,
+  Get_scholarship_info_v1QueryRequest,
+  Get_scholarship_info_v1HeaderRequest,
+  Get_scholarship_info_v1200Response,
+  Get_stipend_v1QueryRequest,
+  Get_stipend_v1HeaderRequest,
+  Get_stipend_v1200Response,
+  Get_student_loanQueryRequest,
+  Get_student_loanHeaderRequest,
+  Get_student_loan200Response,
+  Get_work_studyQueryRequest,
+  Get_work_studyHeaderRequest,
+  Get_work_study200Response,
+  Get_teacher_current_term_timetableQueryRequest,
+  Get_teacher_current_term_timetableHeaderRequest,
+  Get_teacher_current_term_timetable200Response,
+  Create_cloud_meetingBodyRequest,
+  Create_cloud_meetingHeaderRequest,
+  Create_cloud_meeting200Response,
+  Get_card_balanceQueryRequest,
+  Get_card_balanceHeaderRequest,
+  Get_card_balance200Response,
+  Get_card_current_actual_flowQueryRequest,
+  Get_card_current_actual_flowHeaderRequest,
+  Get_card_current_actual_flow200Response,
+  Get_school_accessQueryRequest,
+  Get_school_accessHeaderRequest,
+  Get_school_access200Response,
+  Get_library_accessQueryRequest,
+  Get_library_accessHeaderRequest,
+  Get_library_access200Response,
+  Get_school_calendarQueryRequest,
+  Get_school_calendarHeaderRequest,
+  Get_school_calendar200Response,
+  Cet_scoreQueryRequest,
+  Cet_scoreHeaderRequest,
+  Cet_score200Response,
+  Get_postgraduate_culture_plan_countQueryRequest,
+  Get_postgraduate_culture_plan_countHeaderRequest,
+  Get_postgraduate_culture_plan_count200Response,
+  Get_postgraduate_culture_planQueryRequest,
+  Get_postgraduate_culture_planHeaderRequest,
+  Get_postgraduate_culture_plan200Response,
+  Get_postgraduate_major_infoHeaderRequest,
+  Get_postgraduate_major_info200Response,
+  Get_advanced_lecture_countQueryRequest,
+  Get_advanced_lecture_countHeaderRequest,
+  Get_advanced_lecture_count200Response,
   Postgraduate_scoreQueryRequest,
   Postgraduate_scoreHeaderRequest,
+  Postgraduate_score200Response,
+  Get_all_term_calendarHeaderRequest,
+  Get_all_term_calendar200Response,
+  Get_current_term_calendarHeaderRequest,
+  Get_current_term_calendar200Response,
+  Student_timetableQueryRequest,
+  Student_timetableHeaderRequest,
+  Student_timetable200Response,
+  Undergraduate_scoreQueryRequest,
+  Undergraduate_scoreHeaderRequest,
+  Undergraduate_score200Response,
+  Get_research_patentQueryRequest,
+  Get_research_patentHeaderRequest,
+  Get_research_patent200Response,
+  Get_final_exam_infoQueryRequest,
+  Get_final_exam_infoHeaderRequest,
+  Get_final_exam_info200Response,
+  Get_deferred_exam_infoQueryRequest,
+  Get_deferred_exam_infoHeaderRequest,
+  Get_deferred_exam_info200Response,
+  Get_undergraduate_summarized_gradesQueryRequest,
+  Get_undergraduate_summarized_gradesHeaderRequest,
+  Get_undergraduate_summarized_grades200Response,
   Get_student_detailed_infoBodyRequest,
   Get_student_detailed_infoHeaderRequest,
+  Get_student_detailed_info200Response,
+  Get_tongji_email_infoQueryRequest,
+  Get_tongji_email_infoHeaderRequest,
+  Get_tongji_email_info200Response,
+  Get_user_single_infoQueryRequest,
+  Get_user_single_infoHeaderRequest,
+  Get_user_single_info200Response,
+  Get_book_lend_infoQueryRequest,
+  Get_book_lend_infoHeaderRequest,
+  Get_book_lend_info200Response,
+  Student_accommodation_infoQueryRequest,
+  Student_accommodation_infoHeaderRequest,
+  Student_accommodation_info200Response,
+  Get_teacher_title_infoQueryRequest,
+  Get_teacher_title_infoHeaderRequest,
+  Get_teacher_title_info200Response,
+  Get_competition_prizesQueryRequest,
+  Get_competition_prizesHeaderRequest,
+  Get_competition_prizes200Response,
+  Student_honorary_titleQueryRequest,
+  Student_honorary_titleHeaderRequest,
+  Student_honorary_title200Response,
+  Get_scholarship_infoQueryRequest,
+  Get_scholarship_infoHeaderRequest,
+  Get_scholarship_info200Response,
+  Get_stipendQueryRequest,
+  Get_stipendHeaderRequest,
+  Get_stipend200Response,
+  Get_student_counselor_infoQueryRequest,
+  Get_student_counselor_infoHeaderRequest,
+  Get_student_counselor_info200Response,
+  Get_student_tencent_meeting_courseQueryRequest,
+  Get_student_tencent_meeting_courseHeaderRequest,
+  Get_student_tencent_meeting_course200Response,
+  Get_student_basic_infoQueryRequest,
+  Get_student_basic_infoHeaderRequest,
+  Get_student_basic_info200Response,
+  Get_statistics_info_by_yearQueryRequest,
+  Get_statistics_info_by_yearHeaderRequest,
+  Get_statistics_info_by_year200Response,
+  Get_statistics_infoQueryRequest,
+  Get_statistics_infoHeaderRequest,
+  Get_statistics_info200Response,
+  Get_postgraduate_completed_creditQueryRequest,
+  Get_postgraduate_completed_creditHeaderRequest,
+  Get_postgraduate_completed_credit200Response,
+  Get_postgraduate_degree_course_creditQueryRequest,
+  Get_postgraduate_degree_course_creditHeaderRequest,
+  Get_postgraduate_degree_course_credit200Response,
+  Get_postgraduate_degree_course_msQueryRequest,
+  Get_postgraduate_degree_course_msHeaderRequest,
+  Get_postgraduate_degree_course_ms200Response,
+  Get_user_basic_infoQueryRequest,
+  Get_user_basic_infoHeaderRequest,
+  Get_user_basic_info200Response,
 } from './namespaces';
 
 export default class Tongji_openapiService<T> {
@@ -174,44 +205,31 @@ export default class Tongji_openapiService<T> {
 
   /* API Services */
 
-  /** 身份证信息校验 */
-  Id_card_info_checkGET(
-    req: Id_card_info_checkQueryRequest & Id_card_info_checkHeaderRequest,
+  /** 根据学工号、数据时间查询人员一卡通历史流水信息 */
+  Get_card_spending_flowGET(
+    req: Get_card_spending_flowQueryRequest &
+      Get_card_spending_flowHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_card_spending_flow200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v1/infra/education_data/id_card_info_check');
+    let url = this.genBaseURL('/v1/dc/card/card_history_flow');
     const method = 'GET';
     const data = undefined;
     const params = {
-      name: _req['name'],
-      idCardNo: _req['idCardNo'],
-      qzytjy: _req['qzytjy'],
+      userId: _req['userId'],
+      tradeStartTime: _req['tradeStartTime'],
+      tradeEndTime: _req['tradeEndTime'],
     };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据人员唯一编号pid查询人员所有学工号基本信息 */
-  Person_info_by_pidGET(
-    req: Person_info_by_pidQueryRequest & Person_info_by_pidHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/user/person_info_by_pid');
-    const method = 'GET';
-    const data = undefined;
-    const params = { pid: _req['pid'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
   /** 根据学号查询研究生平均成绩与平均绩点 */
-  Postgraduate_gpa_and_msGET(
-    req: Postgraduate_gpa_and_msQueryRequest &
-      Postgraduate_gpa_and_msHeaderRequest,
+  Get_postgraduate_gpa_and_msGET(
+    req: Get_postgraduate_gpa_and_msQueryRequest &
+      Get_postgraduate_gpa_and_msHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_postgraduate_gpa_and_ms200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v2/rt/teaching_info/postgraduate_gpa_and_ms');
     const method = 'GET';
@@ -221,80 +239,12 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学号查询本科生绩点、百分制成绩、修读学分、实修学分 */
-  Undergraduate_summarized_gradesGET(
-    req: Undergraduate_summarized_gradesQueryRequest &
-      Undergraduate_summarized_gradesHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v2/rt/teaching_info/undergraduate_summarized_grades',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询研究生学位课总学分 */
-  Postgraduate_degree_course_creditGET(
-    req: Postgraduate_degree_course_creditQueryRequest &
-      Postgraduate_degree_course_creditHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v2/rt/teaching_info/postgraduate_degree_course_credit',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询研究生学位课平均分 */
-  Postgraduate_degree_course_msGET(
-    req: Postgraduate_degree_course_msQueryRequest &
-      Postgraduate_degree_course_msHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v2/rt/teaching_info/postgraduate_degree_course_ms',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询研究生已修学分 */
-  Postgraduate_completed_creditGET(
-    req: Postgraduate_completed_creditQueryRequest &
-      Postgraduate_completed_creditHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v2/rt/teaching_info/postgraduate_completed_credit',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
   /** 根据学号查询研究生应修学分 */
-  Postgraduate_required_creditGET(
-    req: Postgraduate_required_creditQueryRequest &
-      Postgraduate_required_creditHeaderRequest,
+  Get_postgraduate_required_creditGET(
+    req: Get_postgraduate_required_creditQueryRequest &
+      Get_postgraduate_required_creditHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_postgraduate_required_credit200Response> {
     const _req = req || {};
     let url = this.genBaseURL(
       '/v2/rt/teaching_info/postgraduate_required_credit',
@@ -306,373 +256,12 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 获取1tongji系统上研究生培养计划完成情况统计信息 */
-  CountGET(
-    req: CountQueryRequest & CountHeaderRequest,
+  /** 按日期区间、近n周或近n月返回消费总额，避免分页拉流水后在模型中计算；cycle为week/month时n必填。cycle=date时，起止时间均不传默认最近一个月；只传开始时间查询其后30天，只传结束时间查询其前30天；两者都传按指定区间，n不影响。 */
+  Get_card_spending_summaryGET(
+    req: Get_card_spending_summaryQueryRequest &
+      Get_card_spending_summaryHeaderRequest,
     options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/culture_plan/count');
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上研究生的培养计划，根据学号查询培养计划 */
-  GetGET(req: GetQueryRequest & GetHeaderRequest, options?: T): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/culture_plan/get');
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上首页通知详情 */
-  Msg_detailGET(req: Msg_detailHeaderRequest, options?: T): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/msg_detail');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上首页通知列表 */
-  Msg_listGET(req: Msg_listHeaderRequest, options?: T): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/msg_list');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1系统上的研究生学位专业信息 */
-  Grad_majorGET(req: Grad_majorHeaderRequest, options?: T): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/grad_major');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1系统上的本科专业信息 */
-  Ugrd_majorGET(
-    req: Ugrd_majorQueryRequest & Ugrd_majorHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/ugrd_major');
-    const method = 'GET';
-    const data = undefined;
-    const params = { grade: _req['grade'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学工号实时查询人员在图书馆借阅最新汇总的情况 */
-  Library_current_borrowGET(
-    req: Library_current_borrowQueryRequest &
-      Library_current_borrowHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/rt/book/library_current_borrow');
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 身份证信息查询 */
-  Id_card_info_queryGET(
-    req: Id_card_info_queryQueryRequest & Id_card_info_queryHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/infra/education_data/id_card_info_query');
-    const method = 'GET';
-    const data = undefined;
-    const params = { name: _req['name'], idCardNo: _req['idCardNo'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 高校学历信息 */
-  EducationGET(
-    req: EducationQueryRequest & EducationHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/infra/education_data/education');
-    const method = 'GET';
-    const data = undefined;
-    const params = { xm: _req['xm'], zjhm: _req['zjhm'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 在校学生学籍信息 */
-  School_rollGET(
-    req: School_rollQueryRequest & School_rollHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/infra/education_data/school_roll');
-    const method = 'GET';
-    const data = undefined;
-    const params = { xm: _req['xm'], zjhm: _req['zjhm'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取所有的教学楼列表 */
-  All_classroom_listGET(
-    req: All_classroom_listQueryRequest & All_classroom_listHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/classroom/all_classroom_list');
-    const method = 'GET';
-    const data = undefined;
-    const params = { campus: _req['campus'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取教室系统中的排课列表 */
-  Course_listGET(
-    req: Course_listQueryRequest & Course_listHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/classroom/course_list');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      startDt: _req['startDt'],
-      endDt: _req['endDt'],
-      classroomNo: _req['classroomNo'],
-      buildingId: _req['buildingId'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 通过教学楼towerCode查教室 */
-  Get_classroom_by_towerGET(
-    req: Get_classroom_by_towerQueryRequest &
-      Get_classroom_by_towerHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v1/rt/onetongji/classroom/get_classroom_by_tower',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = { towerCode: _req['towerCode'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取教室系统中的教室列表 */
-  Classroom_listGET(
-    req: Classroom_listQueryRequest & Classroom_listHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/classroom/classroom_list');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      current: _req['current'],
-      size: _req['size'],
-      buildingId: _req['buildingId'],
-      name: _req['name'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 学生个人评教信息 */
-  Student_evaluationGET(
-    req: Student_evaluationQueryRequest & Student_evaluationHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/teaching_evaluation/student_evaluation');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      year: _req['year'],
-      term: _req['term'],
-      pageNum: _req['pageNum'],
-      pageSize: _req['pageSize'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 学生课程评教信息 */
-  Course_evaluationGET(
-    req: Course_evaluationQueryRequest & Course_evaluationHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/teaching_evaluation/course_evaluation');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      year: _req['year'],
-      term: _req['term'],
-      pageNum: _req['pageNum'],
-      pageSize: _req['pageSize'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学工号查询科研论文数据 */
-  Scientific_paper_dataGET(
-    req: Scientific_paper_dataQueryRequest & Scientific_paper_dataHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/research/scientific_paper_data');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceId: _req['sinceId'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学工号查询以第一申请人申请科研项目情况 */
-  Longitudinal_project_for_PDGET(
-    req: Longitudinal_project_for_PDQueryRequest &
-      Longitudinal_project_for_PDHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/research/longitudinal_project_for_PD');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      projClassifyCode: _req['projClassifyCode'],
-      sinceId: _req['sinceId'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学工号查询科研获奖情况 */
-  RewardGET(
-    req: RewardQueryRequest & RewardHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/research/reward');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceId: _req['sinceId'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 房间ID信息 */
-  Room_idGET(
-    req: Room_idQueryRequest & Room_idHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/nyzx/room_id');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      room: _req['room'],
-      campusId: _req['campusId'],
-      buildingName: _req['buildingName'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 学生宿舍电量信息 */
-  UserGET(
-    req: UserQueryRequest & UserHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/nyzx/electricity/user');
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 查询某一时间段内某一个人或全部人的图书馆闸机门禁信息 */
-  Lib_accessGET(
-    req: Lib_accessQueryRequest & Lib_accessHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/lib/lib_access');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      direction: _req['direction'],
-      dataStartTime: _req['dataStartTime'],
-      dataEndTime: _req['dataEndTime'],
-      sinceVisitNo: _req['sinceVisitNo'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学工号查询在校人员家庭信息 */
-  All_address_infoGET(
-    req: All_address_infoQueryRequest & All_address_infoHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/sep_auth/all_address_info');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceUserId: _req['sinceUserId'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 一卡通历史流水汇总信息 */
-  Week_or_month_sumGET(
-    req: Week_or_month_sumQueryRequest & Week_or_month_sumHeaderRequest,
-    options?: T,
-  ): Promise<any> {
+  ): Promise<Get_card_spending_summary200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v1/dc/card/week_or_month_sum');
     const method = 'GET';
@@ -688,13 +277,229 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学工号查询人员一卡通实时余额 */
-  Card_balanceGET(
-    req: Card_balanceQueryRequest & Card_balanceHeaderRequest,
+  /** 根据学工号查询具体的图书借阅相关信息，包含所有借阅记录 */
+  Get_book_lend_info_v1GET(
+    req: Get_book_lend_info_v1QueryRequest & Get_book_lend_info_v1HeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_book_lend_info_v1200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/rt/card/card_balance');
+    let url = this.genBaseURL('/v1/dc/lib/lend_info_all');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学工号查询以第一申请人申请科研项目情况 */
+  Get_research_projectsGET(
+    req: Get_research_projectsQueryRequest & Get_research_projectsHeaderRequest,
+    options?: T,
+  ): Promise<Get_research_projects200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/research/longitudinal_project_for_PD');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      projClassifyCode: _req['projClassifyCode'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学工号查询科研著作情况 */
+  Get_research_worksGET(
+    req: Get_research_worksQueryRequest & Get_research_worksHeaderRequest,
+    options?: T,
+  ): Promise<Get_research_works200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/research/work');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学工号查询人员联系方式，包括电话号码和邮箱 */
+  Get_user_contact_infoGET(
+    req: Get_user_contact_infoQueryRequest & Get_user_contact_infoHeaderRequest,
+    options?: T,
+  ): Promise<Get_user_contact_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/sep_auth/all_contact_info');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'], systemCode: _req['systemCode'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 通过学号修改用户联系方式 */
+  Update_user_contact_infoPOST(
+    req: Update_user_contact_infoBodyRequest &
+      Update_user_contact_infoHeaderRequest,
+    options?: T,
+  ): Promise<Update_user_contact_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/sep_auth/update_contact_info');
+    const method = 'POST';
+    const data = {
+      email: _req['email'],
+      phone: _req['phone'],
+      userId: _req['userId'],
+    };
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询竞赛获奖情况信息 */
+  Get_competition_prizes_v1GET(
+    req: Get_competition_prizes_v1QueryRequest &
+      Get_competition_prizes_v1HeaderRequest,
+    options?: T,
+  ): Promise<Get_competition_prizes_v1200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/competition_winners');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得困难补助情况信息 */
+  Get_hardship_allowanceGET(
+    req: Get_hardship_allowanceQueryRequest &
+      Get_hardship_allowanceHeaderRequest,
+    options?: T,
+  ): Promise<Get_hardship_allowance200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/hardship_allowance');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得荣誉称号情况信息 */
+  Student_honorary_title_v1GET(
+    req: Student_honorary_title_v1QueryRequest &
+      Student_honorary_title_v1HeaderRequest,
+    options?: T,
+  ): Promise<Student_honorary_title_v1200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/honorary_title');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得奖学金情况信息 */
+  Get_scholarship_info_v1GET(
+    req: Get_scholarship_info_v1QueryRequest &
+      Get_scholarship_info_v1HeaderRequest,
+    options?: T,
+  ): Promise<Get_scholarship_info_v1200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/scholarship');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得助学金情况信息 */
+  Get_stipend_v1GET(
+    req: Get_stipend_v1QueryRequest & Get_stipend_v1HeaderRequest,
+    options?: T,
+  ): Promise<Get_stipend_v1200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/stipend');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得助学贷款情况信息 */
+  Get_student_loanGET(
+    req: Get_student_loanQueryRequest & Get_student_loanHeaderRequest,
+    options?: T,
+  ): Promise<Get_student_loan200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/student_loan');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生勤功助学情况信息 */
+  Get_work_studyGET(
+    req: Get_work_studyQueryRequest & Get_work_studyHeaderRequest,
+    options?: T,
+  ): Promise<Get_work_study200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/student_work_info/work_study');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学工号查询教职工本学期课表情况 */
+  Get_teacher_current_term_timetableGET(
+    req: Get_teacher_current_term_timetableQueryRequest &
+      Get_teacher_current_term_timetableHeaderRequest,
+    options?: T,
+  ): Promise<Get_teacher_current_term_timetable200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/dc/teaching_info/teacher_timetable');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 创建会议 仅供教职工使用。会议日期不得早于当天，时间为HH:mm、以30分钟为间隔，至少提前3分钟；创建会触发账户/邮件通知。 */
+  Create_cloud_meetingPOST(
+    req: Create_cloud_meetingBodyRequest & Create_cloud_meetingHeaderRequest,
+    options?: T,
+  ): Promise<Create_cloud_meeting200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/infra/cloud_meeting/create');
+    const method = 'POST';
+    const data = {
+      duration: _req['duration'],
+      meetingDate: _req['meetingDate'],
+      meetingTime: _req['meetingTime'],
+      password: _req['password'],
+      topic: _req['topic'],
+      userId: _req['userId'],
+    };
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学工号查询人员一卡通实时余额 */
+  Get_card_balanceGET(
+    req: Get_card_balanceQueryRequest & Get_card_balanceHeaderRequest,
+    options?: T,
+  ): Promise<Get_card_balance200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/card/card_balance');
     const method = 'GET';
     const data = undefined;
     const params = { userId: _req['userId'] };
@@ -703,78 +508,130 @@ export default class Tongji_openapiService<T> {
   }
 
   /** 根据学工号查询人员一卡通当日实时流水 */
-  Card_current_actual_flowGET(
-    req: Card_current_actual_flowQueryRequest &
-      Card_current_actual_flowHeaderRequest,
+  Get_card_current_actual_flowGET(
+    req: Get_card_current_actual_flowQueryRequest &
+      Get_card_current_actual_flowHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_card_current_actual_flow200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/rt/card/card_current_actual_flow');
+    let url = this.genBaseURL('/v1/rt/card/card_current_actual_flow');
     const method = 'GET';
     const data = undefined;
     const params = {
-      dataEndTime: _req['dataEndTime'],
       userId: _req['userId'],
       dataStartTime: _req['dataStartTime'],
+      dataEndTime: _req['dataEndTime'],
+      sinceNum: _req['sinceNum'],
     };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 全量获取组织部所有副处及以上的干部信息
-   */
-  Dept_cadre_infoGET(
-    req: Dept_cadre_infoQueryRequest & Dept_cadre_infoHeaderRequest,
+  /** 实时查询指定用户在某一时间段内的校门门禁记录。开始、结束时间均不传时默认近一个月；只传开始时间时结束边界为开始时间后30天，只传结束时间时开始边界为结束时间前30天。使用sinceCardRecordID游标分页。 */
+  Get_school_accessGET(
+    req: Get_school_accessQueryRequest & Get_school_accessHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_school_access200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v3/dc/sep_auth/dept_cadre_info');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      includeRaw: _req['includeRaw'],
-      expandDept: _req['expandDept'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询能源系统学生宿舍房间一段时间内的每日用电记录 */
-  RecordGET(
-    req: RecordQueryRequest & RecordHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/nyzx/electricity/user/record');
+    let url = this.genBaseURL('/v1/rt/door/campus_access_control');
     const method = 'GET';
     const data = undefined;
     const params = {
       userId: _req['userId'],
-      startDate: _req['startDate'],
-      endDate: _req['endDate'],
+      portNum: _req['portNum'],
+      dataStartTime: _req['dataStartTime'],
+      dataEndTime: _req['dataEndTime'],
+      sinceCardRecordID: _req['sinceCardRecordID'],
     };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 实时查询指定用户在某一时间段内的图书馆闸机门禁记录。开始、结束时间均不传时默认近一个月；只传开始时间时结束边界为开始时间后30天，只传结束时间时开始边界为结束时间前30天。使用sinceVisitNo游标分页。 */
+  Get_library_accessGET(
+    req: Get_library_accessQueryRequest & Get_library_accessHeaderRequest,
+    options?: T,
+  ): Promise<Get_library_access200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/lib/lib_access');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      direction: _req['direction'],
+      dataStartTime: _req['dataStartTime'],
+      dataEndTime: _req['dataEndTime'],
+      sinceVisitNo: _req['sinceVisitNo'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 提供逐日节假日、调休日、寒暑假分类；已有两个term_calendar只提供学期编号，不能替代。仅支持2023-01-01之后，未录入区间可能返回A06500。 */
+  Get_school_calendarGET(
+    req: Get_school_calendarQueryRequest & Get_school_calendarHeaderRequest,
+    options?: T,
+  ): Promise<Get_school_calendar200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/onetongji/calendar');
+    const method = 'GET';
+    const data = undefined;
+    const params = { fromDate: _req['fromDate'], endDate: _req['endDate'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
   /** 获取1tongji系统上学生四六级成绩信息 */
-  Cet_scoreGET(req: Cet_scoreHeaderRequest, options?: T): Promise<any> {
+  Cet_scoreGET(
+    req: Cet_scoreQueryRequest & Cet_scoreHeaderRequest,
+    options?: T,
+  ): Promise<Cet_score200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v1/rt/onetongji/cet_score');
     const method = 'GET';
     const data = undefined;
-    const params = undefined;
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 图书借阅信息 */
-  Get_book_lend_infoGET(
-    req: Get_book_lend_infoHeaderRequest,
+  /** 获取1tongji系统上研究生培养计划完成情况统计信息 */
+  Get_postgraduate_culture_plan_countGET(
+    req: Get_postgraduate_culture_plan_countQueryRequest &
+      Get_postgraduate_culture_plan_countHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_postgraduate_culture_plan_count200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/lib/lend_info_all');
+    let url = this.genBaseURL('/v1/rt/onetongji/culture_plan/count');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取1tongji系统上研究生的培养计划，根据学号查询培养计划 */
+  Get_postgraduate_culture_planGET(
+    req: Get_postgraduate_culture_planQueryRequest &
+      Get_postgraduate_culture_planHeaderRequest,
+    options?: T,
+  ): Promise<Get_postgraduate_culture_plan200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/onetongji/culture_plan/get');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取1系统上的研究生学位专业信息 */
+  Get_postgraduate_major_infoGET(
+    req: Get_postgraduate_major_infoHeaderRequest,
+    options?: T,
+  ): Promise<Get_postgraduate_major_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/onetongji/grad_major');
     const method = 'GET';
     const data = undefined;
     const params = undefined;
@@ -782,74 +639,116 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据工号查询全校师生统计数据。如在馆时间，学院专业，最爱的食堂等 */
-  Get_statistics_infoGET(
-    req: Get_statistics_infoHeaderRequest,
+  /** 获取1tongji系统上研究生高等讲堂心得录入与评价完成情况 */
+  Get_advanced_lecture_countGET(
+    req: Get_advanced_lecture_countQueryRequest &
+      Get_advanced_lecture_countHeaderRequest,
     options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/user/user_data_statistics');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 学生班级信息 */
-  Class_infoGET(
-    req: Class_infoQueryRequest & Class_infoHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/class_info');
-    const method = 'GET';
-    const data = undefined;
-    const params = { sinceClassCode: _req['sinceClassCode'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询学生班主任辅导员信息 */
-  Student_headteacher_counselor_infoGET(
-    req: Student_headteacher_counselor_infoQueryRequest &
-      Student_headteacher_counselor_infoHeaderRequest,
-    options?: T,
-  ): Promise<any> {
+  ): Promise<Get_advanced_lecture_count200Response> {
     const _req = req || {};
     let url = this.genBaseURL(
-      '/v2/dc/student_work_info/student_headteacher_counselor_info',
+      '/v1/rt/onetongji/lecture/count_advanced_lecture',
     );
     const method = 'GET';
     const data = undefined;
-    const params = { userId: _req['userId'], sinceUserId: _req['sinceUserId'] };
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学工号查询高级人才信息 */
-  Senior_talents_infoGET(
-    req: Senior_talents_infoQueryRequest & Senior_talents_infoHeaderRequest,
+  /** 获取1tongji系统上研究生课程的成绩信息 */
+  Postgraduate_scoreGET(
+    req: Postgraduate_scoreQueryRequest & Postgraduate_scoreHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Postgraduate_score200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/sep_auth/senior_talents_info');
+    let url = this.genBaseURL('/v1/rt/onetongji/postgraduate_score');
     const method = 'GET';
     const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceUserId: _req['sinceUserId'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
+    const params = { calendarId: _req['calendarId'], userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 获取教务系统期末考试应考学生信息 */
-  Absent_examinfoGET(
-    req: Absent_examinfoQueryRequest & Absent_examinfoHeaderRequest,
+  /** 获取1tongji系统上所有学期的编号，学期编号可以用于查询课表等其他接口 */
+  Get_all_term_calendarGET(
+    req: Get_all_term_calendarHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_all_term_calendar200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL(
+      '/v1/rt/onetongji/school_calendar_all_term_calendar',
+    );
+    const method = 'GET';
+    const data = undefined;
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取1tongji系统上当前学期编号，学期编号可以用于查询课表等其他接口 */
+  Get_current_term_calendarGET(
+    req: Get_current_term_calendarHeaderRequest,
+    options?: T,
+  ): Promise<Get_current_term_calendar200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL(
+      '/v1/rt/onetongji/school_calendar_current_term_calendar',
+    );
+    const method = 'GET';
+    const data = undefined;
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取1tongji系统上学生课表信息，默认查询当前学期课表，支持查询历史课表。实时查询 */
+  Student_timetableGET(
+    req: Student_timetableQueryRequest & Student_timetableHeaderRequest,
+    options?: T,
+  ): Promise<Student_timetable200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/onetongji/student_timetable');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'], calendarId: _req['calendarId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取1tongji系统上本科生课程的成绩信息 */
+  Undergraduate_scoreGET(
+    req: Undergraduate_scoreQueryRequest & Undergraduate_scoreHeaderRequest,
+    options?: T,
+  ): Promise<Undergraduate_score200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/onetongji/undergraduate_score');
+    const method = 'GET';
+    const data = undefined;
+    const params = { calendarId: _req['calendarId'], userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学工号或专利号查询科研专利情况 */
+  Get_research_patentGET(
+    req: Get_research_patentQueryRequest & Get_research_patentHeaderRequest,
+    options?: T,
+  ): Promise<Get_research_patent200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/research/patent');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'], appNo: _req['appNo'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 期末考试时间、地点、应考及缺考情况；userId和calendarId必填，defeat默认否，查询缺考需显式传1。 */
+  Get_final_exam_infoGET(
+    req: Get_final_exam_infoQueryRequest & Get_final_exam_infoHeaderRequest,
+    options?: T,
+  ): Promise<Get_final_exam_info200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v1/rt/teaching_info/absent_examinfo');
     const method = 'GET';
@@ -863,108 +762,35 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 通过教室id查询课表 */
-  Get_timetable_by_classroomGET(
-    req: Get_timetable_by_classroomQueryRequest &
-      Get_timetable_by_classroomHeaderRequest,
+  /** 重缓考时间、地点与状态；userId和calendarId必填，defeat不传查询所有类型。 */
+  Get_deferred_exam_infoGET(
+    req: Get_deferred_exam_infoQueryRequest &
+      Get_deferred_exam_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_deferred_exam_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/rt/teaching_info/deferred_examinfo');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      calendarId: _req['calendarId'],
+      defeat: _req['defeat'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询本科生绩点、百分制成绩、修读学分、实修学分 */
+  Get_undergraduate_summarized_gradesGET(
+    req: Get_undergraduate_summarized_gradesQueryRequest &
+      Get_undergraduate_summarized_gradesHeaderRequest,
+    options?: T,
+  ): Promise<Get_undergraduate_summarized_grades200Response> {
     const _req = req || {};
     let url = this.genBaseURL(
-      '/v1/rt/onetongji/classroom/get_timetable_by_classroom',
+      '/v1/rt/teaching_info/undergraduate_summarized_grades',
     );
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      calendarId: _req['calendarId'],
-      classroomIds: _req['classroomIds'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 研究生排课汇总信息 */
-  PageGET(
-    req: PageQueryRequest & PageHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/teaching_class/page');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      pageNum: _req['pageNum'],
-      pageSize: _req['pageSize'],
-      calendarId: _req['calendarId'],
-      courseCode: _req['courseCode'],
-      manageDptId: _req['manageDptId'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取本科实习课程排课信息 */
-  Internship_course_schedulingGET(
-    req: Internship_course_schedulingQueryRequest &
-      Internship_course_schedulingHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL(
-      '/v1/dc/teaching_info/internship_course_scheduling',
-    );
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      sinceUpdateTime: _req['sinceUpdateTime'],
-      sinceId: _req['sinceId'],
-      includeRaw: _req['includeRaw'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据课程编号查询当前学期教师名单 */
-  Teacher_by_coursenoGET(
-    req: Teacher_by_coursenoQueryRequest & Teacher_by_coursenoHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/rt/teaching_info/teacher_by_courseno');
-    const method = 'GET';
-    const data = undefined;
-    const params = { courseNo: _req['courseNo'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上本科生某个学期的教学任务信息 */
-  Manual_arrangeGET(
-    req: Manual_arrangeQueryRequest & Manual_arrangeHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/manual_arrange');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      code: _req['code'],
-      calendarId: _req['calendarId'],
-      pageSize: _req['pageSize'],
-      pageNum: _req['pageNum'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取本科生覆盖取高成绩信息 */
-  Undergraduate_top_scoreGET(
-    req: Undergraduate_top_scoreQueryRequest &
-      Undergraduate_top_scoreHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/undergraduate_top_score');
     const method = 'GET';
     const data = undefined;
     const params = { userId: _req['userId'] };
@@ -972,65 +798,71 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据人员证件号码、证件号码后六位、姓名、学工号组合验证用户是否为同济大学相关人员 */
-  Cardno_validateGET(
-    req: Cardno_validateQueryRequest & Cardno_validateHeaderRequest,
+  /** 获取教务系统所有的学生详细信息 */
+  Get_student_detailed_infoPOST(
+    req: Get_student_detailed_infoBodyRequest &
+      Get_student_detailed_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_student_detailed_info200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v1/dc/card_info/cardno_validate');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      cardNo: _req['cardNo'],
-      name: _req['name'],
-      cardNoLastSix: _req['cardNoLastSix'],
-    };
+    let url = this.genBaseURL('/v1/rt/user/all_student');
+    const method = 'POST';
+    const data = { userId: _req['userId'] };
+    const params = undefined;
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据身份证件号查询人员基本信息 */
-  Person_info_by_cardnoGET(
-    req: Person_info_by_cardnoQueryRequest & Person_info_by_cardnoHeaderRequest,
+  /** 查询本人同济邮箱及别名、状态；只传登录用户userId，不开放任意邮箱反查。官方支持userId/email二选一，本工具固定用登录用户userId。 */
+  Get_tongji_email_infoGET(
+    req: Get_tongji_email_infoQueryRequest & Get_tongji_email_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_tongji_email_info200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/card_info/person_info_by_cardno');
+    let url = this.genBaseURL('/v1/rt/user/coremail_info');
     const method = 'GET';
     const data = undefined;
-    const params = { cardNo: _req['cardNo'] };
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学工号查询人员联系方式 */
-  All_contact_infoGET(
-    req: All_contact_infoQueryRequest & All_contact_infoHeaderRequest,
+  /** 根据学工号查询人员基本信息 */
+  Get_user_single_infoGET(
+    req: Get_user_single_infoQueryRequest & Get_user_single_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_user_single_info200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v1/dc/sep_auth/all_contact_info');
+    let url = this.genBaseURL('/v1/rt/user/single_info');
     const method = 'GET';
     const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      phone: _req['phone'],
-      email: _req['email'],
-      systemCode: _req['systemCode'],
-    };
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学号查询学生个人信息 */
-  Student_infoGET(
-    req: Student_infoQueryRequest & Student_infoHeaderRequest,
+  /** 图书借阅信息 */
+  Get_book_lend_infoGET(
+    req: Get_book_lend_infoQueryRequest & Get_book_lend_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_book_lend_info200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/sep_auth/student_info');
+    let url = this.genBaseURL('/v2/dc/lib/lend_info_all');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生住宿信息 */
+  Student_accommodation_infoGET(
+    req: Student_accommodation_infoQueryRequest &
+      Student_accommodation_infoHeaderRequest,
+    options?: T,
+  ): Promise<Student_accommodation_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/dc/sep_auth/student_accommodation_info');
     const method = 'GET';
     const data = undefined;
     const params = {
@@ -1042,11 +874,139 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 单条或批量获取学生基本信息。 */
-  Student_infosGET(
-    req: Student_infosQueryRequest & Student_infosHeaderRequest,
+  /** 根据工号查询教职工职称与岗位信息 */
+  Get_teacher_title_infoGET(
+    req: Get_teacher_title_infoQueryRequest &
+      Get_teacher_title_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_teacher_title_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/dc/sep_auth/teacher_title_info');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      sinceUserId: _req['sinceUserId'],
+      sinceUpdateTime: _req['sinceUpdateTime'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询竞赛获奖情况信息 */
+  Get_competition_prizesGET(
+    req: Get_competition_prizesQueryRequest &
+      Get_competition_prizesHeaderRequest,
+    options?: T,
+  ): Promise<Get_competition_prizes200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/dc/student_work_info/competition_winners');
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'], sinceUserId: _req['sinceUserId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得荣誉称号情况信息 */
+  Student_honorary_titleGET(
+    req: Student_honorary_titleQueryRequest &
+      Student_honorary_titleHeaderRequest,
+    options?: T,
+  ): Promise<Student_honorary_title200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/dc/student_work_info/honorary_title');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      sinceWid: _req['sinceWid'],
+      sinceUpdateTime: _req['sinceUpdateTime'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得奖学金情况信息 */
+  Get_scholarship_infoGET(
+    req: Get_scholarship_infoQueryRequest & Get_scholarship_infoHeaderRequest,
+    options?: T,
+  ): Promise<Get_scholarship_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/dc/student_work_info/scholarship');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      sinceWid: _req['sinceWid'],
+      sinceUpdateTime: _req['sinceUpdateTime'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学号查询学生获得助学金情况信息 */
+  Get_stipendGET(
+    req: Get_stipendQueryRequest & Get_stipendHeaderRequest,
+    options?: T,
+  ): Promise<Get_stipend200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v2/dc/student_work_info/stipend');
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      sinceWid: _req['sinceWid'],
+      sinceUpdateTime: _req['sinceUpdateTime'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 查本人班主任、辅导员姓名与工号；本接口不返回联系方式，不应承诺直接查询电话。 */
+  Get_student_counselor_infoGET(
+    req: Get_student_counselor_infoQueryRequest &
+      Get_student_counselor_infoHeaderRequest,
+    options?: T,
+  ): Promise<Get_student_counselor_info200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL(
+      '/v2/dc/student_work_info/student_headteacher_counselor_info',
+    );
+    const method = 'GET';
+    const data = undefined;
+    const params = { userId: _req['userId'], sinceUserId: _req['sinceUserId'] };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 根据学学号查询学生在腾讯会议上的课表情况, 非实时查询 */
+  Get_student_tencent_meeting_courseGET(
+    req: Get_student_tencent_meeting_courseQueryRequest &
+      Get_student_tencent_meeting_courseHeaderRequest,
+    options?: T,
+  ): Promise<Get_student_tencent_meeting_course200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL(
+      '/v2/dc/teaching_info/stu_tencent_meeting_course',
+    );
+    const method = 'GET';
+    const data = undefined;
+    const params = {
+      userId: _req['userId'],
+      sinceId: _req['sinceId'],
+      sinceUpdateTime: _req['sinceUpdateTime'],
+    };
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 获取学生的基础信息，包括入学时间、离校时间、预计毕业时间、所属学院、政治面貌、当前年级 */
+  Get_student_basic_infoGET(
+    req: Get_student_basic_infoQueryRequest &
+      Get_student_basic_infoHeaderRequest,
+    options?: T,
+  ): Promise<Get_student_basic_info200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v2/dc/user/student_infos');
     const method = 'GET';
@@ -1070,31 +1030,28 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学号查询学生获得助学贷款情况信息 */
-  Student_loanGET(
-    req: Student_loanQueryRequest & Student_loanHeaderRequest,
+  /** 根据学号和年份查询全校师生统计数据 */
+  Get_statistics_info_by_yearGET(
+    req: Get_statistics_info_by_yearQueryRequest &
+      Get_statistics_info_by_yearHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_statistics_info_by_year200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/student_loan');
+    let url = this.genBaseURL('/v2/dc/user/user_annual_bill');
     const method = 'GET';
     const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceUserId: _req['sinceUserId'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
+    const params = { year: _req['year'], userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学工号查询学生是否今年毕业及其就业年份 */
-  Student_graduationGET(
-    req: Student_graduationQueryRequest & Student_graduationHeaderRequest,
+  /** 根据工号查询全校师生统计数据。如在馆时间，学院专业，最爱的食堂等 */
+  Get_statistics_infoGET(
+    req: Get_statistics_infoQueryRequest & Get_statistics_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_statistics_info200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/rt/student_info/student_graduation');
+    let url = this.genBaseURL('/v2/dc/user/user_data_statistics');
     const method = 'GET';
     const data = undefined;
     const params = { userId: _req['userId'] };
@@ -1102,277 +1059,75 @@ export default class Tongji_openapiService<T> {
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学号查询学生获得困难补助情况信息 */
-  Hardship_allowanceGET(
-    req: Hardship_allowanceQueryRequest & Hardship_allowanceHeaderRequest,
+  /** 根据学号查询研究生已修学分 */
+  Get_postgraduate_completed_creditGET(
+    req: Get_postgraduate_completed_creditQueryRequest &
+      Get_postgraduate_completed_creditHeaderRequest,
     options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/hardship_allowance');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceWid: _req['sinceWid'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询学生勤功助学情况信息 */
-  Work_studyGET(
-    req: Work_studyQueryRequest & Work_studyHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/work_study');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      userId: _req['userId'],
-      sinceWid: _req['sinceWid'],
-      sinceUpdateTime: _req['sinceUpdateTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上本科生课程的成绩信息 */
-  Undergraduate_scoreGET(
-    req: Undergraduate_scoreQueryRequest & Undergraduate_scoreHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/undergraduate_score');
-    const method = 'GET';
-    const data = undefined;
-    const params = { calendarId: _req['calendarId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上所有学期的编号，学期编号可以用于查询课表等其他接口 */
-  Get_all_term_calendarGET(
-    req: Get_all_term_calendarHeaderRequest,
-    options?: T,
-  ): Promise<any> {
+  ): Promise<Get_postgraduate_completed_credit200Response> {
     const _req = req || {};
     let url = this.genBaseURL(
-      '/v1/rt/onetongji/school_calendar_all_term_calendar',
+      '/v2/rt/teaching_info/postgraduate_completed_credit',
     );
     const method = 'GET';
     const data = undefined;
-    const params = undefined;
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 获取1tongji系统上当前学期编号，学期编号可以用于查询课表等其他接口 */
-  Get_current_term_calendarGET(
-    req: Get_current_term_calendarHeaderRequest,
+  /** 根据学号查询研究生学位课总学分 */
+  Get_postgraduate_degree_course_creditGET(
+    req: Get_postgraduate_degree_course_creditQueryRequest &
+      Get_postgraduate_degree_course_creditHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_postgraduate_degree_course_credit200Response> {
     const _req = req || {};
     let url = this.genBaseURL(
-      '/v1/rt/onetongji/school_calendar_current_term_calendar',
+      '/v2/rt/teaching_info/postgraduate_degree_course_credit',
     );
     const method = 'GET';
     const data = undefined;
-    const params = undefined;
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
-  /** 根据学号查询学生获得助学金情况信息 */
-  Get_stipendGET(req: Get_stipendHeaderRequest, options?: T): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/stipend');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询学生住宿信息 */
-  Student_accommodation_infoGET(
-    req: Student_accommodation_infoHeaderRequest,
+  /** 根据学号查询研究生学位课平均分 */
+  Get_postgraduate_degree_course_msGET(
+    req: Get_postgraduate_degree_course_msQueryRequest &
+      Get_postgraduate_degree_course_msHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_postgraduate_degree_course_ms200Response> {
     const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/sep_auth/student_accommodation_info');
+    let url = this.genBaseURL(
+      '/v2/rt/teaching_info/postgraduate_degree_course_ms',
+    );
     const method = 'GET';
     const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询学生获得荣誉称号情况信息 */
-  Student_honorary_titleGET(
-    req: Student_honorary_titleHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/honorary_title');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询竞赛获奖情况信息 */
-  Get_competition_prizesGET(
-    req: Get_competition_prizesHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/competition_winners');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学工号查询在某一段时间内进出图书馆闸机门禁信息 */
-  Get_library_accessGET(
-    req: Get_library_accessQueryRequest & Get_library_accessHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/dc/lib/lib_access_control');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      direction: _req['direction'],
-      visitStartTime: _req['visitStartTime'],
-      visitEndTime: _req['visitEndTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号查询学生获得奖学金情况信息 */
-  Get_scholarship_infoGET(
-    req: Get_scholarship_infoHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/student_work_info/scholarship');
-    const method = 'GET';
-    const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 查询在某一段时间内进出校门门禁信息。此接口非实时接口，是T+1数据 */
-  Get_school_accessGET(
-    req: Get_school_accessQueryRequest & Get_school_accessHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/dc/door/school_access_control');
-    const method = 'GET';
-    const data = undefined;
-    const params = {
-      portNum: _req['portNum'],
-      dataStartTime: _req['dataStartTime'],
-      dataEndTime: _req['dataEndTime'],
-    };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上学生课表信息，默认查询当前学期课表，支持查询历史课表。实时查询 */
-  Student_timetableGET(
-    req: Student_timetableQueryRequest & Student_timetableHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/student_timetable');
-    const method = 'GET';
-    const data = undefined;
-    const params = { calendarId: _req['calendarId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据学号和年份查询全校师生统计数据 */
-  Get_statistics_info_by_yearGET(
-    req: Get_statistics_info_by_yearQueryRequest &
-      Get_statistics_info_by_yearHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v2/dc/user/user_annual_bill');
-    const method = 'GET';
-    const data = undefined;
-    const params = { year: _req['year'] };
+    const params = { userId: _req['userId'] };
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }
 
   /** 获取人员基础信息 */
   Get_user_basic_infoGET(
-    req: Get_user_basic_infoHeaderRequest,
+    req: Get_user_basic_infoQueryRequest & Get_user_basic_infoHeaderRequest,
     options?: T,
-  ): Promise<any> {
+  ): Promise<Get_user_basic_info200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v2/rt/user/all_info');
     const method = 'GET';
     const data = undefined;
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 根据数据时间查询人员一卡通历史流水信息 */
-  Get_card_spending_flowGET(
-    req: Get_card_spending_flowQueryRequest &
-      Get_card_spending_flowHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/dc/card/card_history_flow');
-    const method = 'GET';
-    const data = undefined;
     const params = {
-      tradeStartTime: _req['tradeStartTime'],
-      tradeEndTime: _req['tradeEndTime'],
+      statusCode: _req['statusCode'],
+      deptCode: _req['deptCode'],
+      userTypeCode: _req['userTypeCode'],
+      sinceUserId: _req['sinceUserId'],
+      sinceCreateTime: _req['sinceCreateTime'],
+      sinceUpdateTime: _req['sinceUpdateTime'],
+      userId: _req['userId'],
     };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取1tongji系统上研究生课程的成绩信息 */
-  Postgraduate_scoreGET(
-    req: Postgraduate_scoreQueryRequest & Postgraduate_scoreHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/onetongji/postgraduate_score');
-    const method = 'GET';
-    const data = undefined;
-    const params = { userId: _req['userId'], calendarId: _req['calendarId'] };
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 获取教务系统所有的学生详细信息 */
-  Get_student_detailed_infoPOST(
-    req: Get_student_detailed_infoBodyRequest &
-      Get_student_detailed_infoHeaderRequest,
-    options?: T,
-  ): Promise<any> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/rt/user/all_student');
-    const method = 'POST';
-    const data = { userId: _req['userId'] };
-    const params = undefined;
     const headers = { Authorization: _req['Authorization'] };
     return this.request({ url, method, data, params, headers }, options);
   }

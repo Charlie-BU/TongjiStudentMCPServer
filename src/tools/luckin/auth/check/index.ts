@@ -1,3 +1,4 @@
+import type { ToolInvocationContext } from "../../../../transport/invocation-context";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import axios from "axios";
@@ -24,10 +25,10 @@ export class LuckinCheckError extends Error {
 }
 
 // false 仅代表未绑定或瑞幸明确拒绝 Token；无法完成检查时抛出不含原始凭据的分类错误。
-export const checkCurrentLuckinToken = async (accessToken?: string): Promise<boolean> => {
-    if (!accessToken) throw new LuckinCheckError("platform_unauthorized");
+export const checkCurrentLuckinToken = async (invocation: ToolInvocationContext): Promise<boolean> => {
+    if (!invocation.accessToken) throw new LuckinCheckError("platform_unauthorized");
     let userId: string | null;
-    try { userId = await readCurrentUserId(accessToken); }
+    try { userId = readCurrentUserId(invocation); }
     catch (error) {
         if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
             throw new LuckinCheckError("platform_unauthorized");
@@ -65,7 +66,7 @@ export const registerLuckinCheckTool = (server: McpServer, context: ToolRegistra
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     }, async () => {
         try {
-            const valid = await checkCurrentLuckinToken(context.invocation.accessToken);
+            const valid = await checkCurrentLuckinToken(context.invocation);
             const result = { valid, message: valid ? "瑞幸登录有效，可以继续操作。" : "尚未登录瑞幸或登录已失效，请完成瑞幸登录。" };
             return { content: [{ type: "text" as const, text: JSON.stringify(result) }], structuredContent: result };
         } catch (error) {

@@ -3,337 +3,793 @@
 /* tslint:disable */
 // @ts-nocheck
 
-export interface Id_card_info_checkQueryRequest {
+export interface Get_card_spending_flowQueryRequest {
+  /** 学工号 */
+  userId: string;
+  /** 消费时间-开始时间 */
+  tradeStartTime?: string;
+  /** 消费时间-结束时间 */
+  tradeEndTime?: string;
+}
+
+export interface Get_card_spending_flowHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_card_spending_flow200Response {
+  code?: string;
+  data?: Get_card_spending_flow200ResponseData;
+  msg?: string;
+}
+
+export interface Get_card_spending_flow200ResponseData {
+  count?: number;
+  userInfos?: Get_card_spending_flow200ResponseDataUserInfosItem[];
+}
+
+export interface Get_card_spending_flow200ResponseDataUserInfosItem {
+  /** 时间代码 */
+  tranCode?: string;
+  /** 所属校区 */
+  campusAreaName?: string;
+  /** 卡内余额 */
+  cardBalance?: number;
+  /** 物理卡号 */
+  fromAccount?: number;
+  /** 商铺名称 */
+  mercName?: string;
+  /** 商铺类别 */
+  mercTypeName?: string;
   /** 姓名 */
-  name: string;
-  /** 身份证号码 */
-  idCardNo: string;
-  /** 是否强制源头校验：0=否；1=是；默认是0 */
-  qzytjy?: string;
-}
-
-export interface Id_card_info_checkHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Person_info_by_pidQueryRequest {
-  /** 人员唯一编号 */
-  pid?: string;
-}
-
-export interface Person_info_by_pidHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Postgraduate_gpa_and_msQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_gpa_and_msHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Undergraduate_summarized_gradesQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Undergraduate_summarized_gradesHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Postgraduate_degree_course_creditQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_degree_course_creditHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Postgraduate_degree_course_msQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_degree_course_msHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Postgraduate_completed_creditQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_completed_creditHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Postgraduate_required_creditQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Postgraduate_required_creditHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface CountQueryRequest {
-  /** 学工号 */
-  userId?: string;
-}
-
-export interface CountHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface GetQueryRequest {
-  /** 学工号 */
-  userId?: string;
-}
-
-export interface GetHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Msg_detailHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Msg_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Grad_majorHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Ugrd_majorQueryRequest {
-  /** 专业年份，与学生的当前年级currentGrade关联，不传则默认返回当年的数据 */
-  grade?: string;
-}
-
-export interface Ugrd_majorHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Library_current_borrowQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Library_current_borrowHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Id_card_info_queryQueryRequest {
-  /** 姓名 */
-  name: string;
-  /** 身份证号码 */
-  idCardNo: string;
-}
-
-export interface Id_card_info_queryHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface EducationQueryRequest {
-  /** 姓名 */
-  xm?: string;
-  /** 证件号码 */
-  zjhm?: string;
-}
-
-export interface EducationHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface School_rollQueryRequest {
-  /** 姓名 */
-  xm: string;
-  /** 证件号码 */
-  zjhm: string;
-}
-
-export interface School_rollHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface All_classroom_listQueryRequest {
-  /** 校区编号，1-四平，2-沪北，3-嘉定，4-沪西，5-其他，为空默认全部校区 解释说明 */
-  campus?: string;
-}
-
-export interface All_classroom_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Course_listQueryRequest {
-  /** 查询开始日期（yyyy-MM-dd） */
-  startDt?: string;
-  /** 查询结束日期 （yyyy-MM-dd） */
-  endDt?: string;
-  /** 教室编号全称（classroomNo和buildingId两个参数至少有一个） */
-  classroomNo?: string;
-  /** 楼宇ID（classroomNo和buildingId两个参数至少有一个） */
-  buildingId?: string;
-}
-
-export interface Course_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_classroom_by_towerQueryRequest {
-  /** 教学楼编号 */
-  towerCode: string;
-}
-
-export interface Get_classroom_by_towerHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Classroom_listQueryRequest {
-  /** 页码 */
-  current?: string;
-  /** 行数 */
-  size?: string;
-  /** 楼宇ID */
-  buildingId?: string;
-  /** 教室名称（模糊查询） */
   name?: string;
-}
-
-export interface Classroom_listHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_evaluationQueryRequest {
-  /** 学年度 */
-  year: string;
-  /** 学期 */
-  term: string;
-  /** 页码，默认 1 */
-  pageNum?: string;
-  /** 每页大小，默认 20，最大 100 */
-  pageSize?: string;
-}
-
-export interface Student_evaluationHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Course_evaluationQueryRequest {
-  /** 学年度 */
-  year: string;
-  /** 学期 */
-  term: string;
-  /** 页码，默认 1 */
-  pageNum?: string;
-  /** 每页大小，默认 20，最大 100 */
-  pageSize?: string;
-}
-
-export interface Course_evaluationHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Scientific_paper_dataQueryRequest {
+  /** 人员类别代码 */
+  personTypeCode?: string;
+  /** POS号 */
+  posCode?: number;
+  /** 所属食堂 */
+  restaurantName?: string;
+  /** 性别代码 */
+  sexCode?: string;
+  /** 交易金额 */
+  tradeAmount?: number;
+  /** 交易日期（年月日） */
+  tradeDate?: string;
+  /** 交易时间（年月日时分秒） */
+  tradeDateTime?: string;
+  /** 交易月份（月） */
+  tradeMonth?: string;
+  /** 交易时间段（时分秒） */
+  tradeTime?: string;
   /** 学工号 */
   userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
 }
 
-export interface Scientific_paper_dataHeaderRequest {
-  /** Bearer <token> */
+export interface Get_postgraduate_gpa_and_msQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_gpa_and_msHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Longitudinal_project_for_PDQueryRequest {
-  /** 学工号 */
+export interface Get_postgraduate_gpa_and_ms200Response {
+  code?: string;
+  data?: Get_postgraduate_gpa_and_ms200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_gpa_and_ms200ResponseDataItem {
+  /** 平均绩点 */
+  GPA?: number;
+  /** 平均成绩 */
+  MS?: number;
+  /** 学号 */
   userId?: string;
+}
+
+export interface Get_postgraduate_required_creditQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_required_creditHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_postgraduate_required_credit200Response {
+  code?: string;
+  data?: Get_postgraduate_required_credit200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_required_credit200ResponseDataItem {
+  /** 应修学分 */
+  requiredCredit?: number;
+  /** 学号 */
+  userId?: string;
+}
+
+export interface Get_card_spending_summaryQueryRequest {
+  /** 学号 */
+  userId: string;
+  /** 周期：date、week、month */
+  cycle: string;
+  /** 开始时间 */
+  tradeStartTime?: string;
+  /** 结束时间 */
+  tradeEndTime?: string;
+  /** 近n个自然周/月；cycle=week或month时必须提供。 */
+  n?: number;
+}
+
+export interface Get_card_spending_summaryHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_card_spending_summary200Response {
+  code?: string;
+  data?: Get_card_spending_summary200ResponseDataItem[] | null;
+  error_code?: number;
+  error_msg?: string;
+  msg?: string;
+}
+
+export interface Get_card_spending_summary200ResponseDataItem {
+  /** 时间 */
+  last?: number;
+  /** 时间描述 */
+  note?: string;
+  /** 金额总数 */
+  tradeAmt?: number;
+}
+
+export interface Get_book_lend_info_v1QueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Get_book_lend_info_v1HeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_book_lend_info_v1200Response {
+  code?: string;
+  data?: Get_book_lend_info_v1200ResponseData;
+  msg?: string;
+}
+
+export interface Get_book_lend_info_v1200ResponseData {
+  count?: number;
+  userInfos?: Get_book_lend_info_v1200ResponseDataUserInfosItem[];
+}
+
+export interface Get_book_lend_info_v1200ResponseDataUserInfosItem {
+  docTypeName?: string;
+  isJournal?: string;
+  isbn?: string;
+  langCode?: string;
+  locationCode?: string;
+  locationName?: string;
+  name?: string;
+  propNo?: string;
+  pubYear?: string;
+  publisher?: string;
+  renewDate?: string;
+  renewTimes?: number;
+  retDate?: string;
+  title?: string;
+  totalLendQty?: number;
+  userId?: string;
+  voltFlag?: string;
+  langName?: string;
+  lendDate?: string;
+  asbackDate?: string;
+  asbackTimes?: number;
+  author?: string;
+  callNo?: string;
+  callNoName?: string;
+  countryCode?: string;
+  countryName?: string;
+  debtFlag?: number;
+  deptCode?: string;
+  deptName?: string;
+  docTypeCode?: string;
+}
+
+export interface Get_research_projectsQueryRequest {
+  /** 学工号 */
+  userId: string;
   /** 项目分类代码，1-纵向项目，3-横向项目，5-专利转化，不传参默认获取全部，可以单独传入一个类别，也可以同时传入多个类别，用英文逗号分隔即可 */
   projClassifyCode?: string;
+}
+
+export interface Get_research_projectsHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_research_projects200Response {
+  code?: string;
+  data?: Get_research_projects200ResponseData;
+  msg?: string;
+}
+
+export interface Get_research_projects200ResponseData {
+  count?: number;
+  userInfos?: Get_research_projects200ResponseDataUserInfosItem[];
+}
+
+export interface Get_research_projects200ResponseDataUserInfosItem {
+  projNo?: string;
+  projSecondLevelCode?: string;
+  projSecondLevelName?: string;
+  projStartDate?: string;
+  projStatusName?: string;
+  userId?: string;
+  appropriationCompany?: string;
+  closingDate?: string;
+  contractAmount?: string;
+  deptCode?: string;
+  deptName?: string;
+  id?: string;
+  name?: string;
+  participationModeCode?: string;
+  participationModeName?: string;
+  projClassifyCode?: string;
+  projClassifyName?: string;
+  projEndDate?: string;
+  projEstablishmentDate?: string;
+  projFirstLevelCode?: string;
+  projFirstLevelName?: string;
+  projId?: string;
+  projName?: string;
+}
+
+export interface Get_research_worksQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Get_research_worksHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_research_works200Response {
+  code?: string;
+  data?: Get_research_works200ResponseData;
+  msg?: string;
+}
+
+export interface Get_research_works200ResponseData {
+  count?: number;
+  userInfos?: Get_research_works200ResponseDataUserInfosItem[];
+}
+
+export interface Get_research_works200ResponseDataUserInfosItem {
+  bookCategoryCode?: string;
+  bookCategoryName?: string;
+  bookName?: string;
+  deptCode?: string;
+  deptName?: string;
+  name?: string;
+  publicationYear?: string;
+  publishHouseName?: string;
+  seqNo?: number;
+  totalWords?: number;
+  userId?: string;
+}
+
+export interface Get_user_contact_infoQueryRequest {
+  /** 学工号，可传入多个（上限为200，使用英文逗号分割）进行批量查询 */
+  userId: string;
+  /** 系统编号，可传入多个(使用英文逗号分割)，传all：获取全部 */
+  systemCode?: string;
+}
+
+export interface Get_user_contact_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_user_contact_info200Response {
+  code?: string;
+  data?: Get_user_contact_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_user_contact_info200ResponseDataItem {
+  /** 姓名 */
+  name?: string;
+  /** 手机号 */
+  phone?: string;
+  /** 学工号 */
+  userId?: string;
+  /** 部门/学院代码 */
+  deptCode?: string;
+  /** 部门/学院姓名 */
+  deptName?: string;
+  /** 邮箱 */
+  email?: string;
+}
+
+export interface Update_user_contact_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Update_user_contact_infoBodyRequest {
+  email?: string;
+  phone?: string;
+  userId: string;
+}
+
+export interface Update_user_contact_info200Response {
+  /** 状态码 */
+  code?: string;
+  /** 显示影响的数据库条数号 */
+  data?: Update_user_contact_info200ResponseData | null;
+  /** 信息 */
+  msg?: string;
+}
+
+export interface Update_user_contact_info200ResponseData {
+  /** 状态码 */
+  code?: string;
+  effectRows?: number;
+  logTrace?: string;
+}
+
+export interface Get_competition_prizes_v1QueryRequest {
+  /** 竞赛获奖学生学号 */
+  userId: string;
+}
+
+export interface Get_competition_prizes_v1HeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_competition_prizes_v1200Response {
+  code?: string;
+  data?: Get_competition_prizes_v1200ResponseData;
+  msg?: string;
+}
+
+export interface Get_competition_prizes_v1200ResponseData {
+  count?: number;
+  userInfos?: Get_competition_prizes_v1200ResponseDataUserInfosItem[];
+}
+
+export interface Get_competition_prizes_v1200ResponseDataUserInfosItem {
+  achievementRecognitionType?: string;
+  awardCategory?: string;
+  awardDate?: string;
+  awardLevel?: string;
+  competitionLevel?: string;
+  competitionName?: string;
+  credit?: string;
+  deptCode?: string;
+  deptName?: string;
+  id?: string;
+  name?: string;
+  schoolYear?: string;
+  userId?: string;
+}
+
+export interface Get_hardship_allowanceQueryRequest {
+  /** 获得困难补助学生学号 */
+  userId: string;
+}
+
+export interface Get_hardship_allowanceHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_hardship_allowance200Response {
+  code?: string;
+  data?: Get_hardship_allowance200ResponseData;
+  msg?: string;
+}
+
+export interface Get_hardship_allowance200ResponseData {
+  count?: number;
+  userInfos?: Get_hardship_allowance200ResponseDataUserInfosItem[];
+}
+
+export interface Get_hardship_allowance200ResponseDataUserInfosItem {
+  deptName?: string;
+  hardshipAllowanceName?: string;
+  name?: string;
+  ratingLevelName?: string;
+  ratingTerm?: string;
+  ratingYear?: string;
+  userId?: string;
+  amount?: number;
+  deptCode?: string;
+}
+
+export interface Student_honorary_title_v1QueryRequest {
+  /** 获得荣誉称号学生学号 */
+  userId: string;
+}
+
+export interface Student_honorary_title_v1HeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Student_honorary_title_v1200Response {
+  code?: string;
+  data?: Student_honorary_title_v1200ResponseData;
+  msg?: string;
+}
+
+export interface Student_honorary_title_v1200ResponseData {
+  count?: number;
+  userInfos?: Student_honorary_title_v1200ResponseDataUserInfosItem[];
+}
+
+export interface Student_honorary_title_v1200ResponseDataUserInfosItem {
+  ratingTerm?: string;
+  ratingYear?: string;
+  rewardLevel?: string;
+  wid?: string;
+  deptCode?: string;
+  deptName?: string;
+  honorTitle?: string;
+  name?: string;
+  userId?: string;
+}
+
+export interface Get_scholarship_info_v1QueryRequest {
+  /** 获得奖学金学生学号 */
+  userId: string;
+}
+
+export interface Get_scholarship_info_v1HeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_scholarship_info_v1200Response {
+  code?: string;
+  data?: Get_scholarship_info_v1200ResponseData;
+  msg?: string;
+}
+
+export interface Get_scholarship_info_v1200ResponseData {
+  count?: number;
+  userInfos?: Get_scholarship_info_v1200ResponseDataUserInfosItem[];
+}
+
+export interface Get_scholarship_info_v1200ResponseDataUserInfosItem {
+  amount?: string;
+  deptCode?: string;
+  deptName?: string;
+  name?: string;
+  rating?: string;
+  ratingYear?: string;
+  scholarshipLevel?: string;
+  scholarshipName?: string;
+  userId?: string;
+  wid?: string;
+}
+
+export interface Get_stipend_v1QueryRequest {
+  /** 获得助学金学生学号 */
+  userId: string;
+}
+
+export interface Get_stipend_v1HeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_stipend_v1200Response {
+  code?: string;
+  data?: Get_stipend_v1200ResponseData;
+  msg?: string;
+}
+
+export interface Get_stipend_v1200ResponseData {
+  count?: number;
+  userInfos?: Get_stipend_v1200ResponseDataUserInfosItem[];
+}
+
+export interface Get_stipend_v1200ResponseDataUserInfosItem {
+  amount?: number;
+  deptCode?: string;
+  deptName?: string;
+  name?: string;
+  rankName?: string;
+  ratingTerm?: string;
+  ratingYear?: string;
+  stipendName?: string;
+  unitAbbreviation?: string;
+  userId?: string;
+}
+
+export interface Get_student_loanQueryRequest {
+  /** 获得助学贷款学生学号 */
+  userId: string;
+}
+
+export interface Get_student_loanHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_student_loan200Response {
+  code?: string;
+  data?: Get_student_loan200ResponseData;
+  msg?: string;
+}
+
+export interface Get_student_loan200ResponseData {
+  count?: number;
+  userInfos?: Get_student_loan200ResponseDataUserInfosItem[];
+}
+
+export interface Get_student_loan200ResponseDataUserInfosItem {
+  deptCode?: string;
+  deptName?: string;
+  loanAmount?: number;
+  loanCode?: string;
+  loanType?: string;
+  loanYear?: string;
+  name?: string;
+  repaymentYear?: string;
+  userId?: string;
+}
+
+export interface Get_work_studyQueryRequest {
+  /** 勤工助学学生学号 */
+  userId: string;
+}
+
+export interface Get_work_studyHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_work_study200Response {
+  code?: string;
+  data?: Get_work_study200ResponseData;
+  msg?: string;
+}
+
+export interface Get_work_study200ResponseData {
+  count?: number;
+  userInfos?: Get_work_study200ResponseDataUserInfosItem[];
+}
+
+export interface Get_work_study200ResponseDataUserInfosItem {
+  applicationNo?: string;
+  companyName?: string;
+  deptCode?: string;
+  deptName?: string;
+  jobName?: string;
+  name?: string;
+  paid?: number;
+  userId?: string;
+  workEndDate?: string;
+  workStartDate?: string;
+}
+
+export interface Get_teacher_current_term_timetableQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Get_teacher_current_term_timetableHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_teacher_current_term_timetable200Response {
+  code?: string;
+  data?: Get_teacher_current_term_timetable200ResponseData;
+  msg?: string;
+}
+
+export interface Get_teacher_current_term_timetable200ResponseData {
+  userInfos?: any;
+}
+
+export interface Create_cloud_meetingHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Create_cloud_meetingBodyRequest {
+  duration: number;
+  meetingDate: string;
+  meetingTime: string;
+  password?: string;
+  topic: string;
+  userId: string;
+}
+
+export interface Create_cloud_meeting200Response {
+  /** 响应状态码 */
+  code?: string;
+  /** 响应数据 */
+  data?: Create_cloud_meeting200ResponseData | null;
+  /** 响应信息 */
+  msg?: string;
+}
+
+export interface Create_cloud_meeting200ResponseData {
+  /** 自动录制 */
+  autoRecord?: number;
+  /** 会议描述 */
+  description?: string;
+  /** 会议时长 */
+  duration?: string;
+  /** 会议链接 */
+  hostUrl?: string;
+  /** id */
+  id?: number;
+  /** 邀请函链接 */
+  invitationImageUrl?: string;
+  /** 加入链接 */
+  joinUrl?: string;
+  /** 会议日期 */
+  meetingDate?: string;
+  /** 会议号 */
+  meetingId?: string;
+  /** 会议时间 */
+  meetingTime?: string;
+  /** 会议密码 */
+  password?: string;
+  /** 开始时间 */
+  startTime?: string;
+  /** 流媒体 */
+  streaming?: string;
+  /** 会议主题 */
+  topic?: string;
+  /** 主持密码 */
+  zcode?: string;
+}
+
+export interface Get_card_balanceQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Get_card_balanceHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_card_balance200Response {
+  code?: string;
+  data?: Get_card_balance200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_card_balance200ResponseDataItem {
+  balance?: number;
+  userId?: string;
+}
+
+export interface Get_card_current_actual_flowQueryRequest {
+  /** 学工号 */
+  userId: string;
+  /** 开始时间 */
+  dataStartTime?: string;
+  /** 结束时间 */
+  dataEndTime?: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
+  sinceNum?: string;
 }
 
-export interface Longitudinal_project_for_PDHeaderRequest {
-  /** Bearer <token> */
+export interface Get_card_current_actual_flowHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface RewardQueryRequest {
-  /** 学工号 */
+export interface Get_card_current_actual_flow200Response {
+  code?: string;
+  data?: Get_card_current_actual_flow200ResponseData;
+  msg?: string;
+}
+
+export interface Get_card_current_actual_flow200ResponseData {
+  count?: number;
+  userInfos?: Get_card_current_actual_flow200ResponseDataUserInfosItem[];
+}
+
+export interface Get_card_current_actual_flow200ResponseDataUserInfosItem {
+  cardBalance?: number;
+  entryTime?: string;
+  name?: string;
+  pos?: number;
+  tradeAmount?: number;
+  tradePlace?: number;
+  tradeTime?: string;
+  tradeType?: string;
   userId?: string;
+}
+
+export interface Get_school_accessQueryRequest {
+  /** 学工号,不传值代表所有人 */
+  userId: string;
+  /** 入校出校标识，1-”入门”,2-”出门”两种，不传值代表全部 */
+  portNum?: string;
+  /** 开始时间 */
+  dataStartTime?: string;
+  /** 结束时间 */
+  dataEndTime?: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
+  sinceCardRecordID?: string;
 }
 
-export interface RewardHeaderRequest {
-  /** Bearer <token> */
+export interface Get_school_accessHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Room_idQueryRequest {
-  /** 房间 */
-  room: string;
-  /** 校区ID */
-  campusId: string;
-  /** 楼栋名称 */
-  buildingName: string;
+export interface Get_school_access200Response {
+  code?: string;
+  data?: Get_school_access200ResponseData;
+  msg?: string;
 }
 
-export interface Room_idHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
+export interface Get_school_access200ResponseData {
+  count?: number;
+  userInfos?: Get_school_access200ResponseDataUserInfosItem[];
 }
 
-export interface UserQueryRequest {
+export interface Get_school_access200ResponseDataUserInfosItem {
+  /** 流水号 */
+  cardRecordID?: number;
+  /** 部门名称 */
+  deptName?: string;
+  equptID?: number;
+  /** 设备ID */
+  equptId?: string;
+  /** 设备名称 */
+  equptName?: string;
+  /** 身份 */
+  job?: string;
+  /** 安装位置名称 */
+  lctnName?: string;
+  /** 姓名 */
+  name?: string;
   /** 学工号 */
   userId?: string;
+  /** 内部人员编号 */
+  personnelId?: number;
+  /** 录端口号,1-入门，2-出门 */
+  portNum?: number;
+  portNumName?: string;
+  /** 记录时间 */
+  recordTime?: string;
+  /** 性别 */
+  sex?: string;
+  /** 入、出门 */
+  PortNumName?: string;
+  /** 校区编号 */
+  campusId?: number;
+  /** 校区名称 */
+  campusName?: string;
+  /** 记录卡号 */
+  cardData?: string;
 }
 
-export interface UserHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Lib_accessQueryRequest {
+export interface Get_library_accessQueryRequest {
   /** 学工号 */
-  userId?: string;
-  /** 进出模式，1-进，2-出,不传值代表全部 */
+  userId: string;
+  /** 进出模式，1-入门，2-出门,不传值代表全部 */
   direction?: string;
   /** 开始时间 */
   dataStartTime?: string;
@@ -343,146 +799,903 @@ export interface Lib_accessQueryRequest {
   sinceVisitNo?: string;
 }
 
-export interface Lib_accessHeaderRequest {
-  /** Bearer <token> */
+export interface Get_library_accessHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface All_address_infoQueryRequest {
+export interface Get_library_access200Response {
+  code?: string;
+  data?: Get_library_access200ResponseData;
+  msg?: string;
+}
+
+export interface Get_library_access200ResponseData {
+  count?: number;
+  userInfos?: Get_library_access200ResponseDataUserInfosItem[];
+}
+
+export interface Get_library_access200ResponseDataUserInfosItem {
+  cardId?: string;
+  /** 入出门 */
+  dataEvent?: string;
+  /** 院系 */
+  deptName?: string;
+  /** 进出模式，1-进，2-出 */
+  direction?: number;
+  /** 所属区域 */
+  door?: string;
+  /** 闸机号 */
+  gateNo?: string;
+  /** 所属校区 */
+  libPlace?: string;
+  /** 姓名 */
+  name?: string;
+  /** 类型 */
+  type?: string;
   /** 学工号 */
   userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
+  /** 流水号 */
+  visitNo?: string;
+  /** 刷卡时间 */
+  visitTime?: string;
 }
 
-export interface All_address_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Week_or_month_sumQueryRequest {
-  /** 学工号 */
-  userId: string;
-  /** 周期：date、week、month */
-  cycle: string;
-  /** 开始时间 */
-  tradeStartTime?: string;
-  /** 结束时间 */
-  tradeEndTime?: string;
-  /** 周期数 */
-  n?: string;
-}
-
-export interface Week_or_month_sumHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Card_balanceQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Card_balanceHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Card_current_actual_flowQueryRequest {
-  /** 结束时间 */
-  dataEndTime?: string;
-  /** 学工号 */
-  userId: string;
-  /** 开始时间 */
-  dataStartTime?: string;
-}
-
-export interface Card_current_actual_flowHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Dept_cadre_infoQueryRequest {
-  /** 输出是否包含原始数据，不传则默认否，true-是 */
-  includeRaw?: string;
-  /** 输出格式是否平铺开，不传则默认否，true-是 */
-  expandDept?: string;
-}
-
-export interface Dept_cadre_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface RecordQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 开始日期 */
-  startDate?: string;
-  /** 结束日期 */
+export interface Get_school_calendarQueryRequest {
+  /** 校历起始日期，格式yyyy-mm-dd */
+  fromDate?: string;
+  /** 校历终止日期，格式yyyy-mm-dd */
   endDate?: string;
 }
 
-export interface RecordHeaderRequest {
-  /** Bearer <token> */
+export interface Get_school_calendarHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
+}
+
+export interface Get_school_calendar200Response {
+  code?: string;
+  data?: any;
+  msg?: string;
+}
+
+export interface Cet_scoreQueryRequest {
+  /** 学生学号 */
+  userId: string;
 }
 
 export interface Cet_scoreHeaderRequest {
-  /** Bearer <token> */
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Get_book_lend_infoHeaderRequest {
-  /** Bearer <token> */
+export interface Cet_score200Response {
+  code?: string;
+  data?: Cet_score200ResponseData;
+  msg?: string;
+}
+
+export interface Cet_score200ResponseData {
+  list?: Cet_score200ResponseDataListItem[];
+  pageNum_?: number;
+  pageSize_?: number;
+  total_?: number;
+}
+
+export interface Cet_score200ResponseDataListItem {
+  calendarId?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  calendarTerm?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  calendarYear?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  calendarYearTerm?: string;
+  calendarYearTermCn?: string;
+  cardNo?: string;
+  cetType?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  competitionExamCategory?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  competitionId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  competitionType?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  examTime?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  oralScore?: string;
+  score?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  scoreExamCategory?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  scoreRank?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  signUpStudentId?: string;
+  studentId?: string;
+  studentName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  subjectCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  title?: string;
+  writtenSubjectName?: string;
+}
+
+export interface Get_postgraduate_culture_plan_countQueryRequest {
+  /** 学生学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_culture_plan_countHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Get_statistics_infoHeaderRequest {
-  /** Bearer <token> */
+export interface Get_postgraduate_culture_plan_count200Response {
+  code: string;
+  data: Get_postgraduate_culture_plan_count200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_culture_plan_count200ResponseDataItem {
+  children?: number[] | null;
+  credit?: string;
+  isPass?: string;
+  labelId?: number;
+  labelName?: string;
+  labelNameEn?: string;
+  parentId?: number;
+  yearEnd?: number;
+  yearStart?: number;
+}
+
+export interface Get_postgraduate_culture_planQueryRequest {
+  /** 学生学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_culture_planHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Class_infoQueryRequest {
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceClassCode?: string;
+export interface Get_postgraduate_culture_plan200Response {
+  code?: string;
+  data?: Get_postgraduate_culture_plan200ResponseData;
+  msg?: string;
 }
 
-export interface Class_infoHeaderRequest {
-  /** Bearer <token> */
+export interface Get_postgraduate_culture_plan200ResponseData {
+  departmentCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  studentIdList?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  studentIds?: string;
+  studentName?: string;
+  teacherId?: string;
+  teacherName?: string;
+  teacherNameEn?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  templateId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  term?: string;
+  trainingCategory?: string;
+  trainingCategoryCode?: string;
+  trainingCategoryI18n?: string;
+  trainingLevel?: string;
+  trainingLevelCode?: string;
+  trainingLevelI18n?: string;
+  workFolwId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  associationStatus?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  associationStatusStr?: string;
+  campus?: string;
+  campusI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  college?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  condition?: string;
+  courseCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseCodeList?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseCodeStr?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseCodeStrStatus?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseNameEn?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseRelStatus?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseRemarks?: string;
+  createBy?: string;
+  createTime?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  credits?: string;
+  cultureId?: number;
+  cultureName?: string;
+  cultureNameEn?: string;
+  degreeType?: string;
+  degreeTypeI18n?: string;
+  departmentId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  departmentId2?: string;
+  departmentId2I18n?: string;
+  departmentIdI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  deptIds?: string;
+  dic?: boolean;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  directionCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  directionName?: string;
+  enrolDate?: string;
+  enrolSeason?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  faculty?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  faculty2?: string;
+  faculty2I18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  facultyCode?: string;
+  facultyI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  firstForeignLanguage?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  fisrtLanguage?: string;
+  formLearning?: string;
+  formLearningI18n?: string;
+  grade?: number;
+  id?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  ids?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  isElective?: string;
+  isOverseas?: string;
+  isOverseasI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  labelId?: string;
+  leaveSchool?: string;
+  lengthSchooling?: string;
+  major?: string;
+  majorCode?: string;
+  majorCodeI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  majorCodeList?: string;
+  majorEn?: string;
+  majorI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  majorList?: string;
+  name?: string;
+  nameSpelling?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  newCourseCodeList?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  newCourseCodeStr?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  newCoursesCode?: string;
+  old4m3?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  oldCoursesCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  oldCultureId?: string;
+  pageNum_?: number;
+  pageSize_?: number;
+  passHistory?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  period?: string;
+  plansComplete?: string;
+  plansCompleteStr?: string;
+  projId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  projIdsTemp?: string;
+  remarks?: string;
+  schemeGrade?: number;
+  spcialPlan?: string | null;
+  spcialPlanI18n?: string;
+  statusPlan?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  statusPlanStr?: string;
+  studentCategory?: string;
+  studentCategoryI18n?: string;
+  studentId?: string;
+}
+
+export interface Get_postgraduate_major_infoHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Student_headteacher_counselor_infoQueryRequest {
+export interface Get_postgraduate_major_info200Response {
+  code?: string;
+  data?: Get_postgraduate_major_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_major_info200ResponseDataItem {
+  /** 二级学科校标代码 */
+  SecondLevelDisciplineSchoolCode?: string;
+  /** 专业类型 */
+  Type?: string;
+  /** 学科门类代码 */
+  disciplineClassCode?: string;
+  /** 学科门类名称 */
+  disciplineClassName?: string;
+  /** 博士点批准时间 */
+  doctorTime?: string;
+  /** 一级学科代码 */
+  firstLevelDisciplineCode?: string;
+  /** 一级学科名称 */
+  firstLevelDisciplineName?: string;
+  /** 一级学科校标代码 */
+  firstLevelDisciplineSchoolCode?: string;
+  /** 序号 */
+  id?: string;
+  /** 专业代码 */
+  majorCode?: string;
+  /** 专业英文名称 */
+  majorEnName?: string;
+  /** 专业名称 */
+  majorName?: string;
+  /** 硕士点批准时间 */
+  masterTime?: string;
+  /** 是否国家重点学科：1，是；0，否 */
+  nationImportant?: string;
+  selfMajor?: string;
+  /** 是否在用：1，在用；0，不在用 */
+  status?: string;
+}
+
+export interface Get_advanced_lecture_countQueryRequest {
+  /** 学生学号 */
+  userId: string;
+}
+
+export interface Get_advanced_lecture_countHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_advanced_lecture_count200Response {
+  code?: string;
+  data?: Get_advanced_lecture_count200ResponseData;
+  msg?: string;
+}
+
+export interface Get_advanced_lecture_count200ResponseData {
+  theCollegeNumShould?: number;
+  collegeNumHave?: number;
+  collegeNumShould?: number;
+  lastGrade?: string;
+  moocNumHave?: number;
+  moocNumShould?: number;
+  schoolNumHave?: number;
+  schoolNumShould?: number;
+  theCollegeNumHave?: number;
+}
+
+export interface Postgraduate_scoreQueryRequest {
+  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
+  calendarId?: number;
+  /** 学生学号 */
+  userId: string;
+}
+
+export interface Postgraduate_scoreHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Postgraduate_score200Response {
+  code?: string;
+  data?: Postgraduate_score200ResponseData;
+  msg?: string;
+}
+
+export interface Postgraduate_score200ResponseData {
+  size?: number;
+  endRow?: number;
+  firstPage?: number;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
+  isFirstPage?: boolean;
+  isLastPage?: boolean;
+  lastPage?: number;
+  list?: Postgraduate_score200ResponseDataListItem[];
+  navigateFirstPage?: number;
+  navigateLastPage?: number;
+  navigatePages?: number;
+  navigatepageNums?: number[];
+  nextPage?: number;
+  pageNum?: number;
+  pageSize?: number;
+  pages?: number;
+  prePage?: number;
+  startRow?: number;
+  total?: number;
+}
+
+export interface Postgraduate_score200ResponseDataListItem {
+  /**  当前资料仅有null值，非空类型未确认。 */
+  addScore?: string;
+  calendar?: string;
+  calendarId?: number;
+  courseCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseCredit?: string;
+  courseLabel?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseLabelId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseLabelName?: string;
+  courseName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseNameEn?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseNature?: string;
+  courseNatureI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseNum?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  createAt?: string;
+  credit?: number;
+  dailyScore?: string | null;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  enterPerson?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  enterTime?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  examMode?: string;
+  examModeI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  examScore1?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  examScore2?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  examScoreName1?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  examScoreName2?: string;
+  examType?: string;
+  examTypeI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  faculty?: string;
+  facultyI18n?: string;
+  finalScore?: string | null;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  formLearning?: string;
+  formLearningI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  greadePoint?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  huxuan?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  id?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  isDegreeCourse?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  isElcCourse?: string;
+  isPass?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  isPassCn?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  isShow?: string;
+  learnType?: string;
+  learnTypeI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  makeupScore?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  managerDeptId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  midtermExamType?: string;
+  midtermScore?: string | null;
+  newCourseCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  newCourseNum?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  period?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  projId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  recoredType?: string;
+  recoredTypeI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  releaseAt?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  releaseType?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  remark?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  remarkPk?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  scoreSource?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  scoreTypeList?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  showAt?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  slowScore?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  specialScore?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  standardScore?: string;
+  studentId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  studentName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  teacherId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  teacherName?: string;
+  teachingClassId?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  teachingClassIdNew?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  teachingClassName?: string;
+  totalMarkScore?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  trainingLevel?: string;
+  trainingLevelI18n?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  updateTime?: string;
+}
+
+export interface Get_all_term_calendarHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_all_term_calendar200Response {
+  code?: string;
+  data?: Get_all_term_calendar200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_all_term_calendar200ResponseDataItem {
+  beginDay?: number;
+  classTimeId?: number;
+  createdAt?: string;
+  currentTermFlag?: boolean;
+  deleteFlag?: number | null;
+  endDay?: number;
+  examWeekEnd?: number;
+  examWeekStart?: number;
+  fullName?: string;
+  gradePartOne?: string;
+  gradePartTwo?: string;
+  id?: number;
+  ids?: string | null;
+  nextTermFlag?: boolean;
+  noWeekendWorkTimes?: Get_all_term_calendar200ResponseDataItemNoWeekendWorkTimesItem[];
+  perTerm?: string;
+  perYear?: string;
+  teachingWeekEnd?: number;
+  teachingWeekStart?: number;
+  term?: number;
+  updatedAt?: string;
+  weekBenginDay?: number;
+  weekNum?: number;
+  weekendWorkTimes?: Get_all_term_calendar200ResponseDataItemWeekendWorkTimesItem[];
+  workTimeGroupConfig?: Get_all_term_calendar200ResponseDataItemWorkTimeGroupConfig;
+  year?: number;
+  zerothWeekDay?: number;
+}
+
+export interface Get_all_term_calendar200ResponseDataItemNoWeekendWorkTimesItem {
+  beginTime?: string;
+  classNode?: string;
+  classNodeI18n?: string;
+  createdAt?: string;
+  endTime?: string;
+  id?: number;
+  isWeekend?: number;
+  nodeId?: number;
+  remark?: string | null;
+  remarkEn?: string | null;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  tagId?: string;
+  updatedAt?: string;
+}
+
+export interface Get_all_term_calendar200ResponseDataItemWeekendWorkTimesItem {
+  beginTime?: string;
+  classNode?: string;
+  classNodeI18n?: string;
+  createdAt?: string;
+  endTime?: string;
+  id?: number;
+  isWeekend?: number;
+  nodeId?: number;
+  remark?: string | null;
+  remarkEn?: string | null;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  tagId?: string;
+  updatedAt?: string;
+}
+
+export interface Get_all_term_calendar200ResponseDataItemWorkTimeGroupConfig {
+  classTimeId?: number;
+  color?: string[];
+  disableTime?: number[];
+  /** 时间分组。实际响应为二维整数数组（integer[][]）；因导入平台不支持嵌套数组 schema，此处不约束数组元素类型，消费方应按二维整数数组解析。 */
+  timeGroup?: string[];
+  timeSplit?: number[];
+}
+
+export interface Get_current_term_calendarHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_current_term_calendar200Response {
+  code?: string;
+  data?: Get_current_term_calendar200ResponseData;
+  msg?: string;
+}
+
+export interface Get_current_term_calendar200ResponseData {
+  name?: string;
+  now?: string;
+  schoolCalendar?: Get_current_term_calendar200ResponseDataSchoolCalendar;
+  simpleName?: string;
+  week?: number;
+}
+
+export interface Get_current_term_calendar200ResponseDataSchoolCalendar {
+  beginDay?: number;
+  classTimeId?: number;
+  createdAt?: string | null;
+  deleteFlag?: number | null;
+  id?: number;
+  endDay?: number;
+  examWeekEnd?: number;
+  examWeekStart?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  noWeekendWorkTimes?: string;
+  teachingWeekEnd?: number;
+  teachingWeekStart?: number;
+  term?: number;
+  updatedAt?: string | null;
+  weekBenginDay?: number;
+  weekNum?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  weekendWorkTimes?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  workTimeGroupConfig?: string;
+  year?: number;
+  zerothWeekDay?: number;
+}
+
+export interface Student_timetableQueryRequest {
+  /** 学生学号 */
+  userId: string;
+  /** 学期编号，为空默认为当前学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
+  calendarId?: number;
+}
+
+export interface Student_timetableHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Student_timetable200Response {
+  code?: string;
+  data?: Student_timetable200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Student_timetable200ResponseDataItem {
+  campus?: string;
+  assessmentMode?: string | null;
+  assessmentModeI18n?: string;
+  campusI18n?: string;
+  classCode?: string;
+  className?: string;
+  classRoom?: string;
+  classRoomI18n?: string;
+  classRoomName?: string | null;
+  classRoomPractice?: string | null;
+  classTime?: string;
+  classType?: string;
+  cloudCourseType?: string | null;
+  compulsory?: string | null;
+  courseCode?: string;
+  courseName?: string;
+  courseTakeType?: number;
+  credits?: number;
+  isExemptionCourse?: string | null;
+  newClassCode?: string;
+  newCourseCode?: string;
+  nonpubCloudCourseAddr?: string | null;
+  remark?: string | null;
+  roomCategory?: string | null;
+  roomLable?: string | null;
+  teachMode?: string | null;
+  teachModeI18n?: string;
+  teacherName?: string;
+  teachingClassId?: number;
+  teachingWay?: string;
+  teachingWayI18n?: string;
+  timeTableList?: Student_timetable200ResponseDataItemTimeTableListItem[];
+}
+
+export interface Student_timetable200ResponseDataItemTimeTableListItem {
+  /**  当前资料仅有null值，非空类型未确认。 */
+  calendarId?: string;
+  campus?: string;
+  campusI18n?: string;
+  classCode?: string;
+  className?: string;
+  courseCode?: string;
+  courseName?: string;
+  dayOfWeek?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  endDate?: string;
+  newClassCode?: string;
+  newCourseCode?: string;
+  newPopover?: string;
+  popover?: string;
+  roomCategory?: string | null;
+  roomId?: string;
+  roomIdI18n?: string;
+  roomLable?: string | null;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  startDate?: string;
+  teacherCode?: string;
+  teacherName?: string;
+  teachingClassId?: number;
+  timeAndRoom?: string;
+  timeEnd?: number;
+  timeId?: string | null;
+  timeStart?: number;
+  timeTab?: string;
+  weekNum?: string;
+  weeks?: number[];
+  weekstr?: string;
+}
+
+export interface Undergraduate_scoreQueryRequest {
+  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
+  calendarId?: number;
+  /** 学生学号 */
+  userId: string;
+}
+
+export interface Undergraduate_scoreHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Undergraduate_score200Response {
+  code?: string;
+  data?: Undergraduate_score200ResponseData;
+  msg?: string;
+}
+
+export interface Undergraduate_score200ResponseData {
+  totalGradePoint?: string;
+  actualCredit?: string;
+  failingCourseCount?: string;
+  failingCredits?: string;
+  term?: Undergraduate_score200ResponseDataTermItem[];
+}
+
+export interface Undergraduate_score200ResponseDataTermItem {
+  termName?: string;
+  termcode?: string;
+  averagePoint?: string;
+  calName?: string;
+  creditInfo?: Undergraduate_score200ResponseDataTermItemCreditInfoItem[];
+}
+
+export interface Undergraduate_score200ResponseDataTermItemCreditInfoItem {
+  score?: string;
+  scoreEaxmType?: number;
+  scoreEaxmTypeI18n?: string;
+  scoreLabel?: string;
+  scoreName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  scoreNatureName?: string;
+  scoreRecordType?: number;
+  courseType?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  createdPerson?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  createdTime?: string;
+  credit?: number;
+  examMode?: string;
+  gradePoint?: number;
+  id?: number;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  importUserCode?: string;
+  isPass?: number;
+  isPassName?: string;
+  keepField?: string;
+  newCourseCode?: string;
+  oldData?: number;
+  publicCoursesName?: string;
+  publicCoursesType?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  realAgainExamScore?: string;
+  scoreSourrce?: number;
+  studentId?: string;
+  studentName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  teachingClassId?: string;
+  term?: number;
+  updateTime?: string;
+  year?: string;
+  calName?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  calendarId?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  couresType?: string;
+  courseCode?: string;
+  /**  当前资料仅有null值，非空类型未确认。 */
+  courseLabName?: string;
+  courseLabel?: string | null;
+  courseName?: string;
+  courseNature?: string | null;
+  courseNum?: string;
+}
+
+export interface Get_research_patentQueryRequest {
   /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
+  userId: string;
+  /** 专利号 */
+  appNo?: string;
 }
 
-export interface Student_headteacher_counselor_infoHeaderRequest {
-  /** Bearer <token> */
+export interface Get_research_patentHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Senior_talents_infoQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceUserId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
+export interface Get_research_patent200Response {
+  code?: string;
+  data?: Get_research_patent200ResponseData;
+  msg?: string;
 }
 
-export interface Senior_talents_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
+export interface Get_research_patent200ResponseData {
+  count?: number;
+  infos?: Get_research_patent200ResponseDataInfosItem[];
 }
 
-export interface Absent_examinfoQueryRequest {
-  /** 学工号 */
+export interface Get_research_patent200ResponseDataInfosItem {
+  /** 专利所属学院代码 */
+  patentDeptCode?: string;
+  /** 专利所属学院名称 */
+  patentDeptName?: string;
+  /** 专利名称 */
+  patentTitle?: string;
+  /** 授权公告日 */
+  regPublishDate?: string;
+  /** 案件状态代码 */
+  statusCode?: string;
+  /** 案件状态名称 */
+  statusName?: string;
+  /** 所有发明人姓名 */
+  allInventorName?: string;
+  /** 所有发明人学工号 */
+  allInventorUserId?: string;
+  /** 申请日 */
+  appDate?: string;
+  /** 申请号(专利号) */
+  appNo?: string;
+  /** 申请类型代码 */
+  appTypeCode?: string;
+  /** 申请类型名称 */
+  appTypeName?: string;
+  /** 是否国际专利 */
+  countryName?: string;
+  /** 发明人总数 */
+  inventorCount?: number;
+}
+
+export interface Get_final_exam_infoQueryRequest {
+  /** 学号 */
   userId: string;
   /** 考试学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
   calendarId: string;
@@ -490,150 +1703,976 @@ export interface Absent_examinfoQueryRequest {
   defeat?: string;
 }
 
-export interface Absent_examinfoHeaderRequest {
-  /** Bearer <token> */
+export interface Get_final_exam_infoHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Get_timetable_by_classroomQueryRequest {
-  /** 学期编号,为空默认为当前学期 */
-  calendarId?: string;
-  /** 教室编号列表，支持批量，用英文逗号分隔 */
-  classroomIds?: string;
-}
-
-export interface Get_timetable_by_classroomHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface PageQueryRequest {
-  /** 页码 */
-  pageNum?: string;
-  /** 每页条数 */
-  pageSize?: string;
-  /** 学期编号，支持批量，英文逗号隔开，可通过学生学期日历编号calendarId 获取学期编号 */
-  calendarId: string;
-  /** 课程代码，精准匹配 */
-  courseCode?: string;
-  /** 2-查询普研的排课数据,4-查询在职研究生的排课数据；不传查询全部 */
-  manageDptId?: string;
-}
-
-export interface PageHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Internship_course_schedulingQueryRequest {
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceId?: string;
-  /** 输出是否包含原始数据，不传则默认否，true-是 */
-  includeRaw?: string;
-}
-
-export interface Internship_course_schedulingHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Teacher_by_coursenoQueryRequest {
-  /** 课程编号 */
-  courseNo: string;
-}
-
-export interface Teacher_by_coursenoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Manual_arrangeQueryRequest {
-  /** 课程编号，为空默认为所有 */
+export interface Get_final_exam_info200Response {
   code?: string;
-  /** 学期编号；可通过学生学期日历编号calendarId 获取历史学期编号 */
-  calendarId: string;
-  /** 行数，建议不超过50，行数太长会响应慢造成调用超时 */
-  pageSize?: string;
-  /** 页码 */
-  pageNum?: string;
+  data?: Get_final_exam_info200ResponseDataItem[];
+  msg?: string;
 }
 
-export interface Manual_arrangeHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Undergraduate_top_scoreQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Undergraduate_top_scoreHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Cardno_validateQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 证件号码 */
-  cardNo?: string;
+export interface Get_final_exam_info200ResponseDataItem {
+  /** 审核状态，期末考该字段为空 */
+  applyStatus?: string | null;
+  /** 考核方式 1考试/2考查 */
+  assessmentMode?: string;
+  calendarId?: number;
+  /** 课程所在学期 */
+  classCalendarId?: number;
+  /** 开课学院 */
+  college?: string;
+  /** 课程代码 */
+  courseCode?: string;
+  /** 课程名称 */
+  courseName?: string;
+  /** 是否缺考 1 是 0 否 */
+  defect?: number | null;
+  /** 学院 */
+  deptCode?: string;
+  /** 考试学期 */
+  examCalendarId?: number;
+  /** 排考具体日期 */
+  examDate?: string | null;
+  /** 结束时间 */
+  examEndTime?: string | null;
+  /** 本科排考管理表ID */
+  examInfoId?: number | null;
+  /** 本科学生排考表 本科排考教室ID */
+  examRoomId?: number | null;
+  /** 考试情况 1 正常 2 缓考 3无资格 4免试 */
+  examSituation?: number | null;
+  /** 开始时间 */
+  examStartTime?: string | null;
+  /** 排考状态 1 排考时间未排考考场 2 时间考场 */
+  examStatus?: number;
+  /** 本科学生排考表ID */
+  examStudentId?: number | null;
+  /** 考试时间 */
+  examTime?: string | null;
+  /** 考试类型 1 期末考试 2 补缓考 */
+  examType?: number | null;
+  /** 年级（本科：当前年级；研究生：年级） */
+  grade?: number;
+  /** 专业代码 */
+  major?: string;
+  /** 专业2代码 */
+  major2?: string | null;
+  /** 学院2 */
+  managementCollege2Code?: string | null;
   /** 姓名 */
   name?: string;
-  /** 证件号码后六位 */
-  cardNoLastSix?: string;
+  /** 缓考备注 期末考该字段为空 */
+  reExamRemark?: string | null;
+  /** 本科排考管理表 备注 */
+  remark?: string | null;
+  /** 考场代码 */
+  roomId?: number | null;
+  /** 考场名称 */
+  roomName?: string | null;
+  /** 任课教师，格式为：姓名（工号），姓名（工号），姓名（工号） */
+  teacherStr?: string;
+  /** 课程序号 */
+  teachingClassCode?: string;
+  /** 教学班表ID */
+  teachingClassId?: number;
+  /** 学号 */
+  userId?: string;
+  /** 星期几 */
+  weekDay?: number | null;
+  /** 第几周 */
+  weekNumber?: number | null;
 }
 
-export interface Cardno_validateHeaderRequest {
-  /** Bearer <token> */
+export interface Get_deferred_exam_infoQueryRequest {
+  /** 学号 */
+  userId: string;
+  /** 考试学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
+  calendarId: string;
+  /** 是否缺考，1是0否，不传为所有类型 */
+  defeat?: string;
+}
+
+export interface Get_deferred_exam_infoHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Person_info_by_cardnoQueryRequest {
-  /** 证件号码 */
-  cardNo: string;
+export interface Get_deferred_exam_info200Response {
+  code?: string;
+  data?: Get_deferred_exam_info200ResponseDataItem[];
+  msg?: string;
 }
 
-export interface Person_info_by_cardnoHeaderRequest {
-  /** Bearer <token> */
+export interface Get_deferred_exam_info200ResponseDataItem {
+  /** 星期几 */
+  weekDay?: number | null;
+  /** 第几周 */
+  weekNumber?: number | null;
+  /** 审核状态 期末考该字段为空 */
+  applyStatus?: number;
+  /** 考核方式 1考试/2考查 */
+  assessmentMode?: string;
+  calendarId?: string;
+  /** 课程所在学期 */
+  classCalendarId?: string;
+  /** 开课学院 */
+  college?: string;
+  /** 课程代码 */
+  courseCode?: string;
+  /** 课程名称 */
+  courseName?: string;
+  /** 是否缺考 1 是 0 否 默认否 */
+  defect?: number | null;
+  /** 学院 */
+  deptCode?: string;
+  /** 考试学期 */
+  examCalendarId?: string;
+  /** 排考具体日期 */
+  examDate?: string | null;
+  /** 结束时间 */
+  examEndTime?: string | null;
+  /** 本科排考管理表ID */
+  examInfoId?: number | null;
+  /** 本科学生排考表 本科排考教室ID */
+  examRoomId?: number | null;
+  /** 考试情况 1 正常 2 缓考 3无资格 4免试 */
+  examSituation?: number | null;
+  /** 开始时间 */
+  examStartTime?: string | null;
+  /** 排考状态 1 排考时间未排考考场 2 时间考场 */
+  examStatus?: number;
+  /** 本科学生排考表ID */
+  examStudentId?: number | null;
+  /** 考试时间 */
+  examTime?: string | null;
+  /** 考试类型 1 期末考试 2 补缓考 */
+  examType?: number;
+  /** 年级（本科：当前年级；研究生：年级） */
+  grade?: number;
+  /** 专业代码 */
+  major?: string;
+  /** 专业2代码 */
+  major2?: string | null;
+  /** 学院2 */
+  managementCollege2Code?: string | null;
+  /** 姓名 */
+  name?: string;
+  /** 缓考备注 期末考该字段为空 */
+  reExamRemark?: string | null;
+  /** 本科排考管理表 备注 */
+  remark?: string | null;
+  /** 考场代码 */
+  roomId?: number | null;
+  /** 考场名称 */
+  roomName?: string | null;
+  /** 任课教师，格式为：姓名（工号），姓名（工号），姓名（工号） */
+  teacherStr?: string;
+  /** 课程序号 */
+  teachingClassCode?: string;
+  /** 教学班表ID */
+  teachingClassId?: number;
+  /** 学号 */
+  userId?: string;
+}
+
+export interface Get_undergraduate_summarized_gradesQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_undergraduate_summarized_gradesHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface All_contact_infoQueryRequest {
+export interface Get_undergraduate_summarized_grades200Response {
+  code?: string;
+  data?: Get_undergraduate_summarized_grades200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_undergraduate_summarized_grades200ResponseDataItem {
+  GPA?: number;
+  completedCredit?: string;
+  hundredMarkScore?: number;
+  requiredCredit?: number;
+  userId?: string;
+}
+
+export interface Get_student_detailed_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_student_detailed_infoBodyRequest {
+  userId: string;
+}
+
+export interface Get_student_detailed_info200Response {
+  code?: string;
+  data?: Get_student_detailed_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_student_detailed_info200ResponseDataItem {
+  /** 出生日期 */
+  birthday?: string;
+  /** 姓名 */
+  name?: string;
+  /** 实际毕业时间 */
+  actualGraduationDate?: string;
+  /** 出生地 */
+  brithplace?: string;
+  /** 出生地代码 */
+  brithplaceCode?: string;
+  /** 校区 */
+  campus?: string;
+  /** 校区代码 */
+  campusCode?: string;
+  /** 门类 */
+  category?: string;
+  /** 门类代码 */
+  categoryCode?: string;
+  /** 港澳台侨 */
+  chinaSon?: string;
+  /** 港澳台侨代码 */
+  chinaSonCode?: string;
+  /** 培养专业 */
+  cultureProfession?: string;
+  /** 培养专业代码 */
+  cultureProfessionCode?: string;
+  cultureProfessionSchoolCode?: string;
+  /** 当前年级 */
+  currentGrade?: number;
+  /** 学位 */
+  degree?: string;
+  /** 学位上报类别 */
+  degreeCategory?: string;
+  /** 学位上报类别代码 */
+  degreeCategoryCode?: string;
+  /** 学位代码 */
+  degreeCode?: string;
+  /** 学位类型 */
+  degreeType?: string;
+  /** 学位类型代码 */
+  degreeTypeCode?: string;
+  /** 录取类别 */
+  enrolCategory?: string;
+  /** 录取类别代码 */
+  enrolCategoryCode?: string;
+  /** 入学时间 */
+  enrolDate?: string;
+  /** 入学方式 */
+  enrolMethods?: string;
+  /** 入学方式代码 */
+  enrolMethodsCode?: string;
+  /** 入学季节 */
+  enrolSeason?: string;
+  /** 入学季节代码 */
+  enrolSeasonCode?: string;
+  /** 预计毕业时间 */
+  expectedGraduationDate?: string;
+  /** 管理学院 */
+  faculty?: string;
+  /** 管理学院代码 */
+  facultyCode?: string;
+  /** 学习形式 */
+  formLearning?: string;
+  /** 学习形式代码 */
+  formLearningCode?: string;
+  /** 入学年级 */
+  grade?: number;
+  /** 健康状况 */
+  healthStatus?: string;
+  /** 健康状况代码 */
+  healthStatusCode?: string;
+  /** 户口所在地 */
+  householdRegister?: string;
+  /** 户口所在地代码 */
+  householdRegisterCode?: string;
+  /** 是否双学位 */
+  isDobleDegree?: string;
+  /** 是否在职生 */
+  isIncumbency?: string;
+  /** 是否在职生代码 */
+  isIncumbencyCode?: string;
+  /** 是否在籍 */
+  isMembership?: string;
+  /** 是否在籍代码 */
+  isMembershipCode?: string;
+  /** 是否国际生 */
+  isOverseas?: string;
+  /** 是否国际生代码 */
+  isOverseasCode?: string;
+  /** 学习方式 */
+  learningStyle?: string;
+  /** 学习方式代码 */
+  learningStyleCode?: string;
+  /** 在校状态 */
+  leaveSchool?: string;
+  /** 在校状态代码 */
+  leaveSchoolCode?: string;
+  /** 学制 */
+  lengthSchooling?: string;
+  /** 法定送达地址 */
+  mailingAddress?: string;
+  /** 专业方向名称 */
+  majorDirection?: string;
+  /** 专业方向代码 */
+  majorDirectionCode?: string;
+  /** 婚姻状况 */
+  maritalStatus?: string;
+  /** 婚姻状况代码 */
+  maritalStatusCode?: string;
+  /** 病史 */
+  medicalHistory?: string;
+  /** 姓名拼音 */
+  nameSpelling?: string;
+  /** 民族 */
+  nation?: string;
+  /** 民族代码 */
+  nationCode?: string;
+  /** 籍贯 */
+  nativePlace?: string;
+  /** 籍贯代码 */
+  nativePlaceCode?: string;
+  /** 离校时间 */
+  offSchool?: string;
+  /** 政治面貌 */
+  politicalStatus?: string;
+  /** 政治面貌代码 */
+  politicalStatusCode?: string;
+  /** 邮政编码 */
+  postalCode?: string;
+  /** 招生专业 */
+  profession?: string;
+  /** 招生专业代码 */
+  professionCode?: string;
+  /** 管理部门 */
+  projId?: string;
+  /** 管理部门代码 */
+  projIdCode?: string;
+  /** 户口所在详细地址 */
+  registeredAddress?: string;
+  /** 户口所在地邮编 */
+  registeredPostalCode?: string;
+  /** 学籍状态 */
+  registrationStatus?: string;
+  /** 学籍状态代码 */
+  registrationStatusCode?: string;
+  /** 研究方向 */
+  researchDirection?: string;
+  /** 性别 */
+  sex?: string;
+  /** 性别代码 */
+  sexCode?: string;
+  /** 专项计划 */
+  spcialPlan?: string;
+  /** 专项计划代码 */
+  spcialPlanCode?: string;
+  /** 特殊类别 */
+  specialCategory?: string;
+  /** 特殊类别代码 */
+  specialCategoryCode?: string;
+  /** 国家地区 */
+  state?: string;
+  /** 国家地区代码 */
+  stateCode?: string;
+  /** 火车起点站 */
+  stationStart?: string;
+  /** 火车终点站 */
+  stationTermini?: string;
+  /** 火车终点站代码 */
+  stationTerminiCode?: string;
+  /** 学籍（招生）学院 */
+  statusFaculty?: string;
+  /** 学籍（招生）学院代码，学生归属判断请使用管理学院代码 */
+  statusFacultyCode?: string;
+  /** 学籍专业 */
+  statusProfession?: string;
+  /** 学籍专业代码 */
+  statusProfessionCode?: string;
+  /** 学生分类 */
+  studentCategory?: string;
+  /** 学生分类代码 */
+  studentCategoryCode?: string;
+  /** 学号 */
+  studentId?: string;
+  /** 生源地 */
+  studentSource?: string;
+  /** 生源地代码 */
+  studentSourceCode?: string;
+  /** 导师 */
+  teacherId?: string;
+  /** 培养类别 */
+  trainingCategory?: string;
+  /** 培养类别代码 */
+  trainingCategoryCode?: string;
+  /** 培养层次 */
+  trainingLevel?: string;
+  /** 培养层次代码 */
+  trainingLevelCode?: string;
+  /** 培养方式 */
+  trainingMethods?: string;
+  /** 培养方式代码 */
+  trainingMethodsCode?: string;
+  /** 曾用名 */
+  usedName?: string;
+  /** 人员类型代码 */
+  userTypeCode?: string;
+  /** 人员类型 */
+  userTypeName?: string;
+  /** 导师2 */
+  viceTeacherId?: string;
+  /** 就读方式 */
+  wayStudy?: string;
+  /** 就读方式代码 */
+  wayStudyCode?: string;
+}
+
+export interface Get_tongji_email_infoQueryRequest {
+  /** 学工号，可批量传参，最多1000条，两个入参必须二选一 */
+  userId: string;
+}
+
+export interface Get_tongji_email_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_tongji_email_info200Response {
+  code?: string;
+  data?: Get_tongji_email_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_tongji_email_info200ResponseDataItem {
+  /** 删除标识 */
+  delFlag?: string;
+  email?: string;
+  type?: string;
+  userId?: string;
+}
+
+export interface Get_user_single_infoQueryRequest {
   /** 学工号 */
   userId: string;
-  /** 手机号 */
-  phone: string;
-  /** 邮箱 */
-  email: string;
-  /** 系统编号，可传入多个(使用英文逗号分割)，传all：获取全部 */
-  systemCode?: string;
 }
 
-export interface All_contact_infoHeaderRequest {
-  /** Bearer <token> */
+export interface Get_user_single_infoHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Student_infoQueryRequest {
-  /** 学工号 */
+export interface Get_user_single_info200Response {
+  code?: string;
+  data?: Get_user_single_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_user_single_info200ResponseDataItem {
+  deptCode?: string;
+  deptName?: string;
+  name?: string;
+  statusCode?: string;
+  statusName?: string;
   userId?: string;
+  userTypeCode?: string;
+  userTypeName?: string;
+}
+
+export interface Get_book_lend_infoQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Get_book_lend_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_book_lend_info200Response {
+  code?: string;
+  data?: Get_book_lend_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_book_lend_info200ResponseDataItem {
+  author?: string;
+  callNo?: string;
+  callNoName?: string;
+  countryCode?: string;
+  countryName?: string;
+  debtFlag?: string;
+  deptCode?: string;
+  deptName?: string;
+  docTypeCode?: string;
+  docTypeName?: string;
+  isJournal?: string;
+  isbn?: string;
+  langCode?: string;
+  langName?: string;
+  lendDate?: string;
+  locationCode?: string;
+  locationName?: string;
+  name?: string;
+  propNo?: string;
+  pubYear?: string;
+  publisher?: string;
+  renewDate?: string;
+  renewTimes?: string;
+  retDate?: string;
+  title?: string;
+  totalLendQty?: string;
+  userId?: string;
+  voltFlag?: string;
+  asbackDate?: string;
+  asbackTimes?: string;
+}
+
+export interface Student_accommodation_infoQueryRequest {
+  /** 学号 */
+  userId: string;
   /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
   sinceUserId?: string;
   /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
   sinceUpdateTime?: string;
 }
 
-export interface Student_infoHeaderRequest {
-  /** Bearer <token> */
+export interface Student_accommodation_infoHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Student_infosQueryRequest {
-  /** 学工号 */
+export interface Student_accommodation_info200Response {
+  code?: string;
+  data?: Student_accommodation_info200ResponseData;
+  msg?: string;
+}
+
+export interface Student_accommodation_info200ResponseData {
+  sinceUserId?: string;
+  count?: number;
+  list?: Student_accommodation_info200ResponseDataListItem[];
+}
+
+export interface Student_accommodation_info200ResponseDataListItem {
+  /** 宿舍区 */
+  accomRegionCode?: string;
+  /** 宿舍区名称 */
+  accomRegionName?: string;
+  /** 部门/学院代码 */
+  deptCode?: string;
+  /** 部门/学院名称 */
+  deptName?: string;
+  /** 楼层 */
+  floor?: string;
+  /** 姓名 */
+  name?: string;
+  /** 房间号 */
+  roomNo?: string;
+  /** 学堂id */
+  schoolCode?: string | null;
+  /** 学堂名称 */
+  schoolName?: string | null;
+  updateTime?: string;
+  /** 学号 */
   userId?: string;
+  /** 人员类型代码 */
+  userTypeCode?: string;
+  /** 人员类型名称 */
+  userTypeName?: string;
+  usertypeCode?: string;
+  usertypeName?: string;
+  /** 宿舍楼 */
+  accomBuildingCode?: string;
+  /** 宿舍楼名称 */
+  accomBuildingName?: string;
+}
+
+export interface Get_teacher_title_infoQueryRequest {
+  /** 工号 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+}
+
+export interface Get_teacher_title_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_teacher_title_info200Response {
+  code?: string;
+  data?: Get_teacher_title_info200ResponseData;
+  msg?: string;
+}
+
+export interface Get_teacher_title_info200ResponseData {
+  sinceUserId?: string;
+  count?: number;
+  list?: Get_teacher_title_info200ResponseDataListItem[];
+}
+
+export interface Get_teacher_title_info200ResponseDataListItem {
+  /** 聘任专业技术职务名称 */
+  titleName?: string;
+  updateTime?: string;
+  /** 工号 */
+  userId?: string;
+  /** 部门/学院代码 */
+  deptCode?: string;
+  /** 部门/学院名称 */
+  deptName?: string;
+  /** 初次聘任职称级别时间 */
+  firstTitleDate?: string;
+  /** 岗位等级代码 */
+  jobLevelCode?: string;
+  /** 岗位等级名称 */
+  jobLevelName?: string;
+  /** 岗位聘任时间 */
+  jobOfferDate?: string;
+  /** 岗位类别代码 */
+  jobTypeCode?: string;
+  /** 岗位类别名称 */
+  jobTypeName?: string;
+  /** 姓名 */
+  name?: string;
+  /** 党政职务等级代码 */
+  partyGovLevelCode?: string;
+  /** 党政职务等级名称 */
+  partyGovLevelName?: string | null;
+  /** 党政职务 */
+  partyJob?: string;
+  /** 党政职务任职年月 */
+  partyJobDate?: string;
+  /** 党政职务级别初任时间 */
+  partyJobFirstDate?: string;
+  /** 专业技术职务级别代码 */
+  techJobLevelCode?: string;
+  /** 专业技术职务级别名称 */
+  techJobLevelName?: string;
+  /** 专技岗分类代码 */
+  techJobTypeCode?: string;
+  /** 专技岗分类名称 */
+  techJobTypeName?: string | null;
+  /** 工人技术等级代码 */
+  techLevelOfWorkersCode?: string;
+  /** 工人技术等级名称 */
+  techLevelOfWorkersName?: string | null;
+  /** 长聘协议结束时间 */
+  tenureEndTime?: string;
+  /** 长聘体系职务代码 */
+  tenurePositionCode?: string;
+  /** 长聘体系职务名称 */
+  tenurePositionName?: string | null;
+  /** 长聘协议开始时间 */
+  tenureStartTime?: string;
+  /** 聘任专业技术职务代码 */
+  titleCode?: string;
+  /** 聘任专业技术职务年月 */
+  titleDate?: string;
+}
+
+export interface Get_competition_prizesQueryRequest {
+  /** 竞赛获奖学生学号 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
+}
+
+export interface Get_competition_prizesHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_competition_prizes200Response {
+  code?: string;
+  data?: Get_competition_prizes200ResponseData;
+  msg?: string;
+}
+
+export interface Get_competition_prizes200ResponseData {
+  count?: number;
+  list?: Get_competition_prizes200ResponseDataListItem[] | null;
+  sinceId?: string;
+}
+
+export interface Get_competition_prizes200ResponseDataListItem {
+  /** 创新成绩认定类型 */
+  achievementRecognitionType?: string;
+  /** 奖项类别 */
+  awardCategory?: string;
+  /** 获奖日期 */
+  awardDate?: string;
+  /** 奖项等级 */
+  awardLevel?: string;
+  /** 竞赛等级 */
+  competitionLevel?: string;
+  /** 竞赛名称 */
+  competitionName?: string;
+  /** 学分 */
+  credit?: number;
+  /** 所属学院代码 */
+  deptCode?: string;
+  /** 所属学院名称 */
+  deptName?: string;
+  /** id */
+  id?: number;
+  /** 竞赛获奖学生姓名 */
+  name?: string;
+  /** 学年度 */
+  schoolYear?: string;
+  /** 竞赛获奖学生学号 */
+  userId?: string;
+}
+
+export interface Student_honorary_titleQueryRequest {
+  /** 获得荣誉称号学生学号 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceWid?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+}
+
+export interface Student_honorary_titleHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Student_honorary_title200Response {
+  code?: string;
+  data?: Student_honorary_title200ResponseData;
+  msg?: string;
+}
+
+export interface Student_honorary_title200ResponseData {
+  sinceWid?: string;
+  count?: number;
+  list?: Student_honorary_title200ResponseDataListItem[] | null;
+}
+
+export interface Student_honorary_title200ResponseDataListItem {
+  /** 评定学期 */
+  ratingTerm?: string | null;
+  /** 评定学年 */
+  ratingYear?: string;
+  /** 奖励级别 */
+  rewardLevel?: string | null;
+  updateTime?: string;
+  /** 获得荣誉称号学生学号 */
+  userId?: string;
+  /** wid */
+  wid?: string;
+  /** 所属学院代码 */
+  deptCode?: string;
+  /** 所属学院名称 */
+  deptName?: string;
+  /** 荣誉称号 */
+  honorTitle?: string;
+  /** 获得荣誉称号学生姓名 */
+  name?: string;
+}
+
+export interface Get_scholarship_infoQueryRequest {
+  /** 获得奖学金学生学号 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceWid?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+}
+
+export interface Get_scholarship_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_scholarship_info200Response {
+  code?: string;
+  data?: Get_scholarship_info200ResponseData;
+  msg?: string;
+}
+
+export interface Get_scholarship_info200ResponseData {
+  count?: number;
+  list?: Get_scholarship_info200ResponseDataListItem[] | null;
+  sinceWid?: string;
+}
+
+export interface Get_scholarship_info200ResponseDataListItem {
+  /** 金额 */
+  amount?: string;
+  /** 所属学院代码 */
+  deptCode?: string;
+  /** 所属学院名称 */
+  deptName?: string;
+  /** 获得奖学金学生姓名 */
+  name?: string;
+  /** 评定等级 */
+  rating?: string;
+  /** 评定学年 */
+  ratingYear?: string;
+  /** 奖学金级别 */
+  scholarshipLevel?: string;
+  /** 奖学金名称 */
+  scholarshipName?: string;
+  updateTime?: string;
+  /** 获得奖学金学生学号 */
+  userId?: string;
+  /** wid */
+  wid?: string;
+}
+
+export interface Get_stipendQueryRequest {
+  /** 获得助学金学生学号 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceWid?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+}
+
+export interface Get_stipendHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_stipend200Response {
+  code?: string;
+  data?: Get_stipend200ResponseData;
+  msg?: string;
+}
+
+export interface Get_stipend200ResponseData {
+  list?: Get_stipend200ResponseDataListItem[] | null;
+  sinceWid?: string;
+  count?: number;
+}
+
+export interface Get_stipend200ResponseDataListItem {
+  /** 金额 */
+  amount?: number;
+  /** 所属学院代码 */
+  deptCode?: string;
+  /** 所属学院名称 */
+  deptName?: string;
+  /** 获得助学金学生姓名 */
+  name?: string;
+  /** 等级名称 */
+  rankName?: string;
+  /** 评定学期 */
+  ratingTerm?: string;
+  /** 评定学年 */
+  ratingYear?: string;
+  /** 助学金名称 */
+  stipendName?: string;
+  /** 单位简称 */
+  unitAbbreviation?: string;
+  updateTime?: string;
+  /** 获得助学金学生学号 */
+  userId?: string;
+  /** wid */
+  wid?: string;
+}
+
+export interface Get_student_counselor_infoQueryRequest {
+  /** 学号 可传入多个学工号(上限为1000，使用英文逗号分割)进行批量查询 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
+}
+
+export interface Get_student_counselor_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_student_counselor_info200Response {
+  code?: string;
+  data?: Get_student_counselor_info200ResponseData;
+  msg?: string;
+}
+
+export interface Get_student_counselor_info200ResponseData {
+  sinceUserId?: string;
+  count?: number;
+  list?: Get_student_counselor_info200ResponseDataListItem[];
+}
+
+export interface Get_student_counselor_info200ResponseDataListItem {
+  /** 学号 */
+  userId?: string;
+  /** 班级代码 */
+  classCode?: string;
+  /** 班级名称 */
+  className?: string;
+  /** 辅导员工号 */
+  counselorId?: string;
+  /** 辅导员姓名 */
+  counselorName?: string;
+  /** 学院代码 */
+  deptCode?: string;
+  /** 学院名称 */
+  deptName?: string;
+  /** 班主任工号 */
+  headTeacherId?: string;
+  /** 班主任姓名 */
+  headTeacherName?: string;
+  /** 姓名 */
+  name?: string;
+}
+
+export interface Get_student_tencent_meeting_courseQueryRequest {
+  /** 学号 */
+  userId: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceId?: string;
+  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
+  sinceUpdateTime?: string;
+}
+
+export interface Get_student_tencent_meeting_courseHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_student_tencent_meeting_course200Response {
+  code?: string;
+  data?: Get_student_tencent_meeting_course200ResponseData;
+  msg?: string;
+}
+
+export interface Get_student_tencent_meeting_course200ResponseData {
+  count?: number;
+  list?: Get_student_tencent_meeting_course200ResponseDataListItem[] | null;
+  sinceId?: string;
+}
+
+export interface Get_student_tencent_meeting_course200ResponseDataListItem {
+  /** 课程编号 */
+  courseNo?: string;
+  id?: string;
+  /** 腾讯会议号 */
+  meetingNo?: string;
+  /** 腾讯会议密码 */
+  meetingPwd?: string;
+  /** 腾讯会议地址 */
+  meetingUrl?: string;
+  updateTime?: string;
+  /** 学号 */
+  userId?: string;
+}
+
+export interface Get_student_basic_infoQueryRequest {
+  /** 学工号 */
+  userId: string;
   /** 日期 */
   sinceTime?: string;
   /** 人员身份认证状态，0代表有效、1代表失效、-1代表全部 不传参数默认为0 */
@@ -660,191 +2699,406 @@ export interface Student_infosQueryRequest {
   sinceUpdateTime?: string;
 }
 
-export interface Student_infosHeaderRequest {
-  /** Bearer <token> */
+export interface Get_student_basic_infoHeaderRequest {
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Student_loanQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+export interface Get_student_basic_info200Response {
+  code?: string;
+  data?: Get_student_basic_info200ResponseData;
+  msg?: string;
+}
+
+export interface Get_student_basic_info200ResponseData {
   sinceUserId?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
+  count?: number;
+  list?: Get_student_basic_info200ResponseDataListItem[];
 }
 
-export interface Student_loanHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_graduationQueryRequest {
-  /** 学工号 */
-  userId: string;
-}
-
-export interface Student_graduationHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Hardship_allowanceQueryRequest {
+export interface Get_student_basic_info200ResponseDataListItem {
+  /** 学籍状态，针对本科生 */
+  registrationStatusCode?: string;
+  /** 学籍状态名称，针对本科生 */
+  registrationStatusName?: string | null;
+  /** 学堂id */
+  schoolCode?: string | null;
+  /** 学堂名称 */
+  schoolName?: string | null;
+  /** 培养专业 */
+  secondDeptCode?: string;
+  /** 培养专业名称 */
+  secondDeptName?: string;
+  /** 性别 */
+  sexCode?: string;
+  /** 性别名称 */
+  sexName?: string;
+  /** 人员身份认证状态，0代表有效、1代表失效 */
+  statusCode?: string;
+  /** 人员身份认证状态名称 */
+  statusName?: string;
+  /** 学习形式 */
+  studyForm?: string;
+  /** 学习形式名称 */
+  studyFormName?: string;
+  /** 导师工号 */
+  teacherId?: string;
+  /** 培养类别 */
+  trainingCategoryCode?: string;
+  /** 培养类别名称 */
+  trainingCategoryName?: string;
+  /** 培养层次 */
+  trainingLevelCode?: string;
+  /** 培养层次名称 */
+  trainingLevelName?: string;
+  /** 更新时间 */
+  updateTime?: string;
   /** 学工号 */
   userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Hardship_allowanceHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Work_studyQueryRequest {
-  /** 学工号 */
-  userId?: string;
-  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
-  sinceWid?: string;
-  /** 更新时间，获取该时间点之后信息有更改的数据，此字段格式支持YYYY-MM-DD HH:mm:ss 和 unix时间戳 */
-  sinceUpdateTime?: string;
-}
-
-export interface Work_studyHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Undergraduate_scoreQueryRequest {
-  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
-  calendarId?: string;
-}
-
-export interface Undergraduate_scoreHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_all_term_calendarHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_current_term_calendarHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_stipendHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_accommodation_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_honorary_titleHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_competition_prizesHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_library_accessQueryRequest {
-  /** 进出模式，1-进，2-出。不传值代表全部 */
-  direction?: string;
-  /** 开始时间，yyyy-MM-dd HH:mm:ss */
-  visitStartTime?: string;
-  /** 结束时间，yyyy-MM-dd HH:mm:ss */
-  visitEndTime?: string;
-}
-
-export interface Get_library_accessHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_scholarship_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_school_accessQueryRequest {
-  /** 入校出校标识，值只有”入门”,“出门”两种，不传值代表全部 */
-  portNum?: string;
-  /** 开始时间，yyyy-MM-dd HH:mm:ss */
-  dataStartTime?: string;
-  /** 结束时间，yyyy-MM-dd HH:mm:ss */
-  dataEndTime?: string;
-}
-
-export interface Get_school_accessHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Student_timetableQueryRequest {
-  /** 学期编号，为空默认为当前学期编号，可通过学生学期日历编号calendarId 获取历史学期编号 */
-  calendarId?: string;
-}
-
-export interface Student_timetableHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
+  /** 人员类型代码 */
+  userTypeCode?: string;
+  /** 人员类型名称 */
+  userTypeName?: string;
+  /** 副导师工号 */
+  viceTeacherId?: string;
+  /** 校区 */
+  campusCode?: string;
+  /** 校区名称 */
+  campusName?: string | null;
+  createTime?: string;
+  /** 当前年级 */
+  currentGrade?: number;
+  /** 部门/学院代码 */
+  deptCode?: string;
+  /** 部门/学院名称 */
+  deptName?: string;
+  /** 入学时间 */
+  enrolDate?: string;
+  /** 预计毕业时间 */
+  expGraduationDate?: string;
+  /** 是否在职，针对研究生，本科生此字段为空，1-是，0-否 */
+  isIncumbencyCode?: string;
+  /** 是否在职名称，针对研究生，本科生此字段为空 */
+  isIncumbencyName?: string | null;
+  /** 是否在籍,针对本科生,1-是，0-否 */
+  isMembershipCode?: string;
+  /** 是否在籍名称,针对本科生, */
+  isMembershipName?: string | null;
+  /** 是否留学生 */
+  isOverseasCode?: string;
+  /** 是否留学生名称 */
+  isOverseasName?: string;
+  /** 在校状态,针对研究生 */
+  leaveSchoolCode?: string;
+  /** 在校状态名,针对研究生称 */
+  leaveSchoolName?: string;
+  /** 学制 */
+  lengthSchooling?: string;
+  /** 管理学院2 */
+  managementCollege2Code?: string;
+  /** 管理学院2名称 */
+  managementCollege2Name?: string | null;
+  /** 姓名 */
+  name?: string;
+  /** 离校时间 */
+  offSchool?: string;
+  /** 政治面貌 */
+  politicalStatusCode?: string;
+  /** 政治面貌名称 */
+  politicalStatusName?: string;
 }
 
 export interface Get_statistics_info_by_yearQueryRequest {
   /** 年份 */
   year: string;
+  /** 学号 */
+  userId: string;
 }
 
 export interface Get_statistics_info_by_yearHeaderRequest {
-  /** Bearer <token> */
+  /** Bearer <service access_token> */
   Authorization: string;
+}
+
+export interface Get_statistics_info_by_year200Response {
+  code?: string;
+  data?: Get_statistics_info_by_year200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_statistics_info_by_year200ResponseDataItem {
+  /** 人员类型代码 */
+  userTypeCode?: string;
+  /** 平均每周出校门的次数 */
+  weeklyExitAvg?: string;
+  /** 年份 */
+  year?: string;
+  /** 一年中的总借书数是全校师生的前X% */
+  annualBorrowedTopPct?: string;
+  /** 平均每次消费金额（食堂里），单位：元 */
+  avgDailySpending?: string;
+  /** 一年中的总借书数 */
+  booksCount?: string;
+  /** 食堂总消费金额超过于全校老师/学生的X% */
+  canteenSpendingPct?: string;
+  /** 学院代码 */
+  deptCode?: string;
+  /** 学院代码名称 */
+  deptName?: string;
+  /** 最早进入图书馆的具体时间（精确到秒） */
+  earliestEntryTime?: string | null;
+  /** 最早出校门的准确时间（精确到秒） */
+  earliestExitTime?: string | null;
+  /** 当天最晚离开图书馆这个时间点还有X师生在图书馆 */
+  lastDepartureCount?: string;
+  /** 当天晚于最早出校门这一时间点出门的师生人数占当天出门师生总人数的X% */
+  lateExitPct?: string;
+  /** 最晚离开图书馆的时间（精确到秒） */
+  latestDepartureTime?: string | null;
+  /** 最晚出校门的准确时间（精确到秒） */
+  latestExitTime?: string | null;
+  /** 进出图书馆次数 */
+  libraryAccessCount?: string;
+  /** 当天最早进入图书馆这个时间点的在馆师生人数占当天进馆师生总人数的X% */
+  libraryAttendancePct?: string;
+  /** 当天最晚离开图书馆这个时间点的仍在馆的师生人数占当天进馆师生总人数的X% */
+  libraryExitPct?: string;
+  /** 在图书馆学习时长，单位：小时 */
+  libraryStudyTime?: string;
+  /** 在图书馆学习时间位于全校师生前X% */
+  libraryStudyTopPct?: string;
+  /** 累计消费最多的地点总计消费金额，单位：元 */
+  maxCumulativeAmt?: string;
+  /** 累计消费最多的地点（食堂名） */
+  maxCumulativeLoc?: string | null;
+  /** 单次消费最多金额，单位：元 */
+  maxTransactionAmt?: string;
+  /** 单次消费最多的地点（食堂名） */
+  maxTransactionLoc?: string | null;
+  /** 单次消费最多的时间（年月日） */
+  maxTransactionTime?: string | null;
+  /** 姓名 */
+  name?: string;
+  /** 校车乘坐次数（年度） */
+  shuttleRidesCount?: string;
+  /** 当天最早进入图书馆这个时间点已有X师生在图书馆 */
+  todayEntryCount?: string;
+  /** 当天晚于最晚出校门这个时间点出门的师生人数占当天出门师生总人数的X% */
+  todayLateExitPct?: string;
+  /** 进出校门总数 */
+  totalEntries?: string;
+  /** 全年消费总金额（食堂里），单位：元 */
+  totalSpendingCanteen?: string;
+  /** 学工号 */
+  userId?: string;
+}
+
+export interface Get_statistics_infoQueryRequest {
+  /** 学工号 */
+  userId: string;
+}
+
+export interface Get_statistics_infoHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_statistics_info200Response {
+  code?: string;
+  data?: Get_statistics_info200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_statistics_info200ResponseDataItem {
+  /** 你最常光顾X（即最多次的消费场所） */
+  consumePlaceOften?: string | null;
+  /** 累计消费￥ 元（所有消费） */
+  consumeTotal?: string;
+  /** 超过了 %的同济人（所有消费） */
+  consumeTotalPercentileRank?: string;
+  /** 最早进入图书馆的时间（精确到秒） */
+  earlistTime?: string | null;
+  /** X年你离开了家 */
+  entYear?: number;
+  /** 去了X次图书馆 */
+  entranceCoun?: number;
+  /** 第一次补卡时间 */
+  firstCardPlaceTime?: string | null;
+  /** 性别 */
+  gender?: string;
+  /** 最晚离开图书馆的时间（精确到秒） */
+  latestTime?: string | null;
+  /** 专业 */
+  major?: string | null;
+  /** 在超市共消费了 元 */
+  marketAmount?: string;
+  /** 你最喜欢在X时间段进行充值,以2小时为间隔，依次类推 */
+  rechargeTimeSlot?: string;
+  /** 乘坐校车在校区之间往返 次 */
+  rideCoun?: number;
+  /** 获得奖学金 次 */
+  scholarshipCoun?: number;
+  /** 姓名 */
+  sname?: string;
+  /** 在馆一共 小时 */
+  stayTime?: string;
+  /** 超过了 %的同济人 */
+  stayTimePercentileRank?: string;
+  /** 开启了属于你的X年济忆时光（本研在同济的所有年头） */
+  stayYear?: number;
+  /** 学历:0->本;1->硕;2->博;9->师 */
+  stuLevel?: string;
+  /** 学工号 */
+  userId?: string;
+  /** 最喜欢的主题 */
+  bookCategory?: string | null;
+  /** 借了X本书 */
+  bookCoun?: number;
+  /** 借阅的第一本书 */
+  bookFirst?: string | null;
+  /** 食堂总消费 */
+  canteenAmount?: string;
+  /** 超过X%的同济人（用总消费算） */
+  canteenAmtPercentileRank?: string;
+  /** 在食堂累计消费X次 */
+  canteenCoun?: number;
+  /** 对X食堂情有独钟 */
+  canteenOften?: string | null;
+  /** 属于你X%的美味时光在此度过 */
+  canteenOftenPercentileRank?: string;
+  /** 补卡次数 */
+  cardPelaceCoun?: number;
+  /** 学院 */
+  college?: string;
+  /** 这一天一共花了￥ 元 */
+  consumMostAmount?: string;
+  /** 最大的一笔消费发生在 年 月 日 */
+  consumMostTime?: string | null;
+}
+
+export interface Get_postgraduate_completed_creditQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_completed_creditHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_postgraduate_completed_credit200Response {
+  code?: string;
+  data?: Get_postgraduate_completed_credit200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_completed_credit200ResponseDataItem {
+  /** 已修学分 */
+  completedCredit?: number;
+  /** 学号 */
+  userId?: string;
+}
+
+export interface Get_postgraduate_degree_course_creditQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_degree_course_creditHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_postgraduate_degree_course_credit200Response {
+  code?: string;
+  data?: Get_postgraduate_degree_course_credit200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_degree_course_credit200ResponseDataItem {
+  /** 学位课总学分 */
+  degreeCourseCredit?: number;
+  /** 学号 */
+  userId?: string;
+}
+
+export interface Get_postgraduate_degree_course_msQueryRequest {
+  /** 学号 */
+  userId: string;
+}
+
+export interface Get_postgraduate_degree_course_msHeaderRequest {
+  /** Bearer <service access_token> */
+  Authorization: string;
+}
+
+export interface Get_postgraduate_degree_course_ms200Response {
+  code?: string;
+  data?: Get_postgraduate_degree_course_ms200ResponseDataItem[];
+  msg?: string;
+}
+
+export interface Get_postgraduate_degree_course_ms200ResponseDataItem {
+  /** 学位课平均分 */
+  degreeCourseMS?: number | null;
+  /** 学号 */
+  userId?: string | null;
+}
+
+export interface Get_user_basic_infoQueryRequest {
+  /** 人员身份认证状态，0代表有效、1代表失效、-1代表全部不传参数默认为0 */
+  statusCode?: string;
+  /** 部门/学院代码不传代表全部获取 */
+  deptCode?: string;
+  /** 人员类型，types，不传代表全部获取 */
+  userTypeCode?: string;
+  /** 游标的起始位置，请把响应中的同字段传入，获取下一页，循环往复获取全量数据 */
+  sinceUserId?: string;
+  /** 创建时间，timestamp，seconds，获取该时间点之后生成的用户基本信息，请注意保证此参数在同一次增量拉取时不会变化 */
+  sinceCreateTime?: string;
+  /** 更新时间，timestamp，seconds，获取该时间点之后信息有更改的用户基本信息，请注意保证此参数在同一次增量拉取时不会变化 */
+  sinceUpdateTime?: string;
+  /** 学工号，最多每次传1000个，用英文逗号隔开 */
+  userId: string;
 }
 
 export interface Get_user_basic_infoHeaderRequest {
-  /** Bearer <token> */
+  /** Bearer <service access_token> */
   Authorization: string;
 }
 
-export interface Get_card_spending_flowQueryRequest {
-  /** 开始时间，yyyy-MM-dd HH:mm:ss */
-  tradeStartTime?: string;
-  /** 结束时间，yyyy-MM-dd HH:mm:ss */
-  tradeEndTime?: string;
+export interface Get_user_basic_info200Response {
+  code?: string;
+  data?: Get_user_basic_info200ResponseData;
+  msg?: string;
 }
 
-export interface Get_card_spending_flowHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
+export interface Get_user_basic_info200ResponseData {
+  count?: number;
+  list?: Get_user_basic_info200ResponseDataListItem[];
+  sincePid?: string;
+  sinceUserId?: string;
 }
 
-export interface Postgraduate_scoreQueryRequest {
+export interface Get_user_basic_info200ResponseDataListItem {
+  /** 创建时间 */
+  createTime?: string;
+  /** 部门/学院代码 */
+  deptCode?: string;
+  /** 部门/代码名称 */
+  deptName?: string;
+  /** 姓名 */
+  name?: string;
+  /** 状态，全部取自人员状态 */
+  statusCode?: string;
+  /** 状态名称 */
+  statusName?: string;
+  /** 更新时间 */
+  updateTime?: string;
   /** 学工号 */
   userId?: string;
-  /** 学期编号，为空默认为当前学期编号；通过”查询所有学期日历编号”获取历史学期编号；-1返回所有学期的成绩 */
-  calendarId?: string;
-}
-
-export interface Postgraduate_scoreHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_student_detailed_infoHeaderRequest {
-  /** Bearer <token> */
-  Authorization: string;
-}
-
-export interface Get_student_detailed_infoBodyRequest {
-  /** 学工号 */
-  userId: string;
+  /** 人员类型代码 */
+  userTypeCode?: string;
+  /** 人员类型名称 */
+  userTypeName?: string;
 }

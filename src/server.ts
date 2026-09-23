@@ -1,3 +1,4 @@
+import { normalizeInvocation } from "./transport/invocation-context";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
     registerTools,
@@ -17,6 +18,6 @@ export const createMcpServer = (
         name: SERVER_NAME,
         version: SERVER_VERSION,
     });
-    registerTools(server, context);
+    registerTools(server, { invocation: normalizeInvocation(context.invocation) });
     return server;
 };

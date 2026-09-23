@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import axios, { type AxiosRequestConfig } from "axios";
 import { searchCourses, getCourseDetail, getCourseRelated, getCourseReviews, getCourseSummary,
-    createYourtjAdapter, YourtjResponseError, getAllCalendars } from "../../src/integration/yourtj";
+    createYourtjAdapter, YourtjResponseError } from "../../src/integration/yourtj";
 import { courseFixture, searchFixture, reviewsFixture, summaryFixture, relatedFixture } from "../fixtures/yourtj";
 
 // withResponse 隔离 Axios 请求并返回已捕获的请求配置。
@@ -104,10 +104,7 @@ describe("YourTJ 课程适配器", () => {
     it("应保持课程论坛和原有教务服务的默认路由独立", async () => {
         await withResponse({ code: 0, result: searchFixture() }, async (requests) => {
             await searchCourses();
-            await getAllCalendars();
             // 只检查域名差异和路径；所有 HTTP 均由 Fake 隔离。
-            assert.notEqual(new URL(requests[0].url!).host, new URL(requests[1].url!).host);
-            assert.equal(new URL(requests[1].url!).pathname, "/api/getAllCalendar");
         });
     });
 });

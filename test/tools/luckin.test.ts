@@ -18,9 +18,9 @@ const { createMcpServer } = require("../../src/server") as typeof import("../../
 const { readLuckinCredential, saveLuckinCredential } = require("../../src/storage/luckin-credentials") as typeof import("../../src/storage/luckin-credentials");
 after(async () => { postgresModule.exports = postgres; await pool.end(); });
 const input = { mobile: "13800000000", validateCode: "012345" };
-const withClient = async (run: (client: Client) => Promise<void>, accessToken: string | undefined = "campus-test-token") => {
+const withClient = async (run: (client: Client) => Promise<void>, accessToken: string | undefined = "campus-test-token", userId: string = accessToken === "campus-b" ? "student-b" : "student-1") => {
     const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { accessToken } });
+    const server = createMcpServer({ invocation: { accessToken, userId } });
     const client = new Client({ name: "luckin-test", version: "1" });
     try { await server.connect(st); await client.connect(ct); await run(client); }
     finally { await client.close(); await server.close(); }
@@ -77,7 +77,7 @@ it("check 使用数据库 Token ping，更新成功验证时间，不泄露凭�
 });
 
 it("仅未绑定和 Token 无效返回 false；其他故障返回分类错误且不删除凭据", async () => {
-    const cases = { "no-user":"platform_unauthorized", "identity-error":"platform_unavailable", "no-token":null,
+    const cases = { "no-user":"platform_unauthorized", "no-token":null,
         unauthorized:null, forbidden:"upstream_forbidden", timeout:"upstream_timeout", "rate-limit":"rate_limited",
         "server-error":"upstream_unavailable", malformed:"upstream_unavailable" };
     for (const [scenario, expected] of Object.entries(cases)) {
@@ -104,7 +104,7 @@ it("仅未绑定和 Token 无效返回 false；其他故障返回分类错误且
                 assert.ok(payload.message);
             }
             assert.doesNotMatch(JSON.stringify(result), /private-secret|private-identity-error|fake-luckin-token/);
-        }));
+        }, "campus-test-token", scenario === "no-user" ? "" : scenario === "no-token" ? "another-user" : "student-1"));
     }
     assert.equal((await readLuckinCredential("student-1"))!.luckin_token, tokenData.luckyMcpToken);
 });
@@ -131,12 +131,12 @@ it("验证码失败不覆盖数据库，非法入参不调用上游", async () =
         const result = await client.callTool({ name: "luckin.auth.login", arguments: input });
         assert.equal(result.isError, true);
         assert.doesNotMatch(JSON.stringify(result), /private-secret|012345/);
-        assert.equal(requests.length, 2);
+        assert.equal(requests.length, 1);
         assert.equal((await readLuckinCredential("student-1"))!.luckin_token, tokenData.luckyMcpToken);
         for (const args of [{ mobile: "bad" }, { ...input, validateCode: 123456 }, { ...input, countryCode: "+86" }]) {
             assert.equal((await client.callTool({ name: "luckin.auth.login", arguments: args })).isError, true);
         }
-        assert.equal(requests.length, 2);
+        assert.equal(requests.length, 1);
     }));
 });
 
@@ -281,7 +281,7 @@ it("模拟闭环：check false → 短信 → 登录 → check true → 选品�
         assert.match(JSON.stringify(afterPayment), /A123/);
         assert.notEqual((await invoke("luckin.order.cancel", { orderId: "1234567890123456789" })).isError, true);
         assert.deepEqual(sequence, ["sms", "login", "token", "ping", ...businessCases.slice(0,6).map(row=>row[1]), "queryOrderDetailInfo", "queryOrderDetailInfo", "cancelOrder"]);
-    }));
+    }, "campus-test-token", "workflow-user"));
 });
 
 

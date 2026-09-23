@@ -17,7 +17,8 @@
     "test:watch": "node --no-experimental-strip-types --import tsx --test --watch test/*.test.ts test/**/*.test.ts",
     "test:typecheck": "tsc --noEmit -p tsconfig.test.json",
     "check": "pnpm test && pnpm test:typecheck && pnpm typecheck && pnpm build",
-    "cam": "cam"
+    "cam": "cam",
+    "docs:tools": "node --no-experimental-strip-types --import tsx scripts/export-tool-catalog.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.22.0",

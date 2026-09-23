@@ -5,7 +5,6 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createMcpServer, SERVER_NAME, SERVER_VERSION } from "../src/server";
 import { ANNUAL_BILL_TOOL_NAME } from "../src/tools/tongji/student/annual_bill";
-import { CALENDAR_LIST_TOOL_NAME } from "../src/tools/tongji/course/calendar_list";
 import { CARD_SPENDING_FLOW_TOOL_NAME } from "../src/tools/tongji/student/card_spending_flow";
 import { COMPETITION_PRIZE_TOOL_NAME } from "../src/tools/tongji/student/competition_prize";
 import { COURSE_CATALOG_TOOL_NAME } from "../src/tools/tongji/course/search";
@@ -25,7 +24,6 @@ import { STIPEND_INFO_TOOL_NAME } from "../src/tools/tongji/student/stipend-info
 import { ACCOMMODATION_INFO_TOOL_NAME } from "../src/tools/tongji/student/accommodation-info";
 import { COURSE_DETAIL_TOOL_NAME } from "../src/tools/tongji/course/course-detail";
 import { COURSE_RELATED_TOOL_NAME } from "../src/tools/tongji/course/course-related";
-import { USER_BASIC_INFO_TOOL_NAME } from "../src/tools/tongji/user/basic_info";
 
 // readJsonContent 读取 MCP 工具文本内容中的 JSON 结果。
 const readJsonContent = (result: {
@@ -104,7 +102,7 @@ describe("createMcpServer", () => {
         const [clientTransport, serverTransport] =
             InMemoryTransport.createLinkedPair();
         const server = createMcpServer({
-            invocation: { accessToken: "test-access-token" },
+            invocation: { accessToken: "test-access-token", userId: "internal-user-id" },
         });
         const client = new Client({ name: "test-client", version: "1.0.0" });
 
@@ -153,18 +151,6 @@ describe("createMcpServer", () => {
             assert.match(
                 JSON.stringify(courseCatalogTool.outputSchema),
                 /开课学期列表/,
-            );
-            const calendarListTool = toolList.tools.find(
-                (tool) => tool.name === CALENDAR_LIST_TOOL_NAME,
-            );
-            assert.ok(calendarListTool);
-            assert.match(
-                JSON.stringify(calendarListTool.outputSchema),
-                /选中的学期 ID/,
-            );
-            assert.match(
-                JSON.stringify(calendarListTool.outputSchema),
-                /下拉菜单展示/,
             );
             const studentTimetableTool = toolList.tools.find(
                 (tool) => tool.name === STUDENT_TIMETABLE_TOOL_NAME,
@@ -361,18 +347,6 @@ describe("createMcpServer", () => {
                 JSON.stringify(libraryAccessTool.outputSchema),
                 /图书馆出入口名称/,
             );
-            const userBasicInfoTool = toolList.tools.find(
-                (tool) => tool.name === USER_BASIC_INFO_TOOL_NAME,
-            );
-            assert.ok(userBasicInfoTool);
-            assert.match(
-                JSON.stringify(userBasicInfoTool.outputSchema),
-                /学籍或账号状态/,
-            );
-            assert.match(
-                JSON.stringify(userBasicInfoTool.outputSchema),
-                /人员或身份类型/,
-            );
         } finally {
             await server.close();
         }
@@ -445,7 +419,7 @@ describe("createMcpServer", () => {
             );
 
             assert.equal(authorization, "Bearer access-token-for-test");
-            assert.deepEqual(params, { year: "2024" });
+            assert.deepEqual(params, { userId: "internal-user-id",  year: "2024"  });
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
                 status: "ok",
@@ -505,7 +479,7 @@ describe("createMcpServer", () => {
                 { year: 2024 },
             );
 
-            assert.deepEqual(params, { year: "2024" });
+            assert.deepEqual(params, { userId: "internal-user-id",  year: "2024"  });
             assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
@@ -669,10 +643,10 @@ describe("createMcpServer", () => {
             );
 
             assert.equal(authorization, "Bearer access-token-for-test");
-            assert.deepEqual(params, {
+            assert.deepEqual(params, { userId: "internal-user-id",
                 tradeStartTime: "2025-05-01 00:00:00",
                 tradeEndTime: "2025-05-31 23:59:59",
-            });
+             });
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
                 status: "ok",
@@ -796,117 +770,6 @@ describe("createMcpServer", () => {
         }
     });
 
-    it("应返回裁剪后的学期列表", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: {
-                code: 200,
-                msg: "查询成功",
-                data: [
-                    {
-                        calendarId: 122,
-                        calendarName: "2026-2027学年第1学期",
-                    },
-                    {
-                        calendarId: 121,
-                        calendarName: "2025-2026学年第2学期",
-                    },
-                ],
-            },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callCalendarListTool({});
-
-            assert.equal(result.isError, undefined);
-            assert.deepEqual(readJsonContent(result), {
-                status: "ok",
-                data: {
-                    list: [
-                        {
-                            calendarId: 122,
-                            calendarName: "2026-2027学年第1学期",
-                        },
-                        {
-                            calendarId: 121,
-                            calendarName: "2025-2026学年第2学期",
-                        },
-                    ],
-                },
-                source: "YourTJ",
-            });
-            assert.doesNotMatch(
-                JSON.stringify(readJsonContent(result)),
-                /"code"|"msg"|查询成功/,
-            );
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将空学期列表标记为空结果", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { data: [] },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callCalendarListTool({});
-
-            assert.deepEqual(readJsonContent(result), {
-                status: "empty",
-                data: { list: [] },
-                source: "YourTJ",
-            });
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将学期列表业务错误响应归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { code: 500, message: "upstream business error" },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callCalendarListTool({});
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /YourTJ 学期列表服务返回异常/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将学期列表上游不可用错误归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async () => {
-            throw new Error("upstream unavailable");
-        };
-
-        try {
-            const result = await callCalendarListTool({});
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /YourTJ 学期列表服务暂时不可用/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
     it("应拒绝缺失 access token 的学生课表查询", async () => {
         const result = await callStudentTimetableTool({});
 
@@ -1000,7 +863,7 @@ describe("createMcpServer", () => {
             );
 
             assert.equal(authorization, "Bearer access-token-for-test");
-            assert.deepEqual(params, { calendarId: "120" });
+            assert.deepEqual(params, { userId: "internal-user-id",  calendarId: 120  });
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
                 status: "ok",
@@ -1051,7 +914,7 @@ describe("createMcpServer", () => {
         }
     });
 
-    it("应兼容数字学期编号并转为字符串传递给学生课表接口", async () => {
+    it("应兼容数字学期编号并按数字传递给学生课表接口", async () => {
         const previousAdapter = axios.defaults.adapter;
         let params: unknown;
         axios.defaults.adapter = async (config) => {
@@ -1071,7 +934,7 @@ describe("createMcpServer", () => {
                 { calendarId: 120 },
             );
 
-            assert.deepEqual(params, { calendarId: "120" });
+            assert.deepEqual(params, { userId: "internal-user-id",  calendarId: 120  });
             assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { list: [] },
@@ -1179,7 +1042,7 @@ describe("createMcpServer", () => {
         assert.match(readToolText(result), /未提供同济账号授权/);
     });
 
-    it("应从基础信息读取 userId、注入 token 并返回裁剪后的学生详细学籍信息", async () => {
+    it("应从 Agent 上下文读取 userId、注入服务 token 并返回裁剪后的学生详细学籍信息", async () => {
         const previousAdapter = axios.defaults.adapter;
         const authorizations: string[] = [];
         let detailedRequestData: unknown;
@@ -1307,7 +1170,6 @@ describe("createMcpServer", () => {
 
             assert.deepEqual(authorizations, [
                 "Bearer access-token-for-test",
-                "Bearer access-token-for-test",
             ]);
             assert.deepEqual(JSON.parse(String(detailedRequestData)), {
                 userId: "internal-user-id",
@@ -1403,7 +1265,7 @@ describe("createMcpServer", () => {
         }
     });
 
-    it("应将无法读取 userId 的基础信息响应归一为工具错误", async () => {
+    it("应将缺失 Agent userId归一为工具错误", async () => {
         const previousAdapter = axios.defaults.adapter;
         axios.defaults.adapter = async (config) => ({
             data: { data: { count: 0, list: [] } },
@@ -1415,11 +1277,11 @@ describe("createMcpServer", () => {
 
         try {
             const result = await callStudentDetailedInfoTool({
-                accessToken: "access-token-for-test",
+                accessToken: "access-token-for-test", userId: "",
             });
 
             assert.equal(result.isError, true);
-            assert.match(readToolText(result), /同济人员基础信息服务返回异常/);
+            assert.match(readToolText(result), /未提供同济账号授权/);
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -1609,7 +1471,7 @@ describe("createMcpServer", () => {
         }
     });
 
-    it("应兼容数字学期编号并转为字符串传递给本科成绩接口", async () => {
+    it("应兼容数字学期编号并按数字传递给本科成绩接口", async () => {
         const previousAdapter = axios.defaults.adapter;
         let params: unknown;
         axios.defaults.adapter = async (config) => {
@@ -1629,7 +1491,7 @@ describe("createMcpServer", () => {
                 { calendarId: 118 },
             );
 
-            assert.deepEqual(params, { calendarId: "118" });
+            assert.deepEqual(params, { userId: "internal-user-id",  calendarId: 118  });
             assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: {
@@ -1981,6 +1843,7 @@ describe("createMcpServer", () => {
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
+                pagination: { sinceWid: "1******0" },
                 status: "ok",
                 data: {
                     list: [
@@ -1995,7 +1858,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(readJsonContent(result)),
+                JSON.stringify((readJsonContent(result) as { data: unknown }).data),
                 /count|sinceWid|deptCode|ratingTerm|rewardLevel|updateTime|userId|wid|code|msg|000182|2025-04-02T00:00:00|0\*\*\*\*\*1|D8CAE0FC060574DEE040A8C0018420C5|1\*\*\*\*\*\*0|成功/,
             );
         } finally {
@@ -2019,6 +1882,7 @@ describe("createMcpServer", () => {
             });
 
             assert.deepEqual(readJsonContent(result), {
+                pagination: { sinceWid: "empty-since-wid" },
                 status: "empty",
                 data: { list: [] },
                 source: "Tongji Open Platform",
@@ -2141,6 +2005,7 @@ describe("createMcpServer", () => {
             assert.equal(authorization, "Bearer access-token-for-test");
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
+                pagination: { sinceWid: "0******3" },
                 status: "ok",
                 data: {
                     count: 3,
@@ -2159,7 +2024,7 @@ describe("createMcpServer", () => {
                 source: "Tongji Open Platform",
             });
             assert.doesNotMatch(
-                JSON.stringify(readJsonContent(result)),
+                JSON.stringify((readJsonContent(result) as { data: unknown }).data),
                 /amount|deptCode|userId|wid|sinceWid|3000|1\*\*\*\*\*4|test-wid-001|0\*\*\*\*\*\*3/,
             );
         } finally {
@@ -2337,11 +2202,12 @@ describe("createMcpServer", () => {
             );
 
             assert.equal(authorization, "Bearer access-token-for-test");
-            assert.deepEqual(params, {
-                portNum: "出门",
+            assert.deepEqual(params, { userId: "internal-user-id",
+                portNum: "2",
                 dataStartTime: "2026-07-01 00:00:00",
                 dataEndTime: "2026-07-31 23:59:59",
-            });
+
+                sinceCardRecordID: undefined, });
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
                 status: "ok",
@@ -2514,11 +2380,12 @@ describe("createMcpServer", () => {
             );
 
             assert.equal(authorization, "Bearer access-token-for-test");
-            assert.deepEqual(params, {
+            assert.deepEqual(params, { userId: "internal-user-id",
                 direction: "1",
-                visitStartTime: "2026-07-01 00:00:00",
-                visitEndTime: "2026-07-31 23:59:59",
-            });
+                dataStartTime: "2026-07-01 00:00:00",
+                dataEndTime: "2026-07-31 23:59:59",
+
+                sinceVisitNo: undefined, });
             assert.equal(result.isError, undefined);
             assert.deepEqual(readJsonContent(result), {
                 status: "ok",
@@ -2569,11 +2436,12 @@ describe("createMcpServer", () => {
                 { direction: 1 },
             );
 
-            assert.deepEqual(params, {
+            assert.deepEqual(params, { userId: "internal-user-id",
                 direction: "1",
-                visitStartTime: undefined,
-                visitEndTime: undefined,
-            });
+                dataStartTime: undefined,
+                dataEndTime: undefined,
+
+                sinceVisitNo: undefined, });
             assert.deepEqual(readJsonContent(result), {
                 status: "empty",
                 data: { userInfos: [] },
@@ -2669,166 +2537,6 @@ describe("createMcpServer", () => {
 
             assert.equal(result.isError, true);
             assert.match(readToolText(result), /图书馆通行服务暂时不可用/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应拒绝缺失 access token 的人员基础信息查询", async () => {
-        const result = await callUserBasicInfoTool({});
-
-        assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
-    });
-
-    it("应注入 token 并返回裁剪后的人员基础信息", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        let authorization: string | undefined;
-        axios.defaults.adapter = async (config) => {
-            authorization = config.headers?.Authorization as string | undefined;
-            return {
-                data: {
-                    code: "A00000",
-                    data: {
-                        count: 2,
-                        list: [
-                            {
-                                createTime: "2023-11-06 11:33:53",
-                                deptCode: "000033",
-                                deptName: "继续教育学院",
-                                name: "姚*",
-                                statusCode: "0",
-                                statusName: "有效",
-                                updateTime: "2024-06-26 16:09:48",
-                                userId: "21*****7",
-                                userTypeCode: "5",
-                                userTypeName: "继续教育本科",
-                            },
-                        ],
-                        sincePid: "1*****8",
-                    },
-                },
-                status: 200,
-                statusText: "OK",
-                headers: {},
-                config,
-            };
-        };
-
-        try {
-            const result = await callUserBasicInfoTool({
-                accessToken: "access-token-for-test",
-            });
-
-            assert.equal(authorization, "Bearer access-token-for-test");
-            assert.equal(result.isError, undefined);
-            assert.deepEqual(readJsonContent(result), {
-                status: "ok",
-                data: {
-                    list: [
-                        {
-                            deptName: "继续教育学院",
-                            name: "姚*",
-                            statusName: "有效",
-                            userTypeName: "继续教育本科",
-                        },
-                    ],
-                },
-                source: "Tongji Open Platform",
-            });
-            assert.doesNotMatch(
-                JSON.stringify(readJsonContent(result)),
-                /count|sincePid|createTime|deptCode|statusCode|updateTime|userId|userTypeCode|code|000033|2023-11-06 11:33:53|2024-06-26 16:09:48|21\*\*\*\*\*7|1\*\*\*\*\*8/,
-            );
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将空人员基础信息标记为空结果", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { data: { count: 0, list: [], sincePid: "empty-since-pid" } },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callUserBasicInfoTool({
-                accessToken: "access-token-for-test",
-            });
-
-            assert.deepEqual(readJsonContent(result), {
-                status: "empty",
-                data: { list: [] },
-                source: "Tongji Open Platform",
-            });
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将人员基础信息业务错误响应归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => ({
-            data: { code: 500, message: "upstream business error" },
-            status: 200,
-            statusText: "OK",
-            headers: {},
-            config,
-        });
-
-        try {
-            const result = await callUserBasicInfoTool({
-                accessToken: "access-token-for-test",
-            });
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /同济人员基础信息服务返回异常/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将人员基础信息上游未授权错误归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async (config) => {
-            throw new AxiosError("Unauthorized", undefined, config, undefined, {
-                data: {},
-                status: 401,
-                statusText: "Unauthorized",
-                headers: {},
-                config,
-            });
-        };
-
-        try {
-            const result = await callUserBasicInfoTool({
-                accessToken: "expired-token-for-test",
-            });
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /授权无效或已过期/);
-        } finally {
-            axios.defaults.adapter = previousAdapter;
-        }
-    });
-
-    it("应将人员基础信息上游不可用错误归一为工具错误", async () => {
-        const previousAdapter = axios.defaults.adapter;
-        axios.defaults.adapter = async () => {
-            throw new Error("upstream unavailable");
-        };
-
-        try {
-            const result = await callUserBasicInfoTool({
-                accessToken: "access-token-for-test",
-            });
-
-            assert.equal(result.isError, true);
-            assert.match(readToolText(result), /人员基础信息服务暂时不可用/);
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -3845,8 +3553,8 @@ it("应注入 token 并返回助学金数据", async () => {
         };
     };
     try {
-        const r = await callStipendInfoTool({ accessToken: "t" });
-        assert.equal(auth, "Bearer t");
+        const r = await callStipendInfoTool({ accessToken: "test-service-credential-opaque" });
+        assert.equal(auth, "Bearer test-service-credential-opaque");
         assert.equal(r.isError, undefined);
         assert.deepEqual(readJsonContent(r), {
             status: "ok",
@@ -3885,7 +3593,7 @@ it("应将空的助学金数据标记为空结果", async () => {
         config: c,
     });
     try {
-        const r = await callStipendInfoTool({ accessToken: "t" });
+        const r = await callStipendInfoTool({ accessToken: "test-service-credential-opaque" });
         assert.deepEqual(readJsonContent(r), {
             status: "empty",
             data: { records: [] },
@@ -3906,7 +3614,7 @@ it("应将上游业务错误响应归一为助学金工具错误", async () => {
         config: c,
     });
     try {
-        const r = await callStipendInfoTool({ accessToken: "t" });
+        const r = await callStipendInfoTool({ accessToken: "test-service-credential-opaque" });
         assert.equal(r.isError, true);
         assert.match(readToolText(r), /助学金服务返回异常/);
     } finally {
@@ -3940,7 +3648,7 @@ it("应将上游不可用错误归一为助学金工具错误", async () => {
         throw new Error("upstream unavailable");
     };
     try {
-        const r = await callStipendInfoTool({ accessToken: "t" });
+        const r = await callStipendInfoTool({ accessToken: "test-service-credential-opaque" });
         assert.equal(r.isError, true);
         assert.match(readToolText(r), /助学金服务暂时不可用/);
     } finally {
@@ -3993,8 +3701,8 @@ it("应注入 token 并返回住宿数据", async () => {
         };
     };
     try {
-        const r = await callAccommodationInfoTool({ accessToken: "t" });
-        assert.equal(auth, "Bearer t");
+        const r = await callAccommodationInfoTool({ accessToken: "test-service-credential-opaque" });
+        assert.equal(auth, "Bearer test-service-credential-opaque");
         assert.equal(r.isError, undefined);
         assert.deepEqual(readJsonContent(r), {
             status: "ok",
@@ -4033,7 +3741,7 @@ it("应将空的住宿数据标记为空结果", async () => {
         config: c,
     });
     try {
-        const r = await callAccommodationInfoTool({ accessToken: "t" });
+        const r = await callAccommodationInfoTool({ accessToken: "test-service-credential-opaque" });
         assert.deepEqual(readJsonContent(r), {
             status: "empty",
             data: { records: [] },
@@ -4054,7 +3762,7 @@ it("应将上游业务错误响应归一为住宿工具错误", async () => {
         config: c,
     });
     try {
-        const r = await callAccommodationInfoTool({ accessToken: "t" });
+        const r = await callAccommodationInfoTool({ accessToken: "test-service-credential-opaque" });
         assert.equal(r.isError, true);
         assert.match(readToolText(r), /住宿信息服务返回异常/);
     } finally {
@@ -4088,7 +3796,7 @@ it("应将上游不可用错误归一为住宿工具错误", async () => {
         throw new Error("unavailable");
     };
     try {
-        const r = await callAccommodationInfoTool({ accessToken: "t" });
+        const r = await callAccommodationInfoTool({ accessToken: "test-service-credential-opaque" });
         assert.equal(r.isError, true);
         assert.match(readToolText(r), /住宿信息服务暂时不可用/);
     } finally {
@@ -4099,7 +3807,7 @@ it("应将上游不可用错误归一为住宿工具错误", async () => {
 // --- 课程详情工具测试 ---
 
 const callScoreTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: { calendarId?: string | number } = {},
 ) => {
     return callTool(UNDERGRADUATE_SCORE_TOOL_NAME, invocation, args);
@@ -4107,7 +3815,7 @@ const callScoreTool = async (
 
 // callAnnualBillTool 通过内存传输调用年度统计账单查询工具。
 const callAnnualBillTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: { year: string | number },
 ) => {
     return callTool(ANNUAL_BILL_TOOL_NAME, invocation, args);
@@ -4115,7 +3823,7 @@ const callAnnualBillTool = async (
 
 // callCardSpendingFlowTool 通过内存传输调用一卡通消费流水查询工具。
 const callCardSpendingFlowTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: {
         tradeStartTime?: string;
         tradeEndTime?: string;
@@ -4124,14 +3832,9 @@ const callCardSpendingFlowTool = async (
     return callTool(CARD_SPENDING_FLOW_TOOL_NAME, invocation, args);
 };
 
-// callCalendarListTool 通过内存传输调用学期列表查询工具。
-const callCalendarListTool = async (invocation: { accessToken?: string }) => {
-    return callTool(CALENDAR_LIST_TOOL_NAME, invocation);
-};
-
 // callStudentTimetableTool 通过内存传输调用学生课表查询工具。
 const callStudentTimetableTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: { calendarId?: string | number } = {},
 ) => {
     return callTool(STUDENT_TIMETABLE_TOOL_NAME, invocation, args);
@@ -4139,33 +3842,33 @@ const callStudentTimetableTool = async (
 
 // callStudentDetailedInfoTool 通过内存传输调用学生详细学籍信息查询工具。
 const callStudentDetailedInfoTool = async (invocation: {
-    accessToken?: string;
+    accessToken?: string; userId?: string;
 }) => {
     return callTool(STUDENT_DETAILED_INFO_TOOL_NAME, invocation);
 };
 
 // callCompetitionPrizeTool 通过内存传输调用竞赛奖励查询工具。
 const callCompetitionPrizeTool = async (invocation: {
-    accessToken?: string;
+    accessToken?: string; userId?: string;
 }) => {
     return callTool(COMPETITION_PRIZE_TOOL_NAME, invocation);
 };
 
 // callHonoraryTitleTool 通过内存传输调用荣誉称号查询工具。
-const callHonoraryTitleTool = async (invocation: { accessToken?: string }) => {
+const callHonoraryTitleTool = async (invocation: { accessToken?: string; userId?: string }) => {
     return callTool(HONORARY_TITLE_TOOL_NAME, invocation);
 };
 
 // callScholarshipInfoTool 通过内存传输调用奖学金查询工具。
 const callScholarshipInfoTool = async (invocation: {
-    accessToken?: string;
+    accessToken?: string; userId?: string;
 }) => {
     return callTool(SCHOLARSHIP_INFO_TOOL_NAME, invocation);
 };
 
 // callSchoolAccessTool 通过内存传输调用校门通行查询工具。
 const callSchoolAccessTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: {
         portNum?: "入门" | "出门";
         dataStartTime?: string;
@@ -4177,7 +3880,7 @@ const callSchoolAccessTool = async (
 
 // callLibraryAccessTool 通过内存传输调用图书馆通行查询工具。
 const callLibraryAccessTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: {
         direction?: "1" | "2" | 1 | 2;
         visitStartTime?: string;
@@ -4187,20 +3890,15 @@ const callLibraryAccessTool = async (
     return callTool(LIBRARY_ACCESS_TOOL_NAME, invocation, args);
 };
 
-// callUserBasicInfoTool 通过内存传输调用人员基础信息查询工具。
-const callUserBasicInfoTool = async (invocation: { accessToken?: string }) => {
-    return callTool(USER_BASIC_INFO_TOOL_NAME, invocation);
-};
-
 // callTool 通过内存传输调用指定工具。
 const callTool = async (
     name: string,
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4223,12 +3921,12 @@ const readToolText = (result: ToolCallResult): string => {
 
 // callTermCalendarTool 通过内存传输调用学期日历查询工具。
 const callTermCalendarTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4245,12 +3943,12 @@ const callTermCalendarTool = async (
 
 // callCurrentTermCalendarTool 通过内存传输调用当前学期日历查询工具。
 const callCurrentTermCalendarTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4267,12 +3965,12 @@ const callCurrentTermCalendarTool = async (
 
 // callCetScoreTool 通过内存传输调用四六级成绩查询工具。
 const callCetScoreTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4289,12 +3987,12 @@ const callCetScoreTool = async (
 
 // callBookLendInfoTool 通过内存传输调用图书借阅信息查询工具。
 const callBookLendInfoTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4311,12 +4009,12 @@ const callBookLendInfoTool = async (
 
 // callStatisticsInfoTool 通过内存传输调用个人统计数据查询工具。
 const callStatisticsInfoTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4333,12 +4031,12 @@ const callStatisticsInfoTool = async (
 
 // callStipendInfoTool 通过内存传输调用助学金信息查询工具。
 const callStipendInfoTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "test-client", version: "1.0.0" });
     try {
         await server.connect(serverTransport);
@@ -4354,11 +4052,11 @@ const callStipendInfoTool = async (
 
 // callAccommodationInfoTool 通过内存传输调用住宿信息查询工具。
 const callAccommodationInfoTool = async (
-    invocation: { accessToken?: string },
+    invocation: { accessToken?: string; userId?: string },
     args: Record<string, unknown> = {},
 ) => {
     const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
     const client = new Client({ name: "t", version: "1" });
     try {
         await server.connect(st);

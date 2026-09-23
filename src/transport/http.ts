@@ -6,7 +6,7 @@ import {
 } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "../server";
-import { readToolInvocationContext } from "./invocation-context";
+import { readToolInvocationContext, validateServiceCredential } from "./invocation-context";
 
 const MCP_PATH = "/mcp";
 const HEALTH_PATH = "/health";
@@ -59,6 +59,10 @@ export const createHttpServer = () => {
         try {
             const invocation = readToolInvocationContext(request.headers);
             const body = await readJSONBody(request);
+            if (invocation.accessToken && !await validateServiceCredential(invocation)) {
+                sendJSON(response, 401, { error: "invalid service credential" });
+                return;
+            }
             const transport = new StreamableHTTPServerTransport({
                 sessionIdGenerator: undefined, // 无状态服务，不生成会话 ID。
             });

@@ -19,7 +19,7 @@ export const registerLuckinLoginTool = (server: McpServer, context: ToolRegistra
     }, async (input) => {
         let userId: string | null = null;
         try {
-            if (context.invocation.accessToken) userId = await readCurrentUserId(context.invocation.accessToken);
+            if (context.invocation.accessToken) userId = readCurrentUserId(context.invocation);
         } catch { /* 不可识别身份时不发起瑞幸登录 */ }
         if (!userId) return createErrorResult("unauthorized", "无法识别当前同济用户，请重新授权后再绑定瑞幸账号。");
         const currentUserId = userId;

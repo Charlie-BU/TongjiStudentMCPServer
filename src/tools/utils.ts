@@ -1,6 +1,7 @@
+import { TongjiBusinessError } from "../integration/tongji_openapi";
 import axios from "axios";
 import type { ToolErrorStatus } from "./types";
-import { getUserBasicInfo } from "../integration/tongji_openapi";
+import type { ToolInvocationContext } from "../transport/invocation-context";
 
 // unwrapResponseData 提取上游响应中的业务数据。
 export const unwrapResponseData = (response: unknown): unknown => {
@@ -83,6 +84,9 @@ export const createErrorResult = (
 
 // toErrorResult 将上游错误转换为 MCP 工具错误结果。
 export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
+    if (error instanceof TongjiBusinessError) {
+        return createErrorResult("upstream_unavailable", config.upstreamUnavailable.replace("暂时不可用", "返回异常"));
+    }
     if (isUnauthorizedUpstreamError(error)) {
         return createErrorResult(
             "unauthorized",
@@ -96,18 +100,28 @@ export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
     );
 };
 
-// readCurrentUserId 从人员基础信息中读取当前授权用户的 userId，仅供服务端调用上游接口使用。
-export const readCurrentUserId = async (accessToken: string): Promise<string | null> => {
-    const response = await getUserBasicInfo({ accessToken });
+// readCurrentUserId 从工具调用上下文读取当前用户 ID。
+export const readCurrentUserId = (invocation: ToolInvocationContext): string | null =>
+    invocation.accessToken && invocation.userId ? invocation.userId : null;
+
+// readCursor 从上游响应中读取分页游标。
+export const readCursor = (response: unknown, key: string): Record<string, string> => {
     const data = unwrapResponseData(response);
-    if (!isRecord(data) || !Array.isArray(data.list)) {
-        return null;
+    let value = (isRecord(data) ? data[key] : undefined) ?? (isRecord(response) ? response[key] : undefined);
+    if (value === undefined && isRecord(data) && Array.isArray(data.userInfos)) {
+        const last = data.userInfos.at(-1);
+        if (isRecord(last)) value = last[key === "sinceCardRecordID" ? "cardRecordID" : "visitNo"];
     }
-    for (const item of readArray(data.list)) {
-        const userId = readString(isRecord(item) ? item.userId : undefined);
-        if (userId) {
-            return userId;
-        }
+    return (typeof value === "string" || typeof value === "number") && String(value) ? { [key]: String(value) } : {};
+};
+
+// readPagination 从上游响应中读取分页信息。
+export const readPagination = (response: unknown): { pagination?: Record<string, string> } => {
+    const data = unwrapResponseData(response);
+    const pagination: Record<string, string> = {};
+    for (const key of ["sinceUserId", "sinceWid", "sincePid", "sinceUpdateTime", "sinceCreateTime", "sinceNum", "sinceId"]) {
+        const value = (isRecord(data) ? data[key] : undefined) ?? (isRecord(response) ? response[key] : undefined);
+        if (typeof value === "string" && value) pagination[key] = value;
     }
-    return null;
+    return Object.keys(pagination).length ? { pagination } : {};
 };

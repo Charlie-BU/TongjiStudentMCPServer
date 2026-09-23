@@ -124,3 +124,27 @@ it('应无需认证通过本地路由返回老师全部评价数组并校验输�
     assert.equal(post.headers.get('allow'), 'GET');
   });
 });
+
+import axios from 'axios';
+it('authenticates the service credential and forwards the human ID without accepting model overrides',async()=>{
+ const previous=axios.defaults.adapter;
+ const identities:string[]=[];
+ let reject=false;
+ axios.defaults.adapter=async config=>{
+  identities.push(config.params.userId);
+  assert.equal(config.headers.Authorization,'Bearer service-token');
+  return {data:{code:reject?'A99999':'A00000',data:config.params.userId==='00001'?{list:[{userId:'00001',name:'李建中',userTypeName:'教职工'}]}:[{balance:12}]},status:200,statusText:'OK',headers:{},config};
+ };
+ try{await withHttpServer(async baseURL=>{
+  const headers={'content-type':'application/json',accept:'application/json, text/event-stream','x-tongji-access-token':'service-token','x-tongji-user-id':'student-a'};
+  const body=JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'tongji.card.balance',arguments:{}}});
+  const result=await fetch(baseURL+'/mcp',{method:'POST',headers,body});
+  assert.equal(result.status,200);
+  assert.match(await result.text(),/12/);
+  assert.deepEqual(identities,['00001','student-a']);
+  reject=true;
+  const denied=await fetch(baseURL+'/mcp',{method:'POST',headers,body});
+  assert.equal(denied.status,401);
+  assert.deepEqual(identities,['00001','student-a','00001']);
+ });}finally{axios.defaults.adapter=previous;}
+});

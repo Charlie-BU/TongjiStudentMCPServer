@@ -3,7 +3,8 @@ export type ToolStatus =
     | "ok"
     | "empty"
     | "unauthorized"
-    | "upstream_unavailable";
+    | "upstream_unavailable"
+    | "invalid_arguments";
 
 // ToolErrorStatus 表示与 "ok"/"empty" 互斥的错误状态。
 export type ToolErrorStatus = Exclude<ToolStatus, "ok" | "empty">;

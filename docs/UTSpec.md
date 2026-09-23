@@ -90,9 +90,10 @@ describe('readToolInvocationContext', () => {
   it('应去除单个 access token 的首尾空白', () => {
     const context = readToolInvocationContext({
       'x-tongji-access-token': ' test-token ',
+      'x-tongji-user-id': ' student_001 ',
     });
 
-    assert.deepEqual(context, { accessToken: 'test-token' });
+    assert.deepEqual(context, { accessToken: 'test-token', userId: 'student_001' });
   });
 });
 ```
@@ -140,7 +141,7 @@ HTTP 测试必须在 `finally` 中关闭临时 server，避免端口泄漏和测
 
 ### 5.3 MCP Server 与 Tool 注册：`src/server.ts`、`src/tools/`
 
-对外验证 MCP 的可见行为，不测试 SDK 私有实现。当前 Tool Catalog 为空时，应验证服务身份信息与空目录的预期行为。未来每个 Tool 至少覆盖：
+对外验证 MCP 的可见行为，不测试 SDK 私有实现。当前目录包含 60 个工具；每个工具至少覆盖：
 
 - 工具名称、说明、输入 Schema 与输出结构的 MCP 契约；
 - 合法输入的正常结果；缺失、类型错误和边界输入的拒绝；
@@ -198,3 +199,7 @@ Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；
 ## 历史教师评价数据
 
 新增 `test/legacy-teacher-reviews.test.ts` 和 HTTP 路由用例，覆盖单表结构、姓名片段模糊匹配、跨课程、多教师、正文署名、空结果、输入校验以及无需账号的 MCP 调用。运行时测试已纳入 `pnpm check`。
+
+## 2026-09 同济 CAM 契约检查
+
+新增接口逐项契约与身份隔离见 test/tools/campus-contracts.test.ts；HTTP 服务凭据检查见 test/transport/http.test.ts。CAM 覆盖矩阵见 [API 迁移](TONGJI_API.md)。模型参数必须拒绝 userId/accessToken/Authorization；服务账号健康检查不得替代当前用户身份。

@@ -24,6 +24,7 @@ import {
 
 const config = {
     accessToken: "test-access-token",
+    userId: "internal-user-id",
     baseUrl: "https://api.example.test/",
     timeoutMs: 1_234,
 };
@@ -42,7 +43,7 @@ const requestCases: RequestCase[] = [
         name: "本科成绩",
         request: () => getUndergraduateScores(config, "120"),
         url: "/v1/rt/onetongji/undergraduate_score",
-        params: { calendarId: "120" },
+        params: { calendarId: 120 },
     },
     { name: "全部学期日历", request: () => getAllTermCalendars(config), url: "/v1/rt/onetongji/school_calendar_all_term_calendar" },
     { name: "当前学期日历", request: () => getCurrentTermCalendar(config), url: "/v1/rt/onetongji/school_calendar_current_term_calendar" },
@@ -56,7 +57,7 @@ const requestCases: RequestCase[] = [
     { name: "奖学金", request: () => getStudentScholarshipInfo(config), url: "/v2/dc/student_work_info/scholarship" },
     {
         name: "学生详细信息",
-        request: () => getAllStudentDetailedInfo(config, "internal-user-id"),
+        request: () => getAllStudentDetailedInfo(config),
         url: "/v1/rt/user/all_student",
         method: "post",
         data: { userId: "internal-user-id" },
@@ -78,19 +79,19 @@ const requestCases: RequestCase[] = [
         name: "学生课表",
         request: () => getStudentTimetable(config, "120"),
         url: "/v1/rt/onetongji/student_timetable",
-        params: { calendarId: "120" },
+        params: { calendarId: 120 },
     },
     {
         name: "校门通行",
         request: () => getSchoolAccess(config, "出门", "2026-07-01 00:00:00", "2026-07-31 23:59:59"),
-        url: "/v1/dc/door/school_access_control",
-        params: { portNum: "出门", dataStartTime: "2026-07-01 00:00:00", dataEndTime: "2026-07-31 23:59:59" },
+        url: "/v1/rt/door/campus_access_control",
+        params: { portNum: "2", dataStartTime: "2026-07-01 00:00:00", dataEndTime: "2026-07-31 23:59:59" },
     },
     {
         name: "图书馆通行",
         request: () => getLibraryAccess(config, "1", "2026-07-01 00:00:00", "2026-07-31 23:59:59"),
-        url: "/v1/dc/lib/lib_access_control",
-        params: { direction: "1", visitStartTime: "2026-07-01 00:00:00", visitEndTime: "2026-07-31 23:59:59" },
+        url: "/v1/rt/lib/lib_access",
+        params: { direction: "1", dataStartTime: "2026-07-01 00:00:00", dataEndTime: "2026-07-31 23:59:59" },
     },
 ];
 
@@ -108,7 +109,9 @@ describe("Tongji OpenAPI integration", () => {
                 await testCase.request();
                 assert.equal(capturedConfig?.url, `${config.baseUrl.slice(0, -1)}${testCase.url}`);
                 assert.equal(capturedConfig?.method, testCase.method ?? "get");
-                assert.deepEqual(capturedConfig?.params, testCase.params);
+                const calendarOnly = ["全部学期日历", "当前学期日历"].includes(testCase.name);
+                const params = Object.fromEntries(Object.entries(capturedConfig?.params ?? {}).filter(([,v]) => v !== undefined));
+                assert.deepEqual(params, testCase.method === "post" || calendarOnly ? (testCase.params ?? {}) : { ...testCase.params as object, userId: config.userId });
                 assert.deepEqual(testCase.data === undefined ? capturedConfig?.data : JSON.parse(String(capturedConfig?.data)), testCase.data);
                 assert.equal(capturedConfig?.headers?.Authorization, `Bearer ${config.accessToken}`);
                 assert.equal(capturedConfig?.timeout, config.timeoutMs);

@@ -12,7 +12,7 @@
 | `tongji.course.reviews` | `CourseReviewListGET` | `courseId`、可选 `offeringId`、`cursor`、`pageSize=20` |
 | `tongji.course.summary` | `CourseSummaryGetGET` | `courseId`、固定 `check=true` |
 
-现有三个课程工具保留名称，输入和输出已整体切换到新契约，不保留旧参数别名。`tongji.course.calendar_list` 使用原有教务契约；专业和年级查询工具已移除。
+现有三个课程工具保留名称，输入和输出已整体切换到新契约，不保留旧参数别名。
 
 ## 客户端迁移
 

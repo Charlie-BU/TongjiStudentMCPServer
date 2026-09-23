@@ -4,14 +4,13 @@
 `TongjiStudentAgent` 提供受控的校园工具；它不保存对话历史、不调用模型、也不决定
 Agent 的工具选择或回答内容。
 
-当前仓库是**可启动且已接入首个业务工具的 MCP 服务**。当前已注册
-`tongji.student.score`，用于查询本科生指定学期的成绩。进程入口不会直接调用同济开放平台；手写适配器位于 `src/integration/<来源>/index.ts`，CAM 自动生成的客户端位于 `src/integration/cam_auto_generated/`，不能直接作为生产适配器使用。
+当前注册 **60 个工具**：43 个同济校园工具、6 个公开课程/历史评价工具、11 个瑞幸工具。接口覆盖矩阵、身份协议和兼容变化见 [同济 API 迁移](docs/TONGJI_API.md)。CAM 文件保持自动生成。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
 
-瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；`luckin.auth.login` 和 `luckin.auth.check` 使用同济请求凭据识别用户。
+瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；`luckin.auth.login` 和 `luckin.auth.check` 使用 Agent 传入的 userId 识别用户。
 CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界
@@ -25,7 +24,7 @@ Gateway
 
 - 传输：MCP Streamable HTTP，统一端点 `POST /mcp`。
 - 状态：服务使用无 MCP 会话业务状态的模式；Agent 保持会话状态，因此 MCP 服务可水平扩容。
-- 身份：未来仅接受 Agent 签发且 MCP 验证过的短期下游凭证。工具参数中的学号、用户 ID、学院或角色不可信。
+- 身份：接收 Agent 的 `X-Tongji-Access-Token`（客户端模式服务凭据）和 `X-Tongji-User-Id`（本轮用户身份）；HTTP 入口检查服务凭据，两项不完整时按匿名请求处理。工具入参不得提供身份或凭据。
 - 工具：按任务暴露领域工具，不把开放平台接口逐一暴露为工具。
 - 数据：上游响应必须在服务端归一、裁剪与脱敏后再作为 MCP Tool Result 返回。
 
@@ -40,11 +39,16 @@ src/
 │   └── tongji/                # tongji.* 工具命名空间
 │       ├── student/           # tongji.student.*（如 score/、cet-score/）
 │       ├── course/            # tongji.course.*
+│       ├── postgraduate/      # tongji.postgraduate.*
+│       ├── card/              # tongji.card.*
+│       ├── research/          # tongji.research.*
+│       ├── teacher/           # tongji.teacher.*
+│       ├── campus-tool.ts     # 同济工具的公共注册、校验和响应处理
 │       └── user/              # tongji.user.*
 ├── integration/
 │   ├── cam_auto_generated/    # CAM 自动生成的上游 API 客户端
 │   ├── luckin_coffee/         # 瑞幸 contract.ts、auth.ts、mcp.ts
-│   ├── tongji_openapi/        # 同济开放平台适配器 index.ts
+│   ├── tongji_openapi/        # adapter.ts 统一认证与请求配置，methods.ts 集中上游方法
 │   ├── tongji_poby/           # 济星云适配器
 │   └── yourtj/                # YourTJ 适配器 index.ts 与 contract.ts
 ├── privacy/                   # 后续字段白名单与脱敏策略
@@ -80,7 +84,7 @@ PORT=3100 pnpm start
 curl http://localhost:3000/health
 ```
 
-MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。当前提供的工具为 `tongji.student.score`，用于查询本科生指定学期的成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
+MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。完整工具见 [目录](docs/TOOLS.md)。例如 `tongji.student.score` 查询本科生成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
 
 `/health` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
 
@@ -104,14 +108,15 @@ http://localhost:3000/mcp
 
 ```json
 {
-  "calendarId": "2025-2026-1"
+  "calendarId": 120
 }
 ```
 
 调用实际同济开放平台接口时，需要在 Inspector 的自定义请求头中增加：
 
 ```text
-X-Tongji-Access-Token: <access_token>
+X-Tongji-Access-Token: <service_access_token>
+X-Tongji-User-Id: <本轮用户 userId>
 ```
 
 未提供 token 时，工具会返回 `unauthorized`；授权失效或上游服务不可用时，也会在工具
@@ -122,10 +127,11 @@ X-Tongji-Access-Token: <access_token>
 主仓在每次需要调用同济 OpenAPI 的 MCP Tool 时，必须在 MCP HTTP 请求中传入：
 
 ```text
-X-Tongji-Access-Token: <access_token>
+X-Tongji-Access-Token: <service_access_token>
+X-Tongji-User-Id: <本轮用户 userId>
 ```
 
-本服务将该值放入仅供服务端使用的 Tool 调用上下文，供后续 OpenAPI 适配层传递给上游接口。服务不对 token 进行独立鉴权或持久化，且 token 不得出现在 Tool Schema、Tool Result 或日志中。
+本服务验证服务凭据后，将两项放入本次请求的独立 Tool 上下文。个人 API 的 userId 由适配器最后写入，模型参数不能覆盖。瑞幸凭据也按该 userId 查询。服务 token 不持久化，不得出现在 Tool 参数、结果或日志中。
 
 可用校验命令：
 

@@ -115,11 +115,3 @@ export const getMajorsByGrade = async (
     return adapter.FindMajorByGradePOST({ calendarId, grade });
 };
 
-// getAllCalendars 获取所有学期列表。
-export const getAllCalendars = async (
-    config: YourtjAdapterConfig = {},
-): Promise<unknown> => {
-    const service = createYourtjAdapter(config);
-    return service.GetAllCalendarGET();
-};
-

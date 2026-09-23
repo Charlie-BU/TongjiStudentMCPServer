@@ -34,7 +34,7 @@ export const registerLuckinBusinessTool = <S extends z.AnyZodObject>(
         let userId: string | null;
         try {
             if (!context.invocation.accessToken) return createErrorResult("unauthorized", "无法识别当前同济用户，请先完成同济授权。");
-            userId = await readCurrentUserId(context.invocation.accessToken);
+            userId = readCurrentUserId(context.invocation);
             if (!userId) return createErrorResult("unauthorized", "无法识别当前同济用户，请先完成同济授权。");
         } catch { return createErrorResult("upstream_unavailable", "暂时无法验证当前同济用户，请稍后重试。"); }
         let invoked = false;

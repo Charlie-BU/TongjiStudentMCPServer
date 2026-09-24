@@ -18,13 +18,11 @@
 | GitLab 变量 | 用途 |
 | --- | --- |
 | `POSTGRES_DSN_SIT` | SIT 服务数据库连接串 |
-| `POSTGRES_DSN_PROD` | PROD 服务数据库连接串，单独配置 Railway 生产库 |
+| `POSTGRES_DSN_PROD` | PROD 服务数据库连接串 |
 | `DEVIP` / `PRODIP` | CI SSH 连接目标 |
 | `USER` / `PASSWORD` | CI SSH 用户和密码 |
 | `PORT` | CI SSH 端口，例如 10022；不是服务端口 |
-| `MCP_HOST_PORT` | CI 配置的宿主机 HTTP 端口，默认 3100，可按环境覆盖 |
-| `SSH_KNOWN_HOSTS` | 可选 File 变量，保存经核验的 SSH 主机公钥；未配置时本次作业首次信任新主机 |
-| `CI_REGISTRY*` | GitLab 提供的镜像库地址和认证变量 |
+| `CI_REGISTRY*` | GitLab 提供的镜像库地址和认证变量，无需手动配置 |
 
 **数据库变量是服务配置，其余变量用于 CI 部署，不注入服务。**
 CI 根据环境将 `POSTGRES_DSN_SIT` 或 `POSTGRES_DSN_PROD` 映射为容器的 `POSTGRES_DSN`，
@@ -54,7 +52,7 @@ CI 拉取镜像后保留旧容器，启动新容器并等待健康检查。新�
 
 1. Runner 可访问 Docker daemon、GitLab Registry 和依赖下载地址，沿用 chatapp 的 Docker Runner 配置；如需 tag，配置与现有 Runner 一致的 tag。
 2. 目标服务器安装 Docker，SSH 用户可以无交互执行 Docker；不再要求安装 Compose。
-3. 服务器到数据库与业务上游的网络可用。开放 3100 给调用方；若 SIT/PROD 共用同一主机，配置不同 `MCP_HOST_PORT`。
+3. 服务器到数据库与业务上游的网络可用。宿主机和容器端口均固定为 3100（`3100:3100`）；确保端口空闲并允许调用方访问。SIT/PROD 应部署在不同主机，避免端口冲突。
 4. PostgreSQL 必须已具备 `sql/user_luckin_credentials.sql` 定义的表及运行账号的 SELECT / INSERT / UPDATE 权限。
    **流水线和服务均不会自动创建 PostgreSQL 表。** `/health` 只检查 HTTP 存活，不验证数据库。
 

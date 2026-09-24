@@ -7,9 +7,6 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
     - when: never
 
-variables:
-  MCP_HOST_PORT: "3100"
-
 build:
   stage: build
   image: docker:27-cli
@@ -38,10 +35,8 @@ build:
       for value in "$host" "$USER" "$MCP_IMAGE" "$CI_REGISTRY" "$CI_REGISTRY_USER"; do
         case "$value" in ''|-*|*[!a-zA-Z0-9_./:@+-]*) echo 'Invalid deployment argument' >&2; exit 1 ;; esac
       done
-      for value in "$PORT" "$MCP_HOST_PORT"; do
-        case "$value" in ''|*[!0-9]*) echo 'Invalid port' >&2; exit 1 ;; esac
-        [ "$value" -ge 1 ] && [ "$value" -le 65535 ] || exit 1
-      done
+      case "$PORT" in ''|*[!0-9]*) echo 'Invalid SSH port' >&2; exit 1 ;; esac
+      [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ] || exit 1
       case "$dsn" in postgres://*|postgresql://*) ;; *) echo 'Invalid PostgreSQL DSN' >&2; exit 1 ;; esac
       # Docker env-file is literal (no dollar expansion); reject multiline values.
       [ "$(printf '%s' "$dsn" | tr -d '\r\n')" = "$dsn" ] || exit 1
@@ -58,7 +53,6 @@ build:
         rm -rf "$bundle"
       }
       trap cleanup EXIT
-      if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then cp "$SSH_KNOWN_HOSTS" "$bundle/known_hosts"; fi
       # Only the selected DSN enters the service, under its existing POSTGRES_DSN name.
       printf 'POSTGRES_DSN=%s\n' "$dsn" > "$bundle/runtime.env"
       printf '%s' "$CI_REGISTRY_PASSWORD" > "$bundle/registry-password"
@@ -68,14 +62,13 @@ build:
       remote_tmp=$candidate
       tar -C "$bundle" -cf "$bundle/payload.tar" runtime.env registry-password
       remote "tar -xf - -C '$remote_tmp'" < "$bundle/payload.tar"
-      remote "sh -s -- '$MCP_IMAGE' '$container' '$MCP_HOST_PORT' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER'" <<'REMOTE'
+      remote "sh -s -- '$MCP_IMAGE' '$container' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER'" <<'REMOTE'
       set -eu
       image=$1
       container=$2
-      http_port=$3
-      temp=$4
-      registry=$5
-      registry_user=$6
+      temp=$3
+      registry=$4
+      registry_user=$5
       export DOCKER_CONFIG="$temp/docker"
       trap 'rm -rf "$temp"' EXIT
       docker login --username "$registry_user" --password-stdin "$registry" < "$temp/registry-password"
@@ -95,7 +88,7 @@ build:
       healthy=false
       if docker run -d --name "$container" --restart unless-stopped --init \
         --env-file "$temp/runtime.env" -e PORT=3100 \
-        -p "$http_port:3100" -v "$container-data:/app/data" \
+        -p 3100:3100 -v "$container-data:/app/data" \
         --security-opt no-new-privileges:true --cap-drop ALL \
         --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 "$image"; then
         attempt=0

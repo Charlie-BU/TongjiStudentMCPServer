@@ -4,6 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { describe, it } from 'node:test';
 import { createHttpServer } from '../../src/transport/http';
 
+// 固定 IPv4 loopback，避免容器中 localhost 的监听与连接解析到不同地址族。
 // withHttpServer 在临时 loopback 端口启动并关闭 HTTP Server。
 const withHttpServer = async (
   operation: (baseURL: string) => Promise<void>,
@@ -12,12 +13,12 @@ const withHttpServer = async (
 
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
-    server.listen(0, 'localhost', resolve);
+    server.listen(0, '127.0.0.1', resolve);
   });
 
   const address = server.address() as AddressInfo;
   try {
-    await operation(`http://localhost:${address.port}`);
+    await operation(`http://127.0.0.1:${address.port}`);
   } finally {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error === undefined ? resolve() : reject(error)));

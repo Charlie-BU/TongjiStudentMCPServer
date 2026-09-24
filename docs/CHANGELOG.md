@@ -1,3 +1,55 @@
+## CHANGELOG - 2026-09-24 17:15 - 增加 GitLab 容器部署并分离种子库目录
+
+### 撰写时间
+
+- 2026-09-24 17:15（Asia/Shanghai）
+
+### Base Commit
+
+- `85d2e798dbdc0c044ef167ddbbc8f3a5d9fd5425`（沿用历史记录格式，取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`5867acd607f3a5d51d0f026dcbe8774fd7234914`）比较。此前已提交的工具命名及人群分类不作为本次新增功能。
+
+### 背景与改动目标
+
+为 MCP 提供 GitLab 镜像构建与 SIT/PROD 发布流程，将只读教师评价种子库和持久化运行库分开，避免容器挂载遮蔽种子。运行数据库继续使用原有 `data/mcp.sqlite` 路径，默认服务端口统一为 3100。
+
+### 改动概览
+
+- 新增多阶段 Dockerfile，使用 Node 22；构建阶段安装锁定依赖并执行 `pnpm check`，随后裁剪开发依赖。运行阶段以 node 用户启动，配置 HTTP 健康检查。
+- 新增 GitLab CI：仅 main 分支 push 创建流水线，构建并推送带提交 SHA 和流水线编号的镜像；自动部署 SIT，PROD 手动部署。同一环境通过 resource_group 串行发布。
+- 部署通过 SSH 拉取并替换容器，保留旧容器直到新容器健康；新容器启动或健康检查失败时尝试恢复旧容器。命名数据卷独立于容器保留。
+- 按环境将 `POSTGRES_DSN_SIT` / `POSTGRES_DSN_PROD` 映射为容器的 `POSTGRES_DSN`，通过临时文件传送；SSH 的 PORT 与应用端口分离，容器固定监听 3100。
+- 将教师评价种子库从 `data/teacher-reviews.seed.sqlite` 移至 `seed/teacher-reviews.seed.sqlite`。运行库仍为 `data/mcp.sqlite`，Docker 挂载 `/app/data`，镜像种子位于 `/app/seed`。
+- 默认 HTTP 端口从 3000 改为 3100，同步端口测试、配置示例、请求示例与 README。
+- 新增 Docker 构建上下文排除规则，更新 Git 忽略规则、GitLab 部署说明及教师评价存储文档。
+
+### 关键链路解析（含上下游）
+
+- 构建：Runner 需可访问 Docker daemon、Registry 和依赖源。镜像内完成测试、类型检查和编译，运行镜像不携带本地运行库或环境密钥文件。
+- 发布：CI 根据 sit/prod 选择主机及数据库连接串；拉取镜像后停止并重命名旧容器，启动新容器并轮询 Docker 健康状态。成功后移除旧容器，失败则清理新容器并恢复旧容器；残留备份容器时停止发布，等待人工处理。
+- 数据：沿用空评价表导入全部种子的初始化逻辑，已有非空评价表保持不变。种子库不在数据卷挂载目录内。路径调整修正后，原 `data/mcp.sqlite` 仍被读取；首次转为 Docker 部署时，应确保所需既有数据已放入目标命名卷。
+- PostgreSQL：本次不建表、不迁移凭据，发布前需具备既有 SQL 定义的表和账号权限。HTTP 健康检查只检查服务存活，不检查数据库或业务上游。
+
+### 改动结果与业务影响
+
+- 默认访问地址改为 `http://<host>:3100/mcp`，调用方需同步配置端口；显式 PORT 配置仍受现有范围校验。
+- 提供 SIT 自动发布与 PROD 手动发布流程，数据卷按环境隔离。容器切换会中断在途请求，不提供零停机保证。
+- 部署须携带新的 `seed/` 目录；运行数据保持在 `data/`。本次未更改工具集合或业务接口契约。
+
+### 风险与待办
+
+- 审阅阶段全量离线测试 242 项、源码与测试 TypeScript 类型检查通过。统一回 `data/` 后重跑存储与历史评价相关 8 项测试，全部通过；最终暂存区和工作区差异检查通过，无 `runtime-data` 引用残留。
+- 当前环境没有 Docker，未验证实际镜像构建、GitLab Runner、SSH 发布、健康检查切换及故障回滚；这些仍需在 SIT 验收。
+- 未访问真实校园或瑞幸接口，未验证生产数据库连通性。部署主机 Docker 权限、端口、Registry 凭据及数据库表需按部署文档准备。
+- 本次仅生成 changelog，沿用本轮已完成的验证结果，未重复执行测试。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(deploy): add GitLab Docker pipeline and separate review seed storage`
+
 ## CHANGELOG - 2026-09-23 19:54 - 按使用人群整理校园工具命名并移除消费汇总
 
 ### 撰写时间

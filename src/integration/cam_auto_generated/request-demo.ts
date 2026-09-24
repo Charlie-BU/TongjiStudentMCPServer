@@ -4,7 +4,7 @@
 import axios, { type AxiosRequestConfig } from 'axios'; // Install axios if you haven't
 import Tongji_openapiService from './tongji_openapi/index';
 
-const BASE_URL = 'http://localhost:3000'; // Change to the actual base URL
+const BASE_URL = 'http://localhost:3100'; // Change to the actual base URL
 
 export const demoServiceForAxios =
   new Tongji_openapiService<AxiosRequestConfig>({

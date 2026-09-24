@@ -1,0 +1,12 @@
+.git
+.codex
+.env
+.env.*
+node_modules
+dist
+coverage
+*.log
+.DS_Store
+data/mcp.sqlite*
+
+data/

@@ -1,0 +1,135 @@
+stages:
+  - build
+  - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+    - when: never
+
+variables:
+  MCP_HOST_PORT: "3100"
+
+build:
+  stage: build
+  image: docker:27-cli
+  script:
+    - export MCP_IMAGE="$CI_REGISTRY_IMAGE/mcp:$CI_COMMIT_SHA-$CI_PIPELINE_IID"
+    - docker build --pull -t "$MCP_IMAGE" .
+    - printf '%s' "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker push "$MCP_IMAGE"
+
+.deploy:
+  stage: deploy
+  image: alpine:3.22
+  before_script:
+    - apk add --no-cache openssh-client sshpass
+  script:
+    - |
+      set -eu
+      case "$CI_ENVIRONMENT_NAME" in
+        sit) host=${DEVIP:?DEVIP is required}; dsn=${POSTGRES_DSN_SIT:?POSTGRES_DSN_SIT is required} ;;
+        prod) host=${PRODIP:?PRODIP is required}; dsn=${POSTGRES_DSN_PROD:?POSTGRES_DSN_PROD is required} ;;
+        *) exit 1 ;;
+      esac
+      : "${USER:?SSH USER is required}" "${PASSWORD:?SSH PASSWORD is required}" "${PORT:?SSH PORT is required}"
+      MCP_IMAGE="$CI_REGISTRY_IMAGE/mcp:$CI_COMMIT_SHA-$CI_PIPELINE_IID"
+      container="tongji-student-mcp-$CI_ENVIRONMENT_NAME"
+      for value in "$host" "$USER" "$MCP_IMAGE" "$CI_REGISTRY" "$CI_REGISTRY_USER"; do
+        case "$value" in ''|-*|*[!a-zA-Z0-9_./:@+-]*) echo 'Invalid deployment argument' >&2; exit 1 ;; esac
+      done
+      for value in "$PORT" "$MCP_HOST_PORT"; do
+        case "$value" in ''|*[!0-9]*) echo 'Invalid port' >&2; exit 1 ;; esac
+        [ "$value" -ge 1 ] && [ "$value" -le 65535 ] || exit 1
+      done
+      case "$dsn" in postgres://*|postgresql://*) ;; *) echo 'Invalid PostgreSQL DSN' >&2; exit 1 ;; esac
+      # Docker env-file is literal (no dollar expansion); reject multiline values.
+      [ "$(printf '%s' "$dsn" | tr -d '\r\n')" = "$dsn" ] || exit 1
+      umask 077
+      bundle=$(mktemp -d)
+      remote_tmp=''
+      export SSHPASS="$PASSWORD"
+      remote() {
+        sshpass -e ssh -p "$PORT" -o ConnectTimeout=15 \
+          -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=$bundle/known_hosts" "$USER@$host" "$@"
+      }
+      cleanup() {
+        if [ -n "$remote_tmp" ]; then remote "rm -rf '$remote_tmp'" || true; fi
+        rm -rf "$bundle"
+      }
+      trap cleanup EXIT
+      if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then cp "$SSH_KNOWN_HOSTS" "$bundle/known_hosts"; fi
+      # Only the selected DSN enters the service, under its existing POSTGRES_DSN name.
+      printf 'POSTGRES_DSN=%s\n' "$dsn" > "$bundle/runtime.env"
+      printf '%s' "$CI_REGISTRY_PASSWORD" > "$bundle/registry-password"
+      candidate=$(remote 'umask 077; mktemp -d /tmp/tongji-mcp.XXXXXXXX')
+      case "$candidate" in /tmp/tongji-mcp.*) ;; *) exit 1 ;; esac
+      case "$candidate" in *[!a-zA-Z0-9_./-]*) exit 1 ;; esac
+      remote_tmp=$candidate
+      tar -C "$bundle" -cf "$bundle/payload.tar" runtime.env registry-password
+      remote "tar -xf - -C '$remote_tmp'" < "$bundle/payload.tar"
+      remote "sh -s -- '$MCP_IMAGE' '$container' '$MCP_HOST_PORT' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER'" <<'REMOTE'
+      set -eu
+      image=$1
+      container=$2
+      http_port=$3
+      temp=$4
+      registry=$5
+      registry_user=$6
+      export DOCKER_CONFIG="$temp/docker"
+      trap 'rm -rf "$temp"' EXIT
+      docker login --username "$registry_user" --password-stdin "$registry" < "$temp/registry-password"
+      docker pull "$image"
+      # Keep the previous container until the replacement passes its health check.
+      # A leftover backup indicates an interrupted deployment; preserve it for recovery.
+      if docker container inspect "$container-previous" >/dev/null 2>&1; then
+        echo 'Previous backup container exists; restore or remove it before retrying.' >&2
+        exit 1
+      fi
+      previous=false
+      if docker container inspect "$container" >/dev/null 2>&1; then
+        docker stop --time 45 "$container"
+        docker rename "$container" "$container-previous"
+        previous=true
+      fi
+      healthy=false
+      if docker run -d --name "$container" --restart unless-stopped --init \
+        --env-file "$temp/runtime.env" -e PORT=3100 \
+        -p "$http_port:3100" -v "$container-data:/app/data" \
+        --security-opt no-new-privileges:true --cap-drop ALL \
+        --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 "$image"; then
+        attempt=0
+        while [ "$attempt" -lt 30 ]; do
+          status=$(docker inspect --format '{{.State.Health.Status}}' "$container" 2>/dev/null || true)
+          case "$status" in healthy) healthy=true; break ;; unhealthy) break ;; esac
+          attempt=$((attempt + 1))
+          sleep 3
+        done
+      fi
+      if [ "$healthy" = true ]; then
+        if [ "$previous" = true ]; then docker rm "$container-previous"; fi
+        echo 'MCP deployment healthy.'
+      else
+        docker rm -f "$container" >/dev/null 2>&1 || true
+        if [ "$previous" = true ]; then
+          docker rename "$container-previous" "$container"
+          docker start "$container"
+        fi
+        echo 'MCP deployment failed; previous container restored if available.' >&2
+        exit 1
+      fi
+      REMOTE
+
+deploy_sit:
+  extends: .deploy
+  environment:
+    name: sit
+  resource_group: mcp-sit
+
+deploy_prod:
+  extends: .deploy
+  environment:
+    name: prod
+  resource_group: mcp-prod
+  when: manual
+  allow_failure: false

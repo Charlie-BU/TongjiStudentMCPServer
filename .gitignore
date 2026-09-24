@@ -44,9 +44,11 @@ log/
 # Environment variables
 .env
 .env.test
+.env.*
+!.env.example
 node_modules/
 dist/
 npm-debug.log*
 
-# 本地教师评价运行库及 WAL/SHM 不进入版本管理
-/data/mcp.sqlite*
+# 本地数据库及 WAL/SHM 不进入版本管理
+data/

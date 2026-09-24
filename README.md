@@ -66,11 +66,11 @@ pnpm install
 pnpm dev
 ```
 
-当前服务直接读取进程环境变量，不加载 `.env` 文件：
+服务优先使用进程环境变量；存储模块也会加载仓库根目录的 `.env`，已有环境变量优先：
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `PORT` | `3000` | HTTP 监听端口，必须在 `1` 到 `65535` 之间。 |
+| `PORT` | `3100` | HTTP 监听端口，必须在 `1` 到 `65535` 之间。 |
 
 例如，修改端口可直接在启动命令前设置：
 
@@ -81,10 +81,10 @@ PORT=3100 pnpm start
 服务启动后：
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3100/health
 ```
 
-MCP 客户端本地连接地址可使用 `http://localhost:3000/mcp`。完整工具见 [目录](docs/TOOLS.md)。例如 `tongji.bachelor.score` 查询本科生成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
+MCP 客户端本地连接地址可使用 `http://localhost:3100/mcp`。完整工具见 [目录](docs/TOOLS.md)。例如 `tongji.bachelor.score` 查询本科生成绩；`calendarId` 可选，缺省时由同济开放平台查询当前学期。
 
 `/health` 仅用于存活探针；`/mcp` 由 `StreamableHTTPServerTransport` 处理 MCP 请求。服务当前为无状态模式，不会分配 MCP session ID。
 
@@ -99,7 +99,7 @@ pnpx @modelcontextprotocol/inspector
 在 Inspector 页面中选择 `Streamable HTTP` 传输方式，并填写 MCP 服务地址：
 
 ```text
-http://localhost:3000/mcp
+http://localhost:3100/mcp
 ```
 
 通过 Inspector 的 `Tools` 页面执行工具发现，确认可看到
@@ -177,7 +177,8 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 - `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
 - MCP tool：`tongji.course.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
-- 常驻数据库：`data/mcp.sqlite`，仅存储教师评价。数据库不存在时自动创建，并从 `data/teacher-reviews.seed.sqlite` 导入教师评价。部署须携带种子库，将 `data/` 放在可写持久化目录；发布不得覆盖运行库，瑞幸凭据存储见下节。
+- 运行数据库：`data/mcp.sqlite`，仅存储教师评价。数据库不存在时自动创建；评价表为空时从 `seed/teacher-reviews.seed.sqlite` 全量导入教师评价。所有环境均须携带种子库，运行库须可写；发布不得覆盖运行库，瑞幸凭据存储见下节。
+- GitLab / Docker 部署使用固定运行库路径 `/app/data/mcp.sqlite`，镜像携带完整种子库，在评价表为空时全量导入（包括此前已部署的空库）。已有非空评价表保持原样，不覆盖修改或删除数据。种子位于 `/app/seed/teacher-reviews.seed.sqlite`，与运行库挂载目录分开；宿主机数据由 Docker 命名卷保留。
 - 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。
 
 ## 瑞幸凭据 PostgreSQL
@@ -198,3 +199,10 @@ MCP 使用与 Agent 相同的 PostgreSQL 数据库，通过 MCP 仓根目录的 
 避免并发登录的新 Token 被旧检查覆盖。缺表或连接故障时，check 返回
 `valid:false`、`status:credential_store_unavailable` 与提示，不触发短信登录。
 备份瑞幸凭据需使用 PostgreSQL 的备份机制；SQLite 仅保留教师评价。
+
+## GitLab CI 部署
+
+现已提供 Dockerfile；main 分支更新自动构建和发布 SIT，PROD 必须手动发布。
+部署命令直接维护在 `.gitlab-ci.yml`，包含容器健康检查和失败时恢复旧容器，不执行数据库初始化。
+部署到现有 DEVIP / PRODIP，默认对外端口 3100；SQLite 首次从完整种子库初始化，后续发布保留运行数据。
+变量设置、服务器前置条件和验收步骤见 [GitLab 部署说明](docs/GITLAB_DEPLOYMENT.md)。

@@ -29,7 +29,7 @@ describe('loadServerConfig', () => {
   it('应在环境变量缺失时使用默认端口', () => {
     const config = withServerEnv({}, loadServerConfig);
 
-    assert.deepEqual(config, { port: 3000 });
+    assert.deepEqual(config, { port: 3100 });
   });
 
   it('应拒绝超出有效范围的端口', () => {
@@ -52,7 +52,7 @@ describe('loadServerConfig', () => {
 
   it('应拒绝非整数端口', () => {
     assert.throws(
-      () => withServerEnv({ port: '3000.5' }, loadServerConfig),
+      () => withServerEnv({ port: '3100.5' }, loadServerConfig),
       /PORT must be an integer between 1 and 65535/,
     );
   });

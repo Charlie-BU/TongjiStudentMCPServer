@@ -96,6 +96,21 @@ const requestCases: RequestCase[] = [
 ];
 
 describe("Tongji OpenAPI integration", () => {
+    it("应将任意非空用户标识原样传给上游，不应用学工号字符限制", async () => {
+        const previousAdapter = axios.defaults.adapter;
+        const userIds = ['15947513567charlie@gmail.com', '用户甲', 'a,b', ' a+b/@:._- ', ' '];
+        const received: string[] = [];
+        axios.defaults.adapter = async requestConfig => {
+            received.push(requestConfig.params.userId);
+            return { data: { data: [] }, status: 200, statusText: "OK", headers: {}, config: requestConfig };
+        };
+        try {
+            for (const userId of userIds) await getUserBasicInfo({ ...config, userId });
+            assert.deepEqual(received, userIds);
+        } finally {
+            axios.defaults.adapter = previousAdapter;
+        }
+    });
     for (const testCase of requestCases) {
         it(`应构造${testCase.name}请求的地址、参数、认证头与超时`, async () => {
             const previousAdapter = axios.defaults.adapter;

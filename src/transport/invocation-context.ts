@@ -9,9 +9,9 @@ export interface ToolInvocationContext {
 // normalizeInvocation 规范化工具调用上下文，确保 accessToken 和用户 ID 是有效的。
 export const normalizeInvocation = (invocation: ToolInvocationContext): ToolInvocationContext => {
   const accessToken = invocation.accessToken?.trim();
-  const userId = invocation.userId?.trim();
-  // 用户身份独立于同济 Token；拒绝批量、重复和不合法的身份值。
-  if (!userId || !/^[A-Za-z0-9_-]+$/.test(userId)) return {};
+  const userId = invocation.userId;
+  // 用户标识是不透明字符串，保留原值，不限制字符格式。
+  if (!userId) return {};
   if (accessToken) return { accessToken, userId };
   return { userId };
 };

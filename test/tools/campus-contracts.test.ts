@@ -60,12 +60,12 @@ it("all registered model input schemas exclude service credentials and user iden
     }
 }));
 
-it("missing or ambiguous identity never reaches a privileged API", async () => {
+it("missing or empty identity never reaches a privileged API", async () => {
     const previous = axios.defaults.adapter;
     let calls=0;
     axios.defaults.adapter=async()=>{calls++;throw new Error("must not call")};
     try {
-        for (const invocation of [{accessToken:"service-token"},{userId:"student-a"},{...identity,userId:"a,b"},{}]) {
+        for (const invocation of [{accessToken:"service-token"},{userId:"student-a"},{...identity,userId:""},{}]) {
             await withClient(invocation,async client=>{
                 for (const name of ["tongji.user.card_balance","tongji.bachelor.score"]) {
                     assert.equal((await client.callTool({name,arguments:{}})).isError,true);

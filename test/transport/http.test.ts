@@ -199,6 +199,28 @@ it('HTTP 瑞幸支持无 Token 调用，携带 Token 时先校验并记录来源
   }));
 });
 
+it('HTTP 邮箱身份在初始化、发现和工具调用中被接受，未绑定时返回正常未登录结果', async () => {
+  await withLuckinFake(async () => { throw new Error('must not access upstream'); }, async requests => withHttpServer(async baseURL => {
+    const headers = {'content-type':'application/json', accept:'application/json, text/event-stream', 'X-User-Id':'15947513567charlie@gmail.com'};
+    const calls = [
+      {method:'initialize', params:{protocolVersion:'2024-11-05', capabilities:{}, clientInfo:{name:'email-identity-test', version:'1'}}},
+      {method:'tools/list', params:{}},
+      {method:'tools/call', params:{name:'luckin.auth.check', arguments:{}}},
+    ];
+    for (const call of calls) {
+      const response = await fetch(baseURL+'/mcp', {method:'POST', headers, body:JSON.stringify({jsonrpc:'2.0', id:1, ...call})});
+      assert.equal(response.status, 200);
+      const body = await response.text();
+      assert.doesNotMatch(body, /"isError":true|"status":"user_id_required"/);
+      if (call.method === 'tools/call') {
+        assert.match(body, /"valid":false/);
+        assert.match(body, /尚未登录瑞幸/);
+      }
+    }
+    assert.equal(requests.length, 0);
+  }));
+});
+
 it('HTTP 缺少 X-User-Id 时短信和检查不调用上游，校园工具只有用户 ID 时仍拒绝', async () => {
   await withLuckinFake(async () => {throw new Error('must not access upstream');}, async requests => withHttpServer(async baseURL => {
     for (const [name,args] of [['luckin.auth.send_sms_code',{mobile:'13800000000'}],['luckin.auth.check',{}],['tongji.user.card_balance',{}]] as const) {

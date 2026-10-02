@@ -30,8 +30,8 @@ export interface TongjiOpenapiAdapter {
 export const createTongjiOpenapiAdapter = (
     config: TongjiOpenapiAdapterConfig,
 ): TongjiOpenapiAdapter => {
-    if (!config.accessToken?.trim() || !/^[A-Za-z0-9_-]+$/.test(config.userId ?? "")) {
-        throw new Error("trusted service credential and single user identity are required");
+    if (!config.accessToken?.trim() || !config.userId) {
+        throw new Error("trusted service credential and user identity are required");
     }
     const timeoutMs = config.timeoutMs ?? loadUpstreamTimeoutMs();
     const authorization = `Bearer ${config.accessToken}`;

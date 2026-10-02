@@ -1,10 +1,9 @@
 import axios, { type AxiosRequestConfig } from "axios";
+import { loadUpstreamTimeoutMs } from "../../config/server";
 import TongjiPobyService from "../cam_auto_generated/tongji_poby";
 
 // DEFAULT_TONGJI_POBY_BASE_URL 表示同济 Poby 服务的默认地址。
 const DEFAULT_TONGJI_POBY_BASE_URL = "https://app.tongji.edu.cn/wallbreakerApi";
-// DEFAULT_TIMEOUT_MS 表示 OpenAPI 请求的默认超时时间。
-const DEFAULT_TIMEOUT_MS = 10_000;
 
 // TongjiPobyAdapterConfig 表示同济 Poby 服务适配器的配置。
 interface TongjiPobyAdapterConfig {
@@ -25,7 +24,7 @@ interface TongjiPobyAdapter {
 export const createTongjiPobyAdapter = (
     config: TongjiPobyAdapterConfig,
 ): TongjiPobyAdapter => {
-    const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const timeoutMs = config.timeoutMs ?? loadUpstreamTimeoutMs();
     const sessionCookie = config.sessionId
         ? `JSESSIONID=${config.sessionId}`
         : undefined;

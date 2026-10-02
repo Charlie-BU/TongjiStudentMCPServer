@@ -1,4 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
+import { loadUpstreamTimeoutMs } from "../../config/server";
 import { z } from "zod";
 import YourtjService from "../cam_auto_generated/yourtj";
 import {
@@ -12,8 +13,6 @@ import {
 const DEFAULT_YOURTJ_BASE_URL = "https://f.yourtj.de";
 // DEFAULT_ACADEMIC_BASE_URL 表示学期、年级和专业服务地址。
 const DEFAULT_ACADEMIC_BASE_URL = "https://jcourse.yourtj.de";
-// DEFAULT_TIMEOUT_MS 表示请求默认超时。
-const DEFAULT_TIMEOUT_MS = 10_000;
 
 // YourtjAdapterConfig 表示手写适配器配置。
 export interface YourtjAdapterConfig {
@@ -38,7 +37,7 @@ export const createYourtjAdapter = (
         ...options,
         headers: { Accept: "application/json", ...requestConfig.headers, ...options?.headers },
         paramsSerializer: { indexes: null },
-        timeout: options?.timeout ?? config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+        timeout: options?.timeout ?? config.timeoutMs ?? loadUpstreamTimeoutMs(),
     }).then((response) => response.data),
 });
 
@@ -114,4 +113,3 @@ export const getMajorsByGrade = async (
     const adapter = createYourtjAdapter(config);
     return adapter.FindMajorByGradePOST({ calendarId, grade });
 };
-

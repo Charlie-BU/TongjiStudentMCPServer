@@ -18,7 +18,7 @@ it("ping 接受 JSON/SSE 成功响应，拒绝协议错误、错 ID、异常状�
         ] as const) {
             axios.defaults.adapter = async config => {
                 assert.equal(config.headers.Authorization, "Bearer fixture-token");
-                assert.equal(config.timeout, 5000);
+                assert.equal(config.timeout, 20_000);
                 assert.equal(config.maxRedirects, 0);
                 return { data, status, statusText: "test", headers: {}, config };
             };

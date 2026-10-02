@@ -1,4 +1,5 @@
 import axios from "axios";
+import { loadUpstreamTimeoutMs } from "../../config/server";
 import { z } from "zod";
 import LuckinCoffeeMCPService from "../cam_auto_generated/LuckinCoffeeMCP";
 import type { CallMcpBodyRequest } from "../cam_auto_generated/LuckinCoffeeMCP/namespaces";
@@ -38,7 +39,7 @@ export const createLuckinMcpAdapter = (token: string, config: LuckinMcpConfig = 
                         Authorization: `Bearer ${token}`, "Content-Type": "application/json",
                         Accept: "application/json, text/event-stream"
                     },
-                    timeout: config.timeoutMs ?? 5000, maxRedirects: 0, maxContentLength: 2 * 1024 * 1024,
+                    timeout: config.timeoutMs ?? loadUpstreamTimeoutMs(), maxRedirects: 0, maxContentLength: 2 * 1024 * 1024,
                 });
                 if (response.status !== 200) throw new LuckinMcpError("unavailable");
                 return decodeResponse(response.data) as R;

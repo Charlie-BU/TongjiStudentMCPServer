@@ -1,10 +1,9 @@
 import axios, { type AxiosRequestConfig } from "axios";
+import { loadUpstreamTimeoutMs } from "../../config/server";
 import TongjiOpenapiService from "../cam_auto_generated/tongji_openapi";
 
 // DEFAULT_TONGJI_OPENAPI_BASE_URL 表示同济开放平台的默认地址。
 const DEFAULT_TONGJI_OPENAPI_BASE_URL = "https://api.tongji.edu.cn";
-// DEFAULT_TIMEOUT_MS 表示 OpenAPI 请求的默认超时时间。
-const DEFAULT_TIMEOUT_MS = 10_000;
 
 export class TongjiBusinessError extends Error {
     constructor() { super("Tongji OpenAPI business failure"); }
@@ -34,7 +33,7 @@ export const createTongjiOpenapiAdapter = (
     if (!config.accessToken?.trim() || !/^[A-Za-z0-9_-]+$/.test(config.userId ?? "")) {
         throw new Error("trusted service credential and single user identity are required");
     }
-    const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const timeoutMs = config.timeoutMs ?? loadUpstreamTimeoutMs();
     const authorization = `Bearer ${config.accessToken}`;
     const service = new TongjiOpenapiService<AxiosRequestConfig>({
         baseURL: config.baseUrl ?? DEFAULT_TONGJI_OPENAPI_BASE_URL,
@@ -64,4 +63,3 @@ export const createTongjiOpenapiAdapter = (
         }),
     };
 };
-

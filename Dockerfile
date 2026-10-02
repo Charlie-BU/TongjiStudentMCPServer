@@ -14,7 +14,7 @@ RUN pnpm prune --prod
 
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
-ENV NODE_ENV=production PORT=3100
+ENV NODE_ENV=production APP_PORT=3100
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json ./package.json
@@ -24,5 +24,5 @@ RUN mkdir /app/data && chown node:node /app/data
 USER node
 EXPOSE 3100
 HEALTHCHECK --interval=5s --timeout=3s --start-period=15s --retries=6 \
-  CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/health',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:'+process.env.APP_PORT+'/health',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "dist/index.js"]

@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import axios from "axios";
+import { loadUpstreamTimeoutMs } from "../../config/server";
 import { z } from "zod";
 import LuckinCoffeeAuthService from "../cam_auto_generated/LuckinCoffeeAuth";
 import {
@@ -41,7 +42,7 @@ const createLuckinAdapter = (config: LuckinAdapterConfig = {}) => {
                         Origin: DEFAULT_BASE_URL, Referer: `${DEFAULT_BASE_URL}/mcp`,
                         Cookie: cookie.join("; "),
                     },
-                    timeout: config.timeoutMs ?? 10_000,
+                    timeout: config.timeoutMs ?? loadUpstreamTimeoutMs(),
                     // 不将手机号/验证码/Cookie 随重定向发送到其他地址，也不自动重试短信或登录。
                     maxRedirects: 0,
                 });

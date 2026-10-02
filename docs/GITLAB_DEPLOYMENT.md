@@ -20,9 +20,10 @@
 | `DEVIP` / `PRODIP` | CI SSH 连接目标 |
 | `USER` / `PASSWORD` | CI SSH 用户和密码 |
 | `PORT` | CI SSH 端口，例如 10022；不是服务端口 |
+| `UPSTREAM_TIMEOUT_MS` | 可选，注入 MCP 容器的上游请求超时（毫秒），默认 `20000`，有效范围 `1` 到 `2147483647` |
 | `CI_REGISTRY*` | GitLab 提供的镜像库地址和认证变量，无需手动配置 |
 
-以上变量仅用于 CI 部署；服务只注入固定应用端口 `PORT=3100`。
+服务注入固定应用端口 `APP_PORT=3100`，以及 `UPSTREAM_TIMEOUT_MS`；其余变量仅用于 CI 部署。
 SSH 变量 `PORT` 不透传。MCP 仅使用本地 SQLite，无远端数据库配置，也不使用 Redis。
 
 ## 镜像和运行

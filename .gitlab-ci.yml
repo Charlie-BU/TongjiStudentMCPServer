@@ -37,6 +37,9 @@ build:
       done
       case "$PORT" in ''|*[!0-9]*) echo 'Invalid SSH port' >&2; exit 1 ;; esac
       [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ] || exit 1
+      upstream_timeout_ms=${UPSTREAM_TIMEOUT_MS:-20000}
+      case "$upstream_timeout_ms" in ''|*[!0-9]*) echo 'Invalid UPSTREAM_TIMEOUT_MS' >&2; exit 1 ;; esac
+      [ "$upstream_timeout_ms" -ge 1 ] && [ "$upstream_timeout_ms" -le 2147483647 ] || exit 1
       umask 077
       bundle=$(mktemp -d)
       remote_tmp=''
@@ -57,13 +60,14 @@ build:
       remote_tmp=$candidate
       tar -C "$bundle" -cf "$bundle/payload.tar" registry-password
       remote "tar -xf - -C '$remote_tmp'" < "$bundle/payload.tar"
-      remote "sh -s -- '$MCP_IMAGE' '$container' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER'" <<'REMOTE'
+      remote "sh -s -- '$MCP_IMAGE' '$container' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER' '$upstream_timeout_ms'" <<'REMOTE'
       set -eu
       image=$1
       container=$2
       temp=$3
       registry=$4
       registry_user=$5
+      upstream_timeout_ms=$6
       export DOCKER_CONFIG="$temp/docker"
       trap 'rm -rf "$temp"' EXIT
       docker login --username "$registry_user" --password-stdin "$registry" < "$temp/registry-password"
@@ -82,7 +86,8 @@ build:
       fi
       healthy=false
       if docker run -d --name "$container" --restart unless-stopped --init \
-        -e PORT=3100 \
+        -e APP_PORT=3100 \
+        -e "UPSTREAM_TIMEOUT_MS=$upstream_timeout_ms" \
         -p 3100:3100 -v "$container-data:/app/data" \
         --security-opt no-new-privileges:true --cap-drop ALL \
         --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 "$image"; then

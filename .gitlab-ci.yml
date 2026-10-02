@@ -25,8 +25,8 @@ build:
     - |
       set -eu
       case "$CI_ENVIRONMENT_NAME" in
-        sit) host=${DEVIP:?DEVIP is required}; dsn=${POSTGRES_DSN_SIT:?POSTGRES_DSN_SIT is required} ;;
-        prod) host=${PRODIP:?PRODIP is required}; dsn=${POSTGRES_DSN_PROD:?POSTGRES_DSN_PROD is required} ;;
+        sit) host=${DEVIP:?DEVIP is required} ;;
+        prod) host=${PRODIP:?PRODIP is required} ;;
         *) exit 1 ;;
       esac
       : "${USER:?SSH USER is required}" "${PASSWORD:?SSH PASSWORD is required}" "${PORT:?SSH PORT is required}"
@@ -37,9 +37,6 @@ build:
       done
       case "$PORT" in ''|*[!0-9]*) echo 'Invalid SSH port' >&2; exit 1 ;; esac
       [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ] || exit 1
-      case "$dsn" in postgres://*|postgresql://*) ;; *) echo 'Invalid PostgreSQL DSN' >&2; exit 1 ;; esac
-      # Docker env-file is literal (no dollar expansion); reject multiline values.
-      [ "$(printf '%s' "$dsn" | tr -d '\r\n')" = "$dsn" ] || exit 1
       umask 077
       bundle=$(mktemp -d)
       remote_tmp=''
@@ -53,14 +50,12 @@ build:
         rm -rf "$bundle"
       }
       trap cleanup EXIT
-      # Only the selected DSN enters the service, under its existing POSTGRES_DSN name.
-      printf 'POSTGRES_DSN=%s\n' "$dsn" > "$bundle/runtime.env"
       printf '%s' "$CI_REGISTRY_PASSWORD" > "$bundle/registry-password"
       candidate=$(remote 'umask 077; mktemp -d /tmp/tongji-mcp.XXXXXXXX')
       case "$candidate" in /tmp/tongji-mcp.*) ;; *) exit 1 ;; esac
       case "$candidate" in *[!a-zA-Z0-9_./-]*) exit 1 ;; esac
       remote_tmp=$candidate
-      tar -C "$bundle" -cf "$bundle/payload.tar" runtime.env registry-password
+      tar -C "$bundle" -cf "$bundle/payload.tar" registry-password
       remote "tar -xf - -C '$remote_tmp'" < "$bundle/payload.tar"
       remote "sh -s -- '$MCP_IMAGE' '$container' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER'" <<'REMOTE'
       set -eu
@@ -87,7 +82,7 @@ build:
       fi
       healthy=false
       if docker run -d --name "$container" --restart unless-stopped --init \
-        --env-file "$temp/runtime.env" -e PORT=3100 \
+        -e PORT=3100 \
         -p 3100:3100 -v "$container-data:/app/data" \
         --security-opt no-new-privileges:true --cap-drop ALL \
         --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 "$image"; then

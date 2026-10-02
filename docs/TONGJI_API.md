@@ -6,10 +6,10 @@ Agent 每轮使用浏览器的原用户 token 查询 basic-info，成功取得 u
 
 ```text
 X-Tongji-Access-Token: <client_credentials service token>
-X-Tongji-User-Id: <本轮 basic-info 返回的单个 userId>
+X-User-Id: <本轮 basic-info 返回的单个 userId>
 ```
 
-MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断用户。重复头、批量身份、空值或只有一项均按匿名处理。HTTP 入口用服务 token 查询固定服务账号 00001，核对姓名李建中和用户类型教职工；失败返回 HTTP 401，不执行工具。此检查不替换用户上下文，也不在 MCP 中申请或刷新 token；刷新由 Agent 负责。
+MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断用户。重复、批量、空白或非法用户标识不进入工具上下文；单独 X-User-Id 可以识别用户，但不足以调用校园个人工具。校园调用还须提供同济服务 token，HTTP 入口查询固定服务账号 00001，核对姓名李建中和用户类型教职工；校验失败返回 HTTP 403，不执行工具。此检查不替换用户上下文，MCP 不申请或刷新 token；刷新由 Agent 负责。瑞幸工具只要求 X-User-Id，同济 Token 可选；包括瑞幸、初始化和工具发现在内，任何 MCP 请求携带 Token 时均须通过上述入口校验。
 
 工具仅使用本请求上下文。适配器先展开业务参数，再覆盖 Authorization/userId；CAM 只将接口实际定义的参数发给上游。无 userId 参数的公共目录查询不额外添加该参数，但同济 API 仍要求完整的登录上下文。公开 YourTJ/本地评价工具保持匿名可用。
 

@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
 import { request as sendRequest } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { describe, it } from 'node:test';
-import { createHttpServer } from '../../src/transport/http';
+import { after, describe, it } from 'node:test';
+import { createTestSqlite } from '../fixtures/sqlite';
+const sqlite = createTestSqlite();
+const database = require('../../src/storage/database') as typeof import('../../src/storage/database');
+const databaseModule = require.cache[require.resolve('../../src/storage/database')]!;
+databaseModule.exports = { ...database, openDatabase: () => sqlite.open() };
+const { createHttpServer } = require('../../src/transport/http') as typeof import('../../src/transport/http');
+const { readLuckinCredential } = require('../../src/storage/luckin-credentials') as typeof import('../../src/storage/luckin-credentials');
+after(() => { databaseModule.exports = database; sqlite.close(); });
 
 // 固定 IPv4 loopback，避免容器中 localhost 的监听与连接解析到不同地址族。
 // withHttpServer 在临时 loopback 端口启动并关闭 HTTP Server。
@@ -137,7 +144,7 @@ it('authenticates the service credential and forwards the human ID without accep
   return {data:{code:reject?'A99999':'A00000',data:config.params.userId==='00001'?{list:[{userId:'00001',name:'李建中',userTypeName:'教职工'}]}:[{balance:12}]},status:200,statusText:'OK',headers:{},config};
  };
  try{await withHttpServer(async baseURL=>{
-  const headers={'content-type':'application/json',accept:'application/json, text/event-stream','x-tongji-access-token':'service-token','x-tongji-user-id':'student-a'};
+  const headers={'content-type':'application/json',accept:'application/json, text/event-stream','x-tongji-access-token':'service-token','x-user-id':'student-a'};
   const body=JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'tongji.user.card_balance',arguments:{}}});
   const result=await fetch(baseURL+'/mcp',{method:'POST',headers,body});
   assert.equal(result.status,200);
@@ -150,4 +157,83 @@ it('authenticates the service credential and forwards the human ID without accep
   assert.equal((await denied.json() as {error:string}).error,'invalid_service_credential');
   assert.deepEqual(identities,['00001','student-a','00001']);
  });}finally{axios.defaults.adapter=previous;}
+});
+
+import { withLuckinFake, success, smsData, tokenData, loginCookies } from '../fixtures/luckin';
+
+
+it('HTTP 瑞幸支持无 Token 调用，携带 Token 时先校验并记录来源', async () => {
+  await withLuckinFake(async request => {
+    if (!request.url?.includes('lkcoffee.com')) {
+      assert.equal(request.headers.Authorization, 'Bearer service-token');
+      assert.equal(request.params.userId, '00001');
+      return {data:{code:'A00000',data:{list:[{userId:'00001',name:'李建中',userTypeName:'教职工'}]}}};
+    }
+    if (request.url?.endsWith('/validcode')) return {data: success(smsData, 0)};
+    if (request.url?.endsWith('/loginAi')) return {data: success({}), headers: {'set-cookie': loginCookies}};
+    if (request.url?.endsWith('/getToken')) return {data: success(tokenData)};
+    return {data: {jsonrpc:'2.0',id:1,result:{}}};
+  }, async () => withHttpServer(async baseURL => {
+    for (const withToken of [false,true]) {
+      const userId = withToken ? 'http-student' : 'http-external';
+      const headers: Record<string,string> = {'content-type':'application/json',accept:'application/json, text/event-stream','x-user-id':userId};
+      if (withToken) headers['x-tongji-access-token'] = 'service-token';
+      // 未携带 Token 可直接初始化和发现工具；携带时须先通过入口校验。
+      for (const [method, params] of [['initialize',{protocolVersion:'2024-11-05',capabilities:{},clientInfo:{name:'luckin-http-test',version:'1'}}],['tools/list',{}]] as const) {
+        const response = await fetch(baseURL+'/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+        assert.equal(response.status,200);
+        assert.doesNotMatch(await response.text(),/invalid_service_credential/);
+      }
+      const invoke = async (name:string,args:Record<string,unknown>) => {
+        const response = await fetch(baseURL+'/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name,arguments:args}})});
+        assert.equal(response.status,200);
+        const result = await response.text();
+        assert.doesNotMatch(result,/"isError":true/);
+        return result;
+      };
+      await invoke('luckin.auth.send_sms_code',{mobile:'13800000000'});
+      await invoke('luckin.auth.login',{mobile:'13800000000',validateCode:'012345'});
+      assert.equal((await readLuckinCredential(userId))!.is_from_tongji,withToken);
+      assert.match(await invoke('luckin.auth.check',{}),/valid/);
+    }
+  }));
+});
+
+it('HTTP 缺少 X-User-Id 时短信和检查不调用上游，校园工具只有用户 ID 时仍拒绝', async () => {
+  await withLuckinFake(async () => {throw new Error('must not access upstream');}, async requests => withHttpServer(async baseURL => {
+    for (const [name,args] of [['luckin.auth.send_sms_code',{mobile:'13800000000'}],['luckin.auth.check',{}],['tongji.user.card_balance',{}]] as const) {
+      const headers:Record<string,string>={'content-type':'application/json',accept:'application/json, text/event-stream'};
+      if (name.startsWith('tongji.')) headers['x-user-id']='external';
+      const response=await fetch(baseURL+'/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name,arguments:args}})});
+      assert.equal(response.status,200);
+      assert.match(await response.text(),/"isError":true/);
+    }
+    assert.equal(requests.length,0);
+  }));
+});
+
+it('HTTP 瑞幸及协议请求携带失效 Token 或身份服务故障时返回 403，不访问瑞幸', async () => {
+  for (const unavailable of [false,true]) {
+    await withLuckinFake(async request => {
+      assert.equal(request.url?.includes('lkcoffee.com'),false,'入口校验失败不得访问瑞幸');
+      assert.equal(request.headers.Authorization,'Bearer invalid-service-token');
+      if (unavailable) throw new Error('private-identity-error');
+      return {data:{code:'A99999',data:{list:[]}}};
+    }, async requests => withHttpServer(async baseURL => {
+      const calls = [
+        {method:'initialize',params:{protocolVersion:'2024-11-05',capabilities:{},clientInfo:{name:'test',version:'1'}}},
+        {method:'tools/list',params:{}},
+        ...['luckin.auth.send_sms_code','luckin.auth.login','luckin.auth.check','luckin.shop.search','luckin.product.search','luckin.product.detail','luckin.product.switch','luckin.order.preview','luckin.order.create','luckin.order.get','luckin.order.cancel'].map(name=>({method:'tools/call',params:{name,arguments:{}}})),
+      ];
+      for (const call of calls) {
+        const response = await fetch(baseURL+'/mcp',{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream','x-user-id':'external','x-tongji-access-token':'invalid-service-token'},body:JSON.stringify({jsonrpc:'2.0',id:1,...call})});
+        assert.equal(response.status,403);
+        assert.equal(response.headers.get('www-authenticate'),null);
+        const payload = await response.json() as {error:string};
+        assert.equal(payload.error,'invalid_service_credential');
+        assert.doesNotMatch(JSON.stringify(payload),/private-identity-error/);
+      }
+      assert.equal(requests.length,calls.length);
+    }));
+  }
 });

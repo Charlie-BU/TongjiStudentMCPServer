@@ -90,7 +90,7 @@ describe('readToolInvocationContext', () => {
   it('应去除单个 access token 的首尾空白', () => {
     const context = readToolInvocationContext({
       'x-tongji-access-token': ' test-token ',
-      'x-tongji-user-id': ' student_001 ',
+      'x-user-id': ' student_001 ',
     });
 
     assert.deepEqual(context, { accessToken: 'test-token', userId: 'student_001' });

@@ -23,7 +23,7 @@ export const registerLuckinBusinessTool = <S extends z.AnyZodObject>(
 ): void => {
     server.registerTool(definition.name, {
         title: definition.title,
-        description: definition.description + " 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。",
+        description: definition.description + " 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。",
         inputSchema: definition.schema as z.AnyZodObject,
         outputSchema: createLuckinOutputSchema(LUCKIN_MCP_RESULT_SCHEMA),
         annotations: {
@@ -33,10 +33,9 @@ export const registerLuckinBusinessTool = <S extends z.AnyZodObject>(
     }, async (input) => {
         let userId: string | null;
         try {
-            if (!context.invocation.accessToken) return createErrorResult("unauthorized", "无法识别当前同济用户，请先完成同济授权。");
             userId = readCurrentUserId(context.invocation);
-            if (!userId) return createErrorResult("unauthorized", "无法识别当前同济用户，请先完成同济授权。");
-        } catch { return createErrorResult("upstream_unavailable", "暂时无法验证当前同济用户，请稍后重试。"); }
+            if (!userId) return createErrorResult("unauthorized", "缺少有效的 X-User-Id，请通过调用方提供用户身份。");
+        } catch { return createErrorResult("upstream_unavailable", "暂时无法识别当前用户，请稍后重试。"); }
         let invoked = false;
         try {
             const credential = await readLuckinCredential(userId);

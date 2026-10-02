@@ -67,7 +67,7 @@ it("missing or ambiguous identity never reaches a privileged API", async () => {
     try {
         for (const invocation of [{accessToken:"service-token"},{userId:"student-a"},{...identity,userId:"a,b"},{}]) {
             await withClient(invocation,async client=>{
-                for (const name of ["tongji.user.card_balance","tongji.bachelor.score","luckin.auth.check"]) {
+                for (const name of ["tongji.user.card_balance","tongji.bachelor.score"]) {
                     assert.equal((await client.callTool({name,arguments:{}})).isError,true);
                 }
             });

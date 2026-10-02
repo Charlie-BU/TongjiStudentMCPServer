@@ -10,7 +10,7 @@ Agent 的工具选择或回答内容。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
 
-瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；`luckin.auth.login` 和 `luckin.auth.check` 使用 Agent 传入的 userId 识别用户。
+瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；全部瑞幸工具要求 `X-User-Id`；无需同济授权，`X-Tongji-Access-Token` 可选。凭据按用户 ID 保存至本地 SQLite。
 CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界
@@ -23,8 +23,8 @@ Gateway
 ```
 
 - 传输：MCP Streamable HTTP，统一端点 `POST /mcp`。
-- 状态：服务使用无 MCP 会话业务状态的模式；Agent 保持会话状态，因此 MCP 服务可水平扩容。
-- 身份：接收 Agent 的 `X-Tongji-Access-Token`（客户端模式服务凭据）和 `X-Tongji-User-Id`（本轮用户身份）；HTTP 入口检查服务凭据，两项不完整时按匿名请求处理。工具入参不得提供身份或凭据。
+- 状态：服务不分配 MCP 会话 ID；Agent 保持对话状态。瑞幸凭据保存在实例的持久化 SQLite 中，多主机副本不自动共享凭据。
+- 身份：统一使用 `X-User-Id`。校园个人工具还要求 `X-Tongji-Access-Token`（客户端模式服务凭据）并验证服务身份；瑞幸只要求用户 ID；任意 MCP 请求携带同济 Token 时，入口均先校验，失败返回 403。工具入参不得提供身份或凭据。
 - 工具：按任务暴露领域工具，不把开放平台接口逐一暴露为工具。
 - 数据：上游响应必须在服务端归一、裁剪与脱敏后再作为 MCP Tool Result 返回。
 
@@ -66,7 +66,7 @@ pnpm install
 pnpm dev
 ```
 
-服务优先使用进程环境变量；存储模块也会加载仓库根目录的 `.env`，已有环境变量优先：
+服务优先使用进程环境变量；配置模块也会加载仓库根目录的 `.env`，已有环境变量优先：
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
@@ -116,7 +116,7 @@ http://localhost:3100/mcp
 
 ```text
 X-Tongji-Access-Token: <service_access_token>
-X-Tongji-User-Id: <本轮用户 userId>
+X-User-Id: <本轮用户 userId>
 ```
 
 Inspector 的 Server Settings → Custom Headers 支持直接配置上述两个请求头。无需配置 OAuth 或动态客户端注册。服务 token 必须由客户端凭据模式申请，不能使用前端用户 token；userId 填实际用户身份。
@@ -129,10 +129,10 @@ Inspector 的 Server Settings → Custom Headers 支持直接配置上述两个�
 
 ```text
 X-Tongji-Access-Token: <service_access_token>
-X-Tongji-User-Id: <本轮用户 userId>
+X-User-Id: <本轮用户 userId>
 ```
 
-本服务验证服务凭据后，将两项放入本次请求的独立 Tool 上下文。个人 API 的 userId 由适配器最后写入，模型参数不能覆盖。瑞幸凭据也按该 userId 查询。服务 token 不持久化，不得出现在 Tool 参数、结果或日志中。
+本服务验证服务凭据后，将两项放入本次请求的独立 Tool 上下文。个人 API 的 userId 由适配器最后写入，模型参数不能覆盖。瑞幸仅要求 `X-User-Id`，可独立调用；同济 Token 可选，携带时仍需通过 HTTP 入口校验。凭据按 userId 查询。服务 token 不持久化，不得出现在 Tool 参数、结果或日志中。
 
 可用校验命令：
 
@@ -177,28 +177,35 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 - `GET /legacy/teacher-reviews?teacher=陈滨`：姓名片段连续子串匹配，去除首尾空白，返回全部 item 的 `content` 字符串数组；无匹配返回 `[]`。缺少姓名、空白姓名、重复参数或超过 100 字符返回 400，非 GET 返回 405，数据库不可用返回 503。
 - MCP tool：`tongji.course.legacy-teacher-reviews`，输入 `{"teacher":"陈滨"}`，结构化输出 `{"content":["..."]}`。不需要账号授权。
-- 运行数据库：`data/mcp.sqlite`，仅存储教师评价。数据库不存在时自动创建；评价表为空时从 `seed/teacher-reviews.seed.sqlite` 全量导入教师评价。所有环境均须携带种子库，运行库须可写；发布不得覆盖运行库，瑞幸凭据存储见下节。
+- 运行数据库：`data/mcp.sqlite`，存储教师评价和瑞幸凭据。数据库不存在时自动创建；评价表为空时从 `seed/teacher-reviews.seed.sqlite` 全量导入教师评价。所有环境均须携带种子库，运行库须可写；发布不得覆盖运行库，瑞幸凭据存储见下节。
 - GitLab / Docker 部署使用固定运行库路径 `/app/data/mcp.sqlite`，镜像携带完整种子库，在评价表为空时全量导入（包括此前已部署的空库）。已有非空评价表保持原样，不覆盖修改或删除数据。种子位于 `/app/seed/teacher-reviews.seed.sqlite`，与运行库挂载目录分开；宿主机数据由 Docker 命名卷保留。
 - 数据说明见 [历史评价说明](docs/LEGACY_TEACHER_REVIEWS.md)。
 
-## 瑞幸凭据 PostgreSQL
+## 瑞幸凭据 SQLite
 
-MCP 使用与 Agent 相同的 PostgreSQL 数据库，通过 MCP 仓根目录的 `.env` 中的
-`POSTGRES_DSN` 配置；部署时可直接注入同名环境变量，环境变量优先。
-`.env` 不进入 Git，配置格式见 [.env.example](.env.example)。
+瑞幸凭据保存在 `data/mcp.sqlite` 的 `user_luckin_credentials` 表。启动自动建表，
+不依赖远端数据库或数据库环境变量，不迁移旧凭据；切换后用户须重新短信登录。
 
-1. 在上述 DSN 指向的数据库中手动执行 [建表 SQL](sql/user_luckin_credentials.sql)。
-   执行账号应是 MCP 连接账号，或为 MCP 账号授予该表的 SELECT、INSERT、UPDATE 权限。
-2. 配置 `POSTGRES_DSN`，安装依赖并构建、重启 MCP 服务。
-3. 通过正常短信登录重新绑定瑞幸，再调用 `luckin.auth.check`。
+| 字段 | SQLite 类型 | 含义 |
+| --- | --- | --- |
+| `user_id` | TEXT PRIMARY KEY NOT NULL | `X-User-Id` 提供的用户标识 |
+| `is_from_tongji` | INTEGER NOT NULL，限制 0/1 | 登录时携带同济 Token 为 true，否则 false；应用层返回 boolean |
+| `luckin_token` | TEXT NOT NULL | 瑞幸 Token，不在工具结果中返回 |
+| `token_date` / `token_timeout` | INTEGER NOT NULL | 瑞幸原始整数时间字段 |
+| `last_verified_at` | INTEGER，可空 | 最近成功验证的 Unix 毫秒时间 |
 
-程序不自动建 PostgreSQL 表，也不迁移旧 SQLite Token。凭据表仅包含
-`user_id`、`luckin_token`、`token_date`、`token_timeout`、`last_verified_at`。
-前两个时间值保留瑞幸原始整数；验证时间为 Unix 毫秒。Token 按要求明文保存。
-凭据读写全部异步，登录等待数据库写入提交后才返回成功；验证时间按用户和 Token 条件更新，
-避免并发登录的新 Token 被旧检查覆盖。缺表或连接故障时，check 返回
-`valid:false`、`status:credential_store_unavailable` 与提示，不触发短信登录。
-备份瑞幸凭据需使用 PostgreSQL 的备份机制；SQLite 仅保留教师评价。
+所有 11 个瑞幸工具都必须携带 `X-User-Id`，包括发送短信。`X-Tongji-Access-Token`
+可选，携带时 HTTP 入口先校验服务凭据，Token 无效或身份服务不可用则返回 403。登录保存时按是否携带 Token 确定 `is_from_tongji`。该标志不是鉴权依据，
+新登录覆盖 Token 时也更新来源，读取和检查不会修改来源。
+用户标识只来自请求头，模型参数不能提供或覆盖。调用方须确保标识稳定且按用户隔离。
+
+登录完成 SQLite 写入后才返回成功；检查成功时按用户和 Token 条件更新验证时间，
+避免旧检查覆盖并发登录的新 Token。缺少用户标识返回 `user_id_required` 检查错误，
+存储故障返回 `credential_store_unavailable`，不得据此自动发短信或重登录。
+
+部署须持久化 `/app/data`；同一环境的多主机副本不会自动共享本地凭据。
+备份应使用 SQLite 一致性备份，不能在运行中只复制主文件而忽略 WAL。
+请求头已从旧名称整体切换为 `X-User-Id`，不提供旧协议兼容。
 
 ## GitLab CI 部署
 

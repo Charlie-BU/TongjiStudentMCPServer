@@ -10,16 +10,17 @@ export interface ToolInvocationContext {
 export const normalizeInvocation = (invocation: ToolInvocationContext): ToolInvocationContext => {
   const accessToken = invocation.accessToken?.trim();
   const userId = invocation.userId?.trim();
-  // Reject batch identities and ambiguous/duplicate headers.
-  return accessToken && /^[A-Za-z0-9._~+\/=-]+$/.test(accessToken)
-    && userId && /^[A-Za-z0-9_-]+$/.test(userId) ? { accessToken, userId } : {};
+  // 用户身份独立于同济 Token；拒绝批量、重复和不合法的身份值。
+  if (!userId || !/^[A-Za-z0-9_-]+$/.test(userId)) return {};
+  if (accessToken) return { accessToken, userId };
+  return { userId };
 };
 
 // readToolInvocationContext 从 HTTP 请求头中读取工具调用上下文。
 export const readToolInvocationContext = (headers: IncomingHttpHeaders): ToolInvocationContext =>
   normalizeInvocation({
     accessToken: typeof headers["x-tongji-access-token"] === "string" ? headers["x-tongji-access-token"] : undefined,
-    userId: typeof headers["x-tongji-user-id"] === "string" ? headers["x-tongji-user-id"] : undefined,
+    userId: typeof headers["x-user-id"] === "string" ? headers["x-user-id"] : undefined,
   });
 
 // validateServiceCredential 通过 getUserBasicInfo API 验证服务凭证是否有效。

@@ -6,7 +6,6 @@ RUN pnpm install --frozen-lockfile
 COPY tsconfig*.json ./
 COPY src ./src
 COPY test ./test
-COPY sql ./sql
 COPY scripts ./scripts
 COPY seed/ ./seed/
 # Tests use mock upstreams and temporary databases; no deployment secrets here.
@@ -19,7 +18,6 @@ ENV NODE_ENV=production PORT=3100
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json ./package.json
-COPY sql ./sql
 COPY seed/ ./seed/
 # Keep the full seed outside the mounted runtime volume; never copy a local runtime DB.
 RUN mkdir /app/data && chown node:node /app/data

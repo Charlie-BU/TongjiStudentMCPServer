@@ -17,22 +17,13 @@
 
 | GitLab 变量 | 用途 |
 | --- | --- |
-| `POSTGRES_DSN_SIT` | SIT 服务数据库连接串 |
-| `POSTGRES_DSN_PROD` | PROD 服务数据库连接串 |
 | `DEVIP` / `PRODIP` | CI SSH 连接目标 |
 | `USER` / `PASSWORD` | CI SSH 用户和密码 |
 | `PORT` | CI SSH 端口，例如 10022；不是服务端口 |
 | `CI_REGISTRY*` | GitLab 提供的镜像库地址和认证变量，无需手动配置 |
 
-**数据库变量是服务配置，其余变量用于 CI 部署，不注入服务。**
-CI 根据环境将 `POSTGRES_DSN_SIT` 或 `POSTGRES_DSN_PROD` 映射为容器的 `POSTGRES_DSN`，
-保持现有服务读取逻辑不变。每个容器只收到自己的连接串，生产缺少配置即失败，不回退到 SIT。
-SSH 变量 `PORT` 不透传，容器监听端口单独固定为 3100。
-
-连接串设为 Masked，关闭变量展开；使用受保护 main 分支时可同时设为 Protected。
-DSN 使用单行，不加行末注释，密码中的特殊字符按 URL 编码。仓库不保存真实密码。
-SIT 使用现有测试库，PROD 使用目标服务器可达的 Railway 数据库入口及其 TLS 参数。
-MCP 不使用 Redis，无需 `REDIS_URL`。
+以上变量仅用于 CI 部署；服务只注入固定应用端口 `PORT=3100`。
+SSH 变量 `PORT` 不透传。MCP 仅使用本地 SQLite，无远端数据库配置，也不使用 Redis。
 
 ## 镜像和运行
 
@@ -42,7 +33,8 @@ MCP 不使用 Redis，无需 `REDIS_URL`。
 - 默认访问：`http://<DEVIP 或 PRODIP>:3100/mcp`。
 - 健康检查：`http://<IP>:3100/health`。
 - SQLite 固定使用 `/app/data/mcp.sqlite`，命名卷挂载 `/app/data`，镜像携带完整的 `/app/seed/teacher-reviews.seed.sqlite`；首次启动或已有评价表为空时全量导入。已有非空评价表不重建、不覆盖，不清除已有数据。种子目录与挂载目录分离，挂载不会遮住种子库。
-- 连接串通过临时文件和 SSH 传送，使用 Docker `--env-file` 注入；发布结束删除临时文件和临时 Registry 登录配置。
+- Registry 凭据通过临时文件和 SSH 传送；发布结束删除临时文件和临时 Registry 登录配置。
+- 瑞幸凭据与教师评价共用 SQLite 数据卷；启动自动建立新凭据表，不迁移旧远端凭据。切换后须重新瑞幸短信登录。
 
 CI 拉取镜像后保留旧容器，启动新容器并等待健康检查。新容器失败时恢复旧容器；
 首次部署无旧容器时删除失败容器，保留数据卷。容器切换会中断在途请求，不承诺零停机。
@@ -52,9 +44,9 @@ CI 拉取镜像后保留旧容器，启动新容器并等待健康检查。新�
 
 1. Runner 可访问 Docker daemon、GitLab Registry 和依赖下载地址，沿用 chatapp 的 Docker Runner 配置；如需 tag，配置与现有 Runner 一致的 tag。
 2. 目标服务器安装 Docker，SSH 用户可以无交互执行 Docker；不再要求安装 Compose。
-3. 服务器到数据库与业务上游的网络可用。宿主机和容器端口均固定为 3100（`3100:3100`）；确保端口空闲并允许调用方访问。SIT/PROD 应部署在不同主机，避免端口冲突。
-4. PostgreSQL 必须已具备 `sql/user_luckin_credentials.sql` 定义的表及运行账号的 SELECT / INSERT / UPDATE 权限。
-   **流水线和服务均不会自动创建 PostgreSQL 表。** `/health` 只检查 HTTP 存活，不验证数据库。
+3. 服务器到业务上游的网络可用。宿主机和容器端口均固定为 3100（`3100:3100`）；确保端口空闲并允许调用方访问。SIT/PROD 应部署在不同主机，避免端口冲突。
+4. `/app/data` 数据卷须可写并持久化。服务自动初始化 SQLite 表；`/health` 只检查 HTTP 存活，不验证数据库或上游。
+5. 每个环境单实例使用自己的卷。多主机副本不会自动共享瑞幸凭据；运行库一致性备份应包含 WAL 状态。
 
 ## 验收和排查
 

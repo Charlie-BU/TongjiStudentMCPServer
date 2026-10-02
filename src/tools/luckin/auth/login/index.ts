@@ -12,20 +12,20 @@ export const LUCKIN_LOGIN_TOOL_NAME = "luckin.auth.login";
 export const registerLuckinLoginTool = (server: McpServer, context: ToolRegistrationContext): void => {
     server.registerTool(LUCKIN_LOGIN_TOOL_NAME, {
         title: "登录瑞幸并保存凭据",
-        description: "使用手机号和验证码登录瑞幸，获取 Token 并保存至当前同济用户。需要请求上下文中的同济 access_token；不返回 Token，失败不自动重试。",
+        description: "使用手机号和验证码登录瑞幸，获取 Token 并保存至 X-User-Id 对应的用户。本工具必须携带 X-User-Id，不需要同济授权；X-Tongji-Access-Token 可选，仅用于记录凭据来源；不返回 Token，失败不自动重试。",
         inputSchema: LUCKIN_LOGIN_INPUT_SCHEMA,
         outputSchema: createLuckinOutputSchema(z.object({ authenticated: z.literal(true) })),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     }, async (input) => {
         let userId: string | null = null;
         try {
-            if (context.invocation.accessToken) userId = readCurrentUserId(context.invocation);
-        } catch { /* 不可识别身份时不发起瑞幸登录 */ }
-        if (!userId) return createErrorResult("unauthorized", "无法识别当前同济用户，请重新授权后再绑定瑞幸账号。");
+            userId = readCurrentUserId(context.invocation);
+        } catch { /* 缺少用户标识时不发起瑞幸登录 */ }
+        if (!userId) return createErrorResult("unauthorized", "缺少有效的 X-User-Id，请通过调用方提供用户身份。");
         const currentUserId = userId;
         return runLuckinAction(async () => {
             const token = await loginLuckinAndGetToken(input);
-            await saveLuckinCredential(currentUserId, token);
+            await saveLuckinCredential(currentUserId, token, !!context.invocation.accessToken);
             return { authenticated: true as const };
         });
     });

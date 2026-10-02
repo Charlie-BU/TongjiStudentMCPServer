@@ -1,4 +1,9 @@
-import { env } from 'node:process';
+import { env, loadEnvFile } from 'node:process';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const envPath = resolve(__dirname, '../../.env');
+if (existsSync(envPath)) loadEnvFile(envPath);
 
 // ServerConfig 表示 MCP 服务的运行配置。
 export interface ServerConfig {

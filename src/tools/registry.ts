@@ -122,7 +122,7 @@ export const registerTools = (
     registerCourseSummaryTool(server, context);
     registerCourseCatalogTool(server, context);
     // Luckin Coffee
-    registerLuckinSendSMSCodeTool(server);
+    registerLuckinSendSMSCodeTool(server, context);
     registerLuckinLoginTool(server, context);
     registerLuckinCheckTool(server, context);
     registerLuckinShopSearchTool(server, context);

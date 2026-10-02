@@ -1,3 +1,56 @@
+## CHANGELOG - 2026-10-02 11:32 - 瑞幸凭据回归 SQLite 并独立用户身份协议
+
+### 撰写时间
+
+- 2026-10-02 11:32（Asia/Shanghai）
+
+### Base Commit
+
+- `318c6192b3eb93aa143a5e8d5b0fb261eb53cad3`（沿用历史记录格式，取 `HEAD~1`，仅作基线元数据）。
+
+### Compare Scope
+
+- `working_tree_only`：全部当前未提交改动，相对 `HEAD`（`3b6cb98aa447ce7d123bdca32e7e1a736f2ddbdb`）比较。Agent 的配套身份头改动不作为本仓新增实现。
+
+### 背景与改动目标
+
+使瑞幸工具可以独立于同济登录使用，并将凭据存储从远端 PostgreSQL 改为实例持久化 SQLite。统一以调用方提供的用户标识定位凭据，校园工具继续要求同济服务 Token。
+
+### 改动概览
+
+- 用户身份请求头统一改为 `X-User-Id`，不兼容旧 `X-Tongji-User-Id`；保留单值与字符格式校验，用户 ID 可独立于同济 Token 存在。
+- 全部 11 个瑞幸工具仅要求有效用户 ID，包括发送短信、登录、检查及业务调用；同济 Token 可选，携带时仍经过既有 HTTP 入口校验，失败返回 403。
+- 瑞幸凭据改存 `data/mcp.sqlite` 的 `user_luckin_credentials` 表，增加布尔来源字段 `is_from_tongji`。登录时按是否携带同济 Token 写入来源，新登录覆盖 Token 和来源并清空最近验证时间。
+- SQLite 读写使用参数化语句并在操作后关闭连接；登录保存完成后才报告成功，验证时间仍按用户 ID 和 Token 条件更新，避免旧检查覆盖新登录。
+- 删除 PostgreSQL 连接池、建表 SQL、相关依赖和测试 fixture；GitLab 部署移除 DSN 变量读取与传送，Docker 不再复制 SQL 目录。
+- `.env` 加载移至服务配置模块，继续保持进程环境变量优先；停机逻辑移除 PostgreSQL 连接池关闭步骤。
+- 更新工具说明、目录导出脚本、README、部署及瑞幸文档；测试改用隔离的临时 SQLite，并增加 HTTP 身份协议场景。
+
+### 关键链路解析（含上下游）
+
+- 身份：调用方传入稳定的 `X-User-Id`，工具参数不得覆盖。Agent 同济用户使用实际用户 ID，匿名用户使用 `anonymous_<sessionID>`；MCP 本身信任此请求头，不验证用户归属。
+- 瑞幸登录：缺少用户 ID 时不请求上游；登录成功后保存 Token、时间字段及来源标志，再返回 authenticated。来源标志仅为元数据，不用于访问控制。
+- 瑞幸业务：按用户 ID 从本地 SQLite 读取 Token，注入上游调用。check 缺少身份时返回 `user_id_required`，存储错误返回 `credential_store_unavailable`；这些错误不表示需要重新发送短信。
+- 校园与协议请求：校园工具仍同时要求用户 ID 和服务 Token。任意 MCP 请求只要携带同济 Token，均先进行服务身份校验，包括初始化、工具发现和瑞幸调用。
+- 存储部署：教师评价与瑞幸凭据共用持久化 `/app/data`。不同主机副本不会自动共享凭据，备份需保持 SQLite/WAL 一致性。
+
+### 改动结果与业务影响
+
+- 瑞幸调用不再依赖同济登录或 PostgreSQL；发送短信也改为必须携带用户 ID。
+- 切换后不迁移 PostgreSQL 中的旧凭据，用户需重新短信登录；旧身份头调用方需同步升级。
+- 部署不再需要数据库连接串，服务启动自动创建缺失的 SQLite 表；历史旧表结构的兼容限制见下方豁免项。
+
+### 验证与已接受风险
+
+- 审阅期间全量离线测试 244 项全部通过，源码及测试 TypeScript 类型检查通过。测试覆盖用户隔离、来源更新、条件验证更新、HTTP 无同济 Token 调用及失效 Token 拒绝等场景。
+- **已豁免 [P1] 调用方认证缺口**：用户明确接受本次不修复。仅凭 `X-User-Id` 可选取已有瑞幸凭据；能直连 MCP 的调用者可冒用他人 ID。当前实现不增加独立调用方认证，仍依赖部署侧限制为可信调用方。此项为接受风险，不代表已修复。
+- **已豁免 [P2] 历史 SQLite 表结构兼容**：用户明确接受本次不修复。历史凭据表缺少 `is_from_tongji` 时，`CREATE TABLE IF NOT EXISTS` 不会补列，读取和登录保存会失败；已用历史表结构复现 `no such column: is_from_tongji`。受影响旧库需另行处理，单纯重新短信登录不能恢复。此项为接受风险，不代表已修复。
+- 未调用真实校园或瑞幸接口，未执行生产部署或真实凭据迁移。本次仅新增 changelog，沿用本轮验证结果，未重复执行测试；文档差异检查通过。
+
+### 建议 Commit Message（git-cz）
+
+- `feat(luckin): use SQLite credentials and independent user identity`
+
 ## CHANGELOG - 2026-09-24 17:15 - 增加 GitLab 容器部署并分离种子库目录
 
 ### 撰写时间

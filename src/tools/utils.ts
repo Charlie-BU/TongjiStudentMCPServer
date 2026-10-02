@@ -102,7 +102,7 @@ export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
 
 // readCurrentUserId 从工具调用上下文读取当前用户 ID。
 export const readCurrentUserId = (invocation: ToolInvocationContext): string | null =>
-    invocation.accessToken && invocation.userId ? invocation.userId : null;
+    invocation.userId ?? null;
 
 // readCursor 从上游响应中读取分页游标。
 export const readCursor = (response: unknown, key: string): Record<string, string> => {

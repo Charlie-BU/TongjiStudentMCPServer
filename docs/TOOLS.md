@@ -5,9 +5,9 @@
 
 ## 通用约定
 
-- 个人工具只使用 Agent 请求头中的服务 token 和 userId，二者必须成对提供；工具参数不能提供或覆盖身份。
-- 框架在 HTTP 入口验证服务凭据，用户身份取自 X-Tongji-User-Id，不能从服务账号推断。
-- YourTJ 公开课程、本地历史评价及瑞幸短信验证码工具可匿名调用；个人校园数据和瑞幸账号工具要求可信身份。
+- 校园个人工具要求 X-User-Id 和 X-Tongji-Access-Token；工具参数不能提供或覆盖身份。
+- 所有 MCP 请求携带同济 Token 时均在 HTTP 入口验证服务凭据，失败返回 403；瑞幸无需携带同济 Token，用户身份取自 X-User-Id。
+- YourTJ 公开课程和本地历史评价无需身份；全部瑞幸工具必须携带 X-User-Id，同济 Token 可选。凭据保存至本地 SQLite，登录时按是否携带同济 Token 记录 is_from_tongji。
 - 同济工具的正常结果使用 status/data/source；错误使用 isError 和脱敏 status/message。瑞幸 check 使用 valid/message。
 - 更新联系方式为写操作，不自动重试。调用前须有用户明确的操作意图。
 - CAM 接口覆盖、分页与兼容说明见 [同济 API 迁移](TONGJI_API.md)。
@@ -132,7 +132,7 @@
 
 ## tongji.postgraduate.gpa
 
-使用范围：仅限研究生使用。根据学号查询研究生平均成绩与平均绩点 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生平均成绩与平均绩点
 
 ### Input Schema
 
@@ -223,7 +223,7 @@
 
 ## tongji.postgraduate.required_credit
 
-使用范围：仅限研究生使用。根据学号查询研究生应修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生应修学分
 
 ### Input Schema
 
@@ -307,7 +307,7 @@
 
 ## tongji.user.research_projects
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询以第一申请人申请科研项目情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询以第一申请人申请科研项目情况
 
 ### Input Schema
 
@@ -565,7 +565,7 @@
 
 ## tongji.user.research_works
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询科研著作情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询科研著作情况
 
 ### Input Schema
 
@@ -733,7 +733,7 @@
 
 ## tongji.user.contact_info
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询人员联系方式，包括电话号码和邮箱 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询人员联系方式，包括电话号码和邮箱
 
 ### Input Schema
 
@@ -852,7 +852,7 @@
 
 ## tongji.user.update_contact_info
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。通过学号修改用户联系方式 仅操作当前登录用户；身份及凭据由 Agent 提供。 仅在用户明确要求执行该操作时调用；失败后先核实结果，不自动重试。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。通过学号修改用户联系方式 仅在用户明确要求执行该操作时调用；失败后先核实结果，不自动重试。
 
 ### Input Schema
 
@@ -957,7 +957,7 @@
 
 ## tongji.student.hardship_allowance
 
-使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生获得困难补助情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生获得困难补助情况信息
 
 ### Input Schema
 
@@ -1111,7 +1111,7 @@
 
 ## tongji.student.loan
 
-使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生获得助学贷款情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生获得助学贷款情况信息
 
 ### Input Schema
 
@@ -1265,7 +1265,7 @@
 
 ## tongji.student.work_study
 
-使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生勤功助学情况信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。根据学号查询学生勤功助学情况信息
 
 ### Input Schema
 
@@ -1426,7 +1426,7 @@
 
 ## tongji.teacher.timetable
 
-使用范围：仅限教师使用。根据学工号查询教职工本学期课表情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限教师使用。根据学工号查询教职工本学期课表情况
 
 ### Input Schema
 
@@ -1509,7 +1509,7 @@
 
 ## tongji.user.card_balance
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询人员一卡通实时余额 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号查询人员一卡通实时余额
 
 ### Input Schema
 
@@ -1593,7 +1593,7 @@
 
 ## tongji.postgraduate.plan_progress
 
-使用范围：仅限研究生使用。获取1tongji系统上研究生培养计划完成情况统计信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1tongji系统上研究生培养计划完成情况统计信息
 
 ### Input Schema
 
@@ -1747,7 +1747,7 @@
 
 ## tongji.postgraduate.plan
 
-使用范围：仅限研究生使用。获取1tongji系统上研究生的培养计划，根据学号查询培养计划 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1tongji系统上研究生的培养计划，根据学号查询培养计划
 
 ### Input Schema
 
@@ -2493,7 +2493,7 @@
 
 ## tongji.postgraduate.majors
 
-使用范围：仅限研究生使用。获取1系统上的研究生学位专业信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1系统上的研究生学位专业信息
 
 ### Input Schema
 
@@ -2682,7 +2682,7 @@
 
 ## tongji.postgraduate.score
 
-使用范围：仅限研究生使用。获取1tongji系统上研究生课程的成绩信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。获取1tongji系统上研究生课程的成绩信息
 
 ### Input Schema
 
@@ -3437,7 +3437,7 @@
 
 ## tongji.user.research_patents
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号或专利号查询科研专利情况 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。根据学工号或专利号查询科研专利情况
 
 ### Input Schema
 
@@ -3640,7 +3640,7 @@
 
 ## tongji.student.final_exams
 
-使用范围：仅限学生（本科生、研究生）使用。期末考试时间、地点、应考及缺考情况；userId和calendarId必填，defeat默认否，查询缺考需显式传1。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。期末考试时间、地点、应考及缺考情况；userId和calendarId必填，defeat默认否，查询缺考需显式传1。
 
 ### Input Schema
 
@@ -4105,7 +4105,7 @@
 
 ## tongji.student.deferred_exams
 
-使用范围：仅限学生（本科生、研究生）使用。重缓考时间、地点与状态；userId和calendarId必填，defeat不传查询所有类型。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。重缓考时间、地点与状态；userId和calendarId必填，defeat不传查询所有类型。
 
 ### Input Schema
 
@@ -4556,7 +4556,7 @@
 
 ## tongji.bachelor.grade_summary
 
-使用范围：仅限本科生使用。根据学号查询本科生绩点、百分制成绩、修读学分、实修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限本科生使用。根据学号查询本科生绩点、百分制成绩、修读学分、实修学分
 
 ### Input Schema
 
@@ -4661,7 +4661,7 @@
 
 ## tongji.user.email
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询本人同济邮箱及别名、状态；只传登录用户userId，不开放任意邮箱反查。官方支持userId/email二选一，本工具固定用登录用户userId。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询本人同济邮箱及别名、状态；只传登录用户userId，不开放任意邮箱反查。官方支持userId/email二选一，本工具固定用登录用户userId。
 
 ### Input Schema
 
@@ -4759,7 +4759,7 @@
 
 ## tongji.teacher.title
 
-使用范围：仅限教师使用。根据工号查询教职工职称与岗位信息 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限教师使用。根据工号查询教职工职称与岗位信息
 
 ### Input Schema
 
@@ -5101,7 +5101,7 @@
 
 ## tongji.student.counselor
 
-使用范围：仅限学生（本科生、研究生）使用。查本人班主任、辅导员姓名与工号；本接口不返回联系方式，不应承诺直接查询电话。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查本人班主任、辅导员姓名与工号；本接口不返回联系方式，不应承诺直接查询电话。
 
 ### Input Schema
 
@@ -5276,7 +5276,7 @@
 
 ## tongji.postgraduate.completed_credit
 
-使用范围：仅限研究生使用。根据学号查询研究生已修学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生已修学分
 
 ### Input Schema
 
@@ -5360,7 +5360,7 @@
 
 ## tongji.postgraduate.degree_credit
 
-使用范围：仅限研究生使用。根据学号查询研究生学位课总学分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生学位课总学分
 
 ### Input Schema
 
@@ -5444,7 +5444,7 @@
 
 ## tongji.postgraduate.degree_average
 
-使用范围：仅限研究生使用。根据学号查询研究生学位课平均分 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限研究生使用。根据学号查询研究生学位课平均分
 
 ### Input Schema
 
@@ -5535,7 +5535,7 @@
 
 ## tongji.user.annual_bill
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户指定年份的校园年度统计账单。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户指定年份的校园年度统计账单。
 
 ### Input Schema
 
@@ -5768,7 +5768,7 @@
 
 ## tongji.user.card_spending_flow
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的一卡通历史消费流水信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的一卡通历史消费流水信息。
 
 ### Input Schema
 
@@ -5934,7 +5934,7 @@
 
 ## tongji.student.timetable
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生指定学期的 1Tongji 课表；不传 calendarId 时查询当前学期。
 
 ### Input Schema
 
@@ -6216,7 +6216,7 @@
 
 ## tongji.student.detailed_info
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的教务系统详细学籍信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的教务系统详细学籍信息。
 
 ### Input Schema
 
@@ -6571,7 +6571,7 @@
 
 ## tongji.bachelor.score
 
-使用范围：仅限本科生使用。查询当前已授权本科生在指定学期的成绩；不传 calendarId 时查询当前学期。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限本科生使用。查询当前已授权本科生在指定学期的成绩；不传 calendarId 时查询当前学期。
 
 ### Input Schema
 
@@ -6821,7 +6821,7 @@
 
 ## tongji.user.term-calendar
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询同济大学所有学期的日历信息，返回学期ID、年份、学期编号、起止日期、周数、学年分段名称、学期完整名称及当前/下一学期标识。学期编号可用于查询课表、成绩等其他接口。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询同济大学所有学期的日历信息，返回学期ID、年份、学期编号、起止日期、周数、学年分段名称、学期完整名称及当前/下一学期标识。学期编号可用于查询课表、成绩等其他接口。
 
 ### Input Schema
 
@@ -7008,7 +7008,7 @@
 
 ## tongji.user.current-term-calendar
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询同济大学当前学期的日历摘要，包含学年、学期、周数、当前所处教学周及学期描述。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询同济大学当前学期的日历摘要，包含学年、学期、周数、当前所处教学周及学期描述。
 
 ### Input Schema
 
@@ -7189,7 +7189,7 @@
 
 ## tongji.student.cet-score
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的全国大学英语四六级考试成绩（CET-4 / CET-6），返回考试科目、准考证号、笔试成绩、口语成绩和考试时间。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的全国大学英语四六级考试成绩（CET-4 / CET-6），返回考试科目、准考证号、笔试成绩、口语成绩和考试时间。
 
 ### Input Schema
 
@@ -7344,7 +7344,7 @@
 
 ## tongji.user.book-lend-info
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户的图书借阅记录，返回书名、作者、ISBN、借出日期、应还日期、馆藏地等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户的图书借阅记录，返回书名、作者、ISBN、借出日期、应还日期、馆藏地等信息。
 
 ### Input Schema
 
@@ -7643,7 +7643,7 @@
 
 ## tongji.user.statistics-info
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户的校园生活统计数据，包括图书馆使用、食堂消费、校车乘坐、超市购物、奖学金及校园卡使用等维度。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户的校园生活统计数据，包括图书馆使用、食堂消费、校车乘坐、超市购物、奖学金及校园卡使用等维度。
 
 ### Input Schema
 
@@ -7974,7 +7974,7 @@
 
 ## tongji.student.stipend-info
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得的助学金记录，返回助学金名称、金额、等级、评定学年及学期等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得的助学金记录，返回助学金名称、金额、等级、评定学年及学期等信息。
 
 ### Input Schema
 
@@ -8163,7 +8163,7 @@
 
 ## tongji.student.accommodation-info
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的住宿信息，返回宿舍楼、宿舍区、楼层、房间号及所属学院等信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生的住宿信息，返回宿舍楼、宿舍区、楼层、房间号及所属学院等信息。
 
 ### Input Schema
 
@@ -8352,7 +8352,7 @@
 
 ## tongji.bachelor.competition_prize
 
-使用范围：仅限本科生使用。查询当前已授权本科生的竞赛获奖与奖励记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限本科生使用。查询当前已授权本科生的竞赛获奖与奖励记录。
 
 ### Input Schema
 
@@ -8504,7 +8504,7 @@
 
 ## tongji.student.honorary_title
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得荣誉称号的情况信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得荣誉称号的情况信息。
 
 ### Input Schema
 
@@ -8629,7 +8629,7 @@
 
 ## tongji.student.scholarship_info
 
-使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得奖学金的情况信息。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：仅限学生（本科生、研究生）使用。查询当前已授权学生获得奖学金的情况信息。
 
 ### Input Schema
 
@@ -8786,7 +8786,7 @@
 
 ## tongji.user.school_access
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的校门进出通行记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的校门进出通行记录。
 
 ### Input Schema
 
@@ -8967,7 +8967,7 @@
 
 ## tongji.user.library_access
 
-使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的图书馆闸机进出记录。 仅操作当前登录用户；身份及凭据由 Agent 提供。
+使用范围：全部已登录用户均可使用（含教师、本科生和研究生）。查询当前已授权用户在指定时间范围内的图书馆闸机进出记录。
 
 ### Input Schema
 
@@ -9991,7 +9991,7 @@
 
 ## luckin.auth.send_sms_code
 
-向用户指定手机号发送瑞幸登录短信。仅在用户要求登录并同意发送验证码时调用，不能自动重试。不需要同济凭据或瑞幸登录 Cookie；CSRF 由服务端管理。
+向用户指定手机号发送瑞幸登录短信。仅在用户要求登录并同意发送验证码时调用，不能自动重试。必须携带 X-User-Id；不需要同济授权或瑞幸登录 Cookie，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错；CSRF 由服务端管理。
 
 ### Input Schema
 
@@ -10078,7 +10078,7 @@
 
 ## luckin.auth.login
 
-使用手机号和验证码登录瑞幸，获取 Token 并保存至当前同济用户。需要请求上下文中的同济 access_token；不返回 Token，失败不自动重试。
+使用手机号和验证码登录瑞幸，获取 Token 并保存至 X-User-Id 对应的用户。本工具必须携带 X-User-Id，不需要同济授权；X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错；登录时记录凭据来源；不返回 Token，失败不自动重试。
 
 ### Input Schema
 
@@ -10160,7 +10160,7 @@
 
 ## luckin.auth.check
 
-检查当前同济用户已保存的瑞幸 Token。不接受参数；所有结果包含 valid 和 message；确认有效返回 valid:true，未绑定或 Token 无效返回 valid:false。身份异常、超时、限流、服务或存储故障返回 isError 和分类 status/message，须先判断错误状态，不得据 valid:false 发起短信登录。必须等待 login 成功后再单独调用。
+检查 X-User-Id 对应用户已保存的瑞幸 Token。必须携带 X-User-Id；无需同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。不接受参数；所有结果包含 valid 和 message；确认有效返回 valid:true，未绑定或 Token 无效返回 valid:false。用户标识缺失、超时、限流、服务或存储故障返回 isError 和分类 status/message，须先判断错误状态，不得据 valid:false 发起短信登录。必须等待 login 成功后再单独调用。
 
 ### Input Schema
 
@@ -10205,7 +10205,7 @@
 
 ## luckin.shop.search
 
-按经纬度及可选门店名查询门店。经纬度必须来自用户提供或授权的位置。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+按经纬度及可选门店名查询门店。经纬度必须来自用户提供或授权的位置。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10301,7 +10301,7 @@
 
 ## luckin.product.search
 
-在用户选定的门店搜索商品。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+在用户选定的门店搜索商品。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10396,7 +10396,7 @@
 
 ## luckin.product.detail
 
-获取选定商品的可选规格和属性，不猜测规格 ID。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+获取选定商品的可选规格和属性，不猜测规格 ID。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10491,7 +10491,7 @@
 
 ## luckin.product.switch
 
-根据商品详情提供的属性切换目标 SKU。此操作不创建订单。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+根据商品详情提供的属性切换目标 SKU。此操作不创建订单。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10624,7 +10624,7 @@
 
 ## luckin.order.preview
 
-预览指定门店商品的价格和优惠。创建前必须预览，保留返回的 couponCodeList。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+预览指定门店商品的价格和优惠。创建前必须预览，保留返回的 couponCodeList。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10739,7 +10739,7 @@
 
 ## luckin.order.create
 
-创建真实订单。仅在用户确认门店、规格、数量及价格条件且订单预览通过后调用；非空优惠券列表原样传入。超时不得自动重试。仅展示支付二维码 payOrderQrCodeUrl，订单号优先使用字符串 orderIdStr。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+创建真实订单。仅在用户确认门店、规格、数量及价格条件且订单预览通过后调用；非空优惠券列表原样传入。超时不得自动重试。仅展示支付二维码 payOrderQrCodeUrl，订单号优先使用字符串 orderIdStr。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10871,7 +10871,7 @@
 
 ## luckin.order.get
 
-查询用户指定订单的支付状态与取餐信息。orderId 必须为字符串，只有查询确认已支付后才展示取餐码。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+查询用户指定订单的支付状态与取餐信息。orderId 必须为字符串，只有查询确认已支付后才展示取餐码。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 
@@ -10960,7 +10960,7 @@
 
 ## luckin.order.cancel
 
-取消用户明确要求取消的订单，orderId 必须为字符串。操作结果不明时先查单，不直接重复取消。 使用当前同济用户已保存的瑞幸凭据，不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
+取消用户明确要求取消的订单，orderId 必须为字符串。操作结果不明时先查单，不直接重复取消。 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选，携带时由 HTTP 入口校验，无效则提前报错。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。
 
 ### Input Schema
 

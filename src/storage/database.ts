@@ -20,7 +20,15 @@ export const openDatabase = (path = MCP_DATABASE_PATH): DatabaseSync => {
             teacher TEXT NOT NULL,
             content TEXT NOT NULL
         );
-        CREATE INDEX IF NOT EXISTS teacher_reviews_teacher ON teacher_reviews(teacher)`);
+        CREATE INDEX IF NOT EXISTS teacher_reviews_teacher ON teacher_reviews(teacher);
+        CREATE TABLE IF NOT EXISTS user_luckin_credentials (
+            user_id TEXT PRIMARY KEY NOT NULL,
+            is_from_tongji INTEGER NOT NULL CHECK (is_from_tongji IN (0, 1)),
+            luckin_token TEXT NOT NULL,
+            token_date INTEGER NOT NULL,
+            token_timeout INTEGER NOT NULL,
+            last_verified_at INTEGER
+        )`);
 
         if (!db.prepare("SELECT 1 FROM teacher_reviews LIMIT 1").get()) {
             const seed = new DatabaseSync(TEACHER_REVIEWS_SEED_PATH, { readOnly: true });

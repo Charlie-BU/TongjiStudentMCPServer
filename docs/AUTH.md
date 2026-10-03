@@ -14,6 +14,8 @@
 
 ## 配置
 
+持久化目录由 `MCP_DATA_DIR` 指定，未设置时使用 `RAILWAY_VOLUME_MOUNT_PATH`，再回退到项目 `data/`。`mcp.sqlite` 和 `oauth.sqlite` 共用该目录，备份与挂载应覆盖实际目录；Railway 环境要求目录位于已挂载的持久卷内。
+
 | 环境变量 | 默认值 | 含义 |
 | --- | --- | --- |
 | `ALLOWED_API_KEYS` | `[]` | API Key 的 JSON 数组；每个 Key 至少 32 个无空白 ASCII 字符。空数组禁用 API Key 和 API Key 确认的 OAuth 授权。 |

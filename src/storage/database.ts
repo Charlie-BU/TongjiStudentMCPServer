@@ -2,9 +2,10 @@ import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
-// Fixed runtime directory, separate from the read-only seed shipped in seed/.
-const dataDirectory = resolve(__dirname, "../../data");
-export const MCP_DATABASE_PATH = resolve(dataDirectory, "mcp.sqlite");
+import { DATA_DIRECTORY } from "../config/storage";
+
+// 运行目录可配置；只读种子库始终与代码一起发布。
+export const MCP_DATABASE_PATH = resolve(DATA_DIRECTORY, "mcp.sqlite");
 export const TEACHER_REVIEWS_SEED_PATH = resolve(__dirname, "../../seed/teacher-reviews.seed.sqlite");
 
 // 初始化空库时导入随代码发布的教师评价；已有评价保持不变。

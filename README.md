@@ -70,6 +70,7 @@ pnpm dev
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
+| `MCP_DATA_DIR` | Railway 挂载目录或项目 `data/` | 两个 SQLite 数据库共用目录，相对路径按工作目录解析。 |
 | `ALLOWED_API_KEYS` | `[]` | API Key JSON 数组；空数组禁用 API Key 和 OAuth 授权。 |
 | `ACCESS_TOKEN_EXPIRE_SECONDS` | `2592000` | OAuth token 有效秒数，`-1` 永久；没有 refresh token。 |
 | `MCP_PUBLIC_URL` | 本地服务源地址 | 生产 HTTPS 源地址，不含 `/mcp`。 |
@@ -209,7 +210,11 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 OAuth 数据库为 `data/oauth.sqlite`。外部 token 过期需重新授权；新 token 是新身份，原瑞幸绑定不会自动继承。API Key 轮换也产生新身份。
 
-部署须持久化 `/app/data`；同一环境的多主机副本不会自动共享本地凭据。
+部署须持久化实际数据目录；同一环境的多主机副本不会自动共享本地凭据。
+
+数据目录优先级为 `MCP_DATA_DIR` → `RAILWAY_VOLUME_MOUNT_PATH` → 项目 `data/`。两个运行库共用此目录，种子库位置不变。GitLab 默认继续挂载 `/app/data`；Railway 关联 Volume 后自动使用其挂载路径，也可通过 `MCP_DATA_DIR` 指定卷内子目录。检测到 Railway 环境却缺少持久卷，或指定目录位于卷外时，启动失败。
+
+Railway 使用当前非 root Docker 镜像时，可设置 `RAILWAY_RUN_UID=0` 处理卷写入权限（容器将以 root 运行）。切换目录不会自动搬迁旧数据，修改配置前需备份并迁移数据库。
 备份应使用 SQLite 一致性备份，不能在运行中只复制主文件而忽略 WAL。
 不兼容旧的无凭据或匿名 session ID 调用。
 

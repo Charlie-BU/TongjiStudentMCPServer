@@ -3,7 +3,9 @@ import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { digest } from "../auth/authenticate";
 
-export const OAUTH_DATABASE_PATH = resolve(__dirname, "../../data/oauth.sqlite");
+import { DATA_DIRECTORY } from "../config/storage";
+
+export const OAUTH_DATABASE_PATH = resolve(DATA_DIRECTORY, "oauth.sqlite");
 // Identifiers (including bearer secrets and codes) are hashed before persistence.
 export class OAuthStore {
     constructor(public readonly path = OAUTH_DATABASE_PATH, private readonly now = Date.now) {

@@ -54,7 +54,7 @@ CI 拉取镜像后保留旧容器，启动新容器并等待健康检查。新�
 
 ## 验收和排查
 
-其他部署环境可通过 `MCP_DATA_DIR` 指定持久化目录，两个 SQLite 数据库共用该目录。Railway 自动读取 `RAILWAY_VOLUME_MOUNT_PATH`，显式配置的 `MCP_DATA_DIR` 优先且必须位于卷内；Railway 缺少持久卷时拒绝启动。当前 Dockerfile 使用 node 用户，Railway 可设置 `RAILWAY_RUN_UID=0` 获取卷写入权限，此设置使容器以 root 运行。种子库路径不变，已有数据库需自行迁移到新目录。
+其他部署环境可通过 `MCP_DATA_DIR` 指定持久化目录，两个 SQLite 数据库共用该目录。Railway 自动读取 `RAILWAY_VOLUME_MOUNT_PATH`，显式配置的 `MCP_DATA_DIR` 优先且必须位于卷内；Railway 缺少持久卷时拒绝启动。当前 Dockerfile 与 MijiaMCP 一致，默认以 root 运行以写入挂载卷，无需额外设置 `RAILWAY_RUN_UID`。种子库路径不变，已有数据库需自行迁移到新目录。
 
 ```sh
 curl --fail http://<DEVIP>:3100/health

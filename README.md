@@ -214,7 +214,6 @@ OAuth 数据库为 `data/oauth.sqlite`。外部 token 过期需重新授权；�
 
 数据目录优先级为 `MCP_DATA_DIR` → `RAILWAY_VOLUME_MOUNT_PATH` → 项目 `data/`。两个运行库共用此目录，种子库位置不变。GitLab 默认继续挂载 `/app/data`；Railway 关联 Volume 后自动使用其挂载路径，也可通过 `MCP_DATA_DIR` 指定卷内子目录。检测到 Railway 环境却缺少持久卷，或指定目录位于卷外时，启动失败。
 
-Railway 使用当前非 root Docker 镜像时，可设置 `RAILWAY_RUN_UID=0` 处理卷写入权限（容器将以 root 运行）。切换目录不会自动搬迁旧数据，修改配置前需备份并迁移数据库。
 备份应使用 SQLite 一致性备份，不能在运行中只复制主文件而忽略 WAL。
 不兼容旧的无凭据或匿名 session ID 调用。
 

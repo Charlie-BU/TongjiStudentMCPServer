@@ -20,8 +20,8 @@ COPY --from=build /app/dist ./dist
 COPY package.json ./package.json
 COPY seed/ ./seed/
 # Keep the full seed outside the mounted runtime volume; never copy a local runtime DB.
-RUN mkdir /app/data && chown node:node /app/data
-USER node
+# 用基础镜像的 root 用户，以便写入 Railway 挂载卷。
+RUN mkdir /app/data
 EXPOSE 3100
 HEALTHCHECK --interval=5s --timeout=3s --start-period=15s --retries=6 \
   CMD node -e "fetch('http://127.0.0.1:'+process.env.APP_PORT+'/health',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

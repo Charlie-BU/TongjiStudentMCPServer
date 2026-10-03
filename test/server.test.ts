@@ -1,3 +1,4 @@
+import { invocationForTest } from "./fixtures/auth";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import axios, { AxiosError } from "axios";
@@ -102,7 +103,7 @@ describe("createMcpServer", () => {
         const [clientTransport, serverTransport] =
             InMemoryTransport.createLinkedPair();
         const server = createMcpServer({
-            invocation: { accessToken: "test-access-token", userId: "internal-user-id" },
+            invocation: invocationForTest({ accessToken: "test-access-token", userId: "internal-user-id" }),
         });
         const client = new Client({ name: "test-client", version: "1.0.0" });
 
@@ -356,7 +357,7 @@ describe("createMcpServer", () => {
         const result = await callAnnualBillTool({}, { year: "2024" });
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token、传递年份并返回裁剪后的年度统计账单", async () => {
@@ -589,7 +590,7 @@ describe("createMcpServer", () => {
         const result = await callCardSpendingFlowTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token、传递时间参数并返回裁剪后的一卡通消费流水", async () => {
@@ -774,7 +775,7 @@ describe("createMcpServer", () => {
         const result = await callStudentTimetableTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token、传递学期编号并返回裁剪后的学生课表", async () => {
@@ -1039,7 +1040,7 @@ describe("createMcpServer", () => {
         const result = await callStudentDetailedInfoTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应从 Agent 上下文读取 userId、注入服务 token 并返回裁剪后的学生详细学籍信息", async () => {
@@ -1281,7 +1282,7 @@ describe("createMcpServer", () => {
             });
 
             assert.equal(result.isError, true);
-            assert.match(readToolText(result), /未提供同济账号授权/);
+            assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
         } finally {
             axios.defaults.adapter = previousAdapter;
         }
@@ -1372,7 +1373,7 @@ describe("createMcpServer", () => {
         const result = await callScoreTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token 并返回上游成绩数据", async () => {
@@ -1607,7 +1608,7 @@ describe("createMcpServer", () => {
         const result = await callCompetitionPrizeTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token 并返回裁剪后的竞赛奖励记录", async () => {
@@ -1797,7 +1798,7 @@ describe("createMcpServer", () => {
         const result = await callHonoraryTitleTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token 并返回裁剪后的荣誉称号记录", async () => {
@@ -1960,7 +1961,7 @@ describe("createMcpServer", () => {
         const result = await callScholarshipInfoTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token 并返回裁剪后的奖学金记录", async () => {
@@ -2150,7 +2151,7 @@ describe("createMcpServer", () => {
         const result = await callSchoolAccessTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token、传递查询参数并返回裁剪后的校门通行记录", async () => {
@@ -2332,7 +2333,7 @@ describe("createMcpServer", () => {
         const result = await callLibraryAccessTool({});
 
         assert.equal(result.isError, true);
-        assert.match(readToolText(result), /未提供同济账号授权/);
+        assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
     });
 
     it("应注入 token、传递查询参数并返回裁剪后的图书馆通行记录", async () => {
@@ -2549,7 +2550,7 @@ it("应拒绝缺失 access token 的学期日历查询", async () => {
     const result = await callTermCalendarTool({});
 
     assert.equal(result.isError, true);
-    assert.match(readToolText(result), /未提供同济账号授权/);
+    assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回学期日历数据", async () => {
@@ -2720,7 +2721,7 @@ it("应拒绝缺失 access token 的当前学期日历查询", async () => {
     const result = await callCurrentTermCalendarTool({});
 
     assert.equal(result.isError, true);
-    assert.match(readToolText(result), /未提供同济账号授权/);
+    assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回当前学期日历数据", async () => {
@@ -2905,7 +2906,7 @@ it("应拒绝缺失 access token 的四六级成绩查询", async () => {
     const result = await callCetScoreTool({});
 
     assert.equal(result.isError, true);
-    assert.match(readToolText(result), /未提供同济账号授权/);
+    assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回四六级成绩数据", async () => {
@@ -3115,7 +3116,7 @@ it("应拒绝缺失 access token 的图书借阅查询", async () => {
     const result = await callBookLendInfoTool({});
 
     assert.equal(result.isError, true);
-    assert.match(readToolText(result), /未提供同济账号授权/);
+    assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回图书借阅数据", async () => {
@@ -3312,7 +3313,7 @@ it("应拒绝缺失 access token 的个人统计查询", async () => {
     const result = await callStatisticsInfoTool({});
 
     assert.equal(result.isError, true);
-    assert.match(readToolText(result), /未提供同济账号授权/);
+    assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回个人统计数据", async () => {
@@ -3515,7 +3516,7 @@ it("应将上游不可用错误归一为个人统计工具错误", async () => {
 it("应拒绝缺失 access token 的助学金查询", async () => {
     const result = await callStipendInfoTool({});
     assert.equal(result.isError, true);
-    assert.match(readToolText(result), /未提供同济账号授权/);
+    assert.match(readToolText(result), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回助学金数据", async () => {
@@ -3661,7 +3662,7 @@ it("应将上游不可用错误归一为助学金工具错误", async () => {
 it("应拒绝缺失 access token 的住宿查询", async () => {
     const r = await callAccommodationInfoTool({});
     assert.equal(r.isError, true);
-    assert.match(readToolText(r), /未提供同济账号授权/);
+    assert.match(readToolText(r), /缺少已认证的用户身份|此工具要求同济身份认证/);
 });
 
 it("应注入 token 并返回住宿数据", async () => {
@@ -3898,7 +3899,7 @@ const callTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -3926,7 +3927,7 @@ const callTermCalendarTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -3948,7 +3949,7 @@ const callCurrentTermCalendarTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -3970,7 +3971,7 @@ const callCetScoreTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -3992,7 +3993,7 @@ const callBookLendInfoTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4014,7 +4015,7 @@ const callStatisticsInfoTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
 
     try {
@@ -4036,7 +4037,7 @@ const callStipendInfoTool = async (
 ) => {
     const [clientTransport, serverTransport] =
         InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "test-client", version: "1.0.0" });
     try {
         await server.connect(serverTransport);
@@ -4056,7 +4057,7 @@ const callAccommodationInfoTool = async (
     args: Record<string, unknown> = {},
 ) => {
     const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) } });
+    const server = createMcpServer({ invocation: invocationForTest({ ...invocation, userId: invocation.userId ?? (invocation.accessToken ? "internal-user-id" : undefined) }) });
     const client = new Client({ name: "t", version: "1" });
     try {
         await server.connect(st);

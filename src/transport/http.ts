@@ -1,149 +1,63 @@
-import { LEGACY_TEACHER_REVIEWS_PATH, legacyTeacherNameSchema, searchLegacyTeacherReviews } from "../tools/tongji/course/legacy-teacher-reviews/query";
-import {
-    createServer,
-    type IncomingMessage,
-    type ServerResponse,
-} from "node:http";
+import { createServer } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "../server";
-import { readToolInvocationContext, validateServiceCredential } from "./invocation-context";
-
-const MCP_PATH = "/mcp";
-const HEALTH_PATH = "/health";
-// MAX_REQUEST_BYTES 表示 HTTP 请求体的最大字节数。
-const MAX_REQUEST_BYTES = 1_048_576;
-
-// createHttpServer 创建 MCP 服务的 HTTP 入口。
-export const createHttpServer = () => {
+import { authenticateRequest } from "../auth/authenticate";
+import { loadAuthConfig, type AuthConfig } from "../auth/config";
+import { AuthenticationError } from "../auth/types";
+import { authorizeTool } from "../auth/tools";
+import { hasToolPolicy } from "../auth/tool-policy";
+import { OAuthServer } from "../oauth/server";
+import { readJSONBody, sendJSON, HttpInputError } from "./http-utils";
+import { LEGACY_TEACHER_REVIEWS_PATH, legacyTeacherNameSchema, searchLegacyTeacherReviews } from "../tools/tongji/course/legacy-teacher-reviews/query";
+export const createHttpServer = (options: { authConfig?: AuthConfig; oauth?: OAuthServer } = {}) => {
+    const config = options.authConfig ?? options.oauth?.config ?? loadAuthConfig();
+    const oauth = options.oauth ?? new OAuthServer(config);
     return createServer(async (request, response) => {
-        if (request.url === HEALTH_PATH && request.method === "GET") {
-            sendJSON(response, 200, { status: "ok" });
-            return;
-        }
         let url: URL;
-        try {
-            url = new URL(request.url ?? "/", "http://localhost");
-        } catch {
-            sendJSON(response, 400, { error: "invalid request URL" });
-            return;
+        try { url = new URL(request.url ?? "/", config.publicUrl); }
+        catch { sendJSON(response, 400, { error: "invalid_request" }); return; }
+        if (url.pathname === "/health" && request.method === "GET") {
+            sendJSON(response, 200, { status: "ok" }); return;
         }
-        if (url.pathname === LEGACY_TEACHER_REVIEWS_PATH) {
-            if (request.method !== "GET") {
-                response.setHeader("allow", "GET");
-                sendJSON(response, 405, { error: "method not allowed" });
+        if (await oauth.handle(request, response, url)) return;
+        if (url.pathname !== "/mcp" && url.pathname !== LEGACY_TEACHER_REVIEWS_PATH) {
+            sendJSON(response, 404, { error: "not_found" }); return;
+        }
+        try {
+            const invocation = await authenticateRequest(request, config, oauth.verifyAccessToken);
+            if (url.pathname === LEGACY_TEACHER_REVIEWS_PATH) {
+                authorizeTool("tongji.course.legacy-teacher-reviews", invocation);
+                if (request.method !== "GET") {
+                    response.setHeader("allow", "GET"); sendJSON(response, 405, { error: "method_not_allowed" }); return;
+                }
+                const names = url.searchParams.getAll("teacher");
+                const parsed = legacyTeacherNameSchema.safeParse(names.length === 1 ? names[0] : undefined);
+                if (!parsed.success) { sendJSON(response, 400, { error: "invalid_teacher" }); return; }
+                try { sendJSON(response, 200, searchLegacyTeacherReviews(parsed.data)); }
+                catch { sendJSON(response, 503, { error: "legacy_teacher_reviews_unavailable" }); }
                 return;
             }
-            const names = url.searchParams.getAll("teacher");
-            const parsed = legacyTeacherNameSchema.safeParse(names.length === 1 ? names[0] : undefined);
-            if (!parsed.success) {
-                sendJSON(response, 400, { error: "teacher must be a single non-empty name of at most 100 characters" });
-                return;
-            }
-            try {
-                sendJSON(response, 200, searchLegacyTeacherReviews(parsed.data));
-            } catch {
-                sendJSON(response, 503, { error: "legacy teacher reviews database unavailable" });
-            }
-            return;
-        }
-        if (request.url !== MCP_PATH) {
-            sendJSON(response, 404, { error: "not found" });
-            return;
-        }
-        if (isRequestBodyTooLarge(request)) {
-            request.resume();
-            sendJSON(response, 413, { error: "request body is too large" });
-            return;
-        }
-
-        try {
-            const invocation = readToolInvocationContext(request.headers);
             const body = await readJSONBody(request);
-            if (invocation.accessToken && !await validateServiceCredential(invocation)) {
-                // 自定义服务凭据不走 OAuth；401 会让 Inspector 自动发起 OAuth 注册。
-                sendJSON(response, 403, {
-                    error: "invalid_service_credential",
-                    message: "服务凭据校验失败，请检查 X-Tongji-Access-Token 是否为有效的客户端模式服务 token，以及上游身份校验服务是否可用。",
-                });
-                return;
+            // Reject insufficient tool privileges before dispatch; registration wrappers also enforce this.
+            if (body && typeof body === "object" && !Array.isArray(body)) {
+                const message = body as { method?: unknown; params?: { name?: unknown } };
+                const name = message.params?.name;
+                if (message.method === "tools/call" && typeof name === "string" && hasToolPolicy(name)) authorizeTool(name, invocation);
             }
-            const transport = new StreamableHTTPServerTransport({
-                sessionIdGenerator: undefined, // 无状态服务，不生成会话 ID。
-            });
-            const mcpServer = createMcpServer({ invocation });
-            await mcpServer.connect(transport);
+            const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+            const server = createMcpServer({ invocation });
+            response.once("close", () => { void Promise.allSettled([transport.close(), server.close()]); });
+            await server.connect(transport);
             await transport.handleRequest(request, response, body);
         } catch (error) {
-            if (!response.headersSent) {
-                const message =
-                    error instanceof Error ? error.message : "invalid request";
-                sendJSON(response, 400, { error: message });
-            }
+            if (response.headersSent) return;
+            if (error instanceof AuthenticationError) {
+                if (error.status === 401 && request.headers["x-tongji-access-token"] === undefined) {
+                    response.setHeader("www-authenticate", `Bearer resource_metadata="${oauth.resourceMetadataUrl}", scope="tongji.external"`);
+                }
+                sendJSON(response, error.status, { error: error.code, message: error.message });
+            } else if (error instanceof HttpInputError) sendJSON(response, error.status, { error: "invalid_request", message: error.message });
+            else sendJSON(response, 500, { error: "server_error" });
         }
     });
-};
-
-// isRequestBodyTooLarge 根据 Content-Length 提前拒绝超大请求体。
-const isRequestBodyTooLarge = (request: IncomingMessage): boolean => {
-    const contentLength = request.headers["content-length"];
-    if (Array.isArray(contentLength) || contentLength === undefined) {
-        return false;
-    }
-
-    const size = Number(contentLength);
-    return Number.isFinite(size) && size > MAX_REQUEST_BYTES;
-};
-
-// readJSONBody 读取并解析 HTTP 请求体。
-const readJSONBody = (request: IncomingMessage): Promise<unknown> => {
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        let size = 0;
-        let settled = false;
-        const rejectOnce = (error: Error): void => {
-            if (!settled) {
-                settled = true;
-                reject(error);
-            }
-        };
-        request.on("data", (chunk: Buffer) => {
-            if (settled) {
-                return;
-            }
-            size += chunk.length;
-            if (size > MAX_REQUEST_BYTES) {
-                rejectOnce(new Error("request body is too large"));
-                return;
-            }
-            chunks.push(chunk);
-        });
-        request.on("error", rejectOnce);
-        request.on("end", () => {
-            if (settled) {
-                return;
-            }
-            try {
-                const body =
-                    chunks.length === 0
-                        ? undefined
-                        : JSON.parse(Buffer.concat(chunks).toString("utf8"));
-                settled = true;
-                resolve(body);
-            } catch {
-                rejectOnce(new Error("request body must be valid JSON"));
-            }
-        });
-    });
-};
-
-// sendJSON 写入 JSON 格式的 HTTP 响应。
-const sendJSON = (
-    response: ServerResponse,
-    statusCode: number,
-    body: unknown,
-): void => {
-    response.writeHead(statusCode, {
-        "content-type": "application/json; charset=utf-8",
-    });
-    response.end(JSON.stringify(body));
 };

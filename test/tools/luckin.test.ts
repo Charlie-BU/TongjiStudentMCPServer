@@ -1,3 +1,4 @@
+import { invocationForTest } from "../fixtures/auth";
 import { AxiosError } from "axios";
 import assert from "node:assert/strict";
 import { after, it } from "node:test";
@@ -21,7 +22,7 @@ after(() => { databaseModule.exports = database; sqlite.close(); });
 const input = { mobile: "13800000000", validateCode: "012345" };
 const withClient = async (run: (client: Client) => Promise<void>, accessToken: string | undefined = "campus-test-token", userId: string = accessToken === "campus-b" ? "student-b" : "student-1") => {
     const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { accessToken, userId } });
+    const server = createMcpServer({ invocation: invocationForTest({ accessToken, userId }) });
     const client = new Client({ name: "luckin-test", version: "1" });
     try { await server.connect(st); await client.connect(ct); await run(client); }
     finally { await client.close(); await server.close(); }
@@ -78,7 +79,7 @@ it("check 使用数据库 Token ping，更新成功验证时间，不泄露凭�
 });
 
 it("仅未绑定和 Token 无效返回 false；其他故障返回分类错误且不删除凭据", async () => {
-    const cases = { "no-user":"user_id_required", "no-token":null,
+    const cases = { "no-user":"unauthorized", "no-token":null,
         unauthorized:null, forbidden:"upstream_forbidden", timeout:"upstream_timeout", "rate-limit":"rate_limited",
         "server-error":"upstream_unavailable", malformed:"upstream_unavailable" };
     for (const [scenario, expected] of Object.entries(cases)) {
@@ -101,7 +102,7 @@ it("仅未绑定和 Token 无效返回 false；其他故障返回分类错误且
                 assert.equal(result.isError, true);
                 const payload = JSON.parse((result.content as {text:string}[])[0].text);
                 assert.equal(payload.status, expected, scenario);
-                assert.equal(payload.valid, false);
+                if (scenario !== "no-user") assert.equal(payload.valid, false);
                 assert.ok(payload.message);
             }
             assert.doesNotMatch(JSON.stringify(result), /private-secret|private-identity-error|fake-luckin-token/);
@@ -115,7 +116,7 @@ it("没有用户 ID 时全量瑞幸工具不调用上游；check 不接受模型
         await withClient(async client => {
             const result = await client.callTool({ name: "luckin.auth.check", arguments: {} });
             assert.equal(result.isError, true);
-            assert.match(JSON.stringify(result), /user_id_required/);
+            assert.match(JSON.stringify(result), /unauthorized/);
             const login = await client.callTool({ name: "luckin.auth.login", arguments: input });
             assert.equal(login.isError, true);
             assert.equal((await client.callTool({ name: "luckin.auth.send_sms_code", arguments: { mobile: input.mobile } })).isError, true);

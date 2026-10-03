@@ -9,9 +9,9 @@ X-Tongji-Access-Token: <client_credentials service token>
 X-User-Id: <本轮 basic-info 返回的单个 userId>
 ```
 
-MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断用户。重复、批量、空白或非法用户标识不进入工具上下文；单独 X-User-Id 可以识别用户，但不足以调用校园个人工具。校园调用还须提供同济服务 token，HTTP 入口查询固定服务账号 00001，核对姓名李建中和用户类型教职工；校验失败返回 HTTP 403，不执行工具。此检查不替换用户上下文，MCP 不申请或刷新 token；刷新由 Agent 负责。瑞幸工具只要求 X-User-Id，同济 Token 可选；包括瑞幸、初始化和工具发现在内，任何 MCP 请求携带 Token 时均须通过上述入口校验。
+MCP 不接收模型生成的身份或凭据，不从同济服务 token 推断用户。统一鉴权位于 `src/auth/`。校园工具要求有效同济服务 token 和非空单值用户 ID；入口查询固定服务账号 00001，核对姓名李建中与用户类型教职工，只校验 token、不校验用户归属，失败返回 403 且不回退。外部工具还可接受本服务 OAuth token 或配置的 API Key，通过 Authorization Bearer 验证并构造内部用户 ID，忽略外部 X-User-Id。完整配置见 [身份认证与 OAuth](AUTH.md)。
 
-工具仅使用本请求上下文。适配器先展开业务参数，再覆盖 Authorization/userId；CAM 只将接口实际定义的参数发给上游。无 userId 参数的公共目录查询不额外添加该参数，但同济 API 仍要求完整的登录上下文。公开 YourTJ/本地评价工具保持匿名可用。
+工具仅使用本请求上下文。适配器先展开业务参数，再覆盖 Authorization/userId；CAM 只将接口实际定义的参数发给上游。无 userId 参数的公共目录查询不额外添加该参数，但同济 API 仍要求完整的登录上下文。YourTJ/本地评价工具也要求认证，但不要求同济身份。
 
 ## 已有工具兼容变化
 
@@ -103,7 +103,7 @@ MCP 不接收模型生成的身份或凭据，不从服务 token 的主体推断
 
 Agent 与 MCP 需配套部署。Agent 的服务 token 通过 TONGJI_MCP_CLIENT_ID / TONGJI_MCP_CLIENT_SECRET 申请，MCP 不保存这些客户端密钥。Agent 静态 allowlist 已同步为当前 59 个工具。
 
-本地测试覆盖新工具逐项 CAM 请求契约、完整凭据/匿名/批量身份拒绝、模型身份注入拒绝、并发用户隔离、写操作参数与不重试、分页和响应裁剪。运行 pnpm test、pnpm test:typecheck、pnpm typecheck、pnpm build。pnpm docs:tools 从无凭据内存实例导出目录，不执行任何上游请求。
+本地测试覆盖新工具逐项 CAM 请求契约、完整凭据/匿名/批量身份拒绝、模型身份注入拒绝、并发用户隔离、写操作参数与不重试、分页和响应裁剪。运行 pnpm test、pnpm test:typecheck、pnpm typecheck、pnpm build。pnpm docs:tools 从内部目录导出实例导出目录，不执行任何上游请求。
 
 未用真实校园账号进行联调；单元测试不访问生产 API，也不会修改联系方式。
 

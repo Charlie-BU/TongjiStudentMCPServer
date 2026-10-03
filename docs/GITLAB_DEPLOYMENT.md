@@ -21,9 +21,12 @@
 | `USER` / `PASSWORD` | CI SSH 用户和密码 |
 | `PORT` | CI SSH 端口，例如 10022；不是服务端口 |
 | `UPSTREAM_TIMEOUT_MS` | 可选，注入 MCP 容器的上游请求超时（毫秒），默认 `20000`，有效范围 `1` 到 `2147483647` |
+| `ALLOWED_API_KEYS` | 必填、按环境配置的 API Key JSON 数组，至少一个 Key 用于 Agent 发现；每个 Key 至少 32 个无空白 ASCII 字符 |
+| `ACCESS_TOKEN_EXPIRE_SECONDS` | 默认 `2592000`；永久 token 配置 `-1` |
+| `MCP_PUBLIC_URL` | 必填，当前环境的公网 HTTPS 源地址，不含 `/mcp` |
 | `CI_REGISTRY*` | GitLab 提供的镜像库地址和认证变量，无需手动配置 |
 
-服务注入固定应用端口 `APP_PORT=3100`，以及 `UPSTREAM_TIMEOUT_MS`；其余变量仅用于 CI 部署。
+服务注入固定应用端口 `APP_PORT=3100`、`UPSTREAM_TIMEOUT_MS` 与上述认证变量。认证变量通过权限受限的临时 env 文件传输，部署完成清理；不放入 SSH 命令参数。
 SSH 变量 `PORT` 不透传。MCP 仅使用本地 SQLite，无远端数据库配置，也不使用 Redis。
 
 ## 镜像和运行
@@ -35,7 +38,7 @@ SSH 变量 `PORT` 不透传。MCP 仅使用本地 SQLite，无远端数据库配
 - 健康检查：`http://<IP>:3100/health`。
 - SQLite 固定使用 `/app/data/mcp.sqlite`，命名卷挂载 `/app/data`，镜像携带完整的 `/app/seed/teacher-reviews.seed.sqlite`；首次启动或已有评价表为空时全量导入。已有非空评价表不重建、不覆盖，不清除已有数据。种子目录与挂载目录分离，挂载不会遮住种子库。
 - Registry 凭据通过临时文件和 SSH 传送；发布结束删除临时文件和临时 Registry 登录配置。
-- 瑞幸凭据与教师评价共用 SQLite 数据卷；启动自动建立新凭据表，不迁移旧远端凭据。切换后须重新瑞幸短信登录。
+- OAuth 的 `oauth.sqlite` 也保存在同一持久化数据卷。重建数据卷会丢失客户端注册和 OAuth token。瑞幸凭据与教师评价共用 SQLite 数据卷；启动自动建立新凭据表，不迁移旧远端凭据。切换后须重新瑞幸短信登录。
 
 CI 拉取镜像后保留旧容器，启动新容器并等待健康检查。新容器失败时恢复旧容器；
 首次部署无旧容器时删除失败容器，保留数据卷。容器切换会中断在途请求，不承诺零停机。

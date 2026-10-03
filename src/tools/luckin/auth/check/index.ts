@@ -1,7 +1,6 @@
-import type { ToolInvocationContext } from "../../../../transport/invocation-context";
+import type { ToolInvocationContext } from "../../../../auth/types";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { readCurrentUserId } from "../../../utils";
 import type { ToolRegistrationContext } from "../../../registry";
 import { readLuckinCredential, markLuckinVerified } from "../../../../storage/luckin-credentials";
 import { createLuckinMcpAdapter } from "../../../../integration/luckin_coffee/mcp";
@@ -9,7 +8,6 @@ import { LuckinMcpError } from "../../../../integration/luckin_coffee/contract";
 
 export const LUCKIN_CHECK_TOOL_NAME = "luckin.auth.check";
 export const CHECK_ERROR_MESSAGES = {
-    user_id_required: "缺少有效的 X-User-Id，请通过调用方提供用户身份。",
     upstream_timeout: "瑞幸登录检查超时，请稍后重试；当前不能判断 Token 是否有效。",
     rate_limited: "瑞幸登录检查过于频繁，请稍后重试，不要重新发送验证码。",
     upstream_unavailable: "瑞幸服务暂时不可用或响应异常，暂时无法检查登录状态，请稍后重试。",
@@ -24,8 +22,7 @@ export class LuckinCheckError extends Error {
 
 // false 仅代表未绑定或瑞幸明确拒绝 Token；无法完成检查时抛出不含原始凭据的分类错误。
 export const checkCurrentLuckinToken = async (invocation: ToolInvocationContext): Promise<boolean> => {
-    const userId = readCurrentUserId(invocation);
-    if (!userId) throw new LuckinCheckError("user_id_required");
+    const userId = invocation.userId;
     let credential;
     try { credential = await readLuckinCredential(userId); }
     catch { throw new LuckinCheckError("credential_store_unavailable"); }
@@ -50,7 +47,7 @@ export const checkCurrentLuckinToken = async (invocation: ToolInvocationContext)
 export const registerLuckinCheckTool = (server: McpServer, context: ToolRegistrationContext): void => {
     server.registerTool(LUCKIN_CHECK_TOOL_NAME, {
         title: "检查瑞幸登录状态",
-        description: "检查 X-User-Id 对应用户已保存的瑞幸 Token。必须携带 X-User-Id；无需同济授权，X-Tongji-Access-Token 可选。不接受参数；所有结果包含 valid 和 message；确认有效返回 valid:true，未绑定或 Token 无效返回 valid:false。用户标识缺失、超时、限流、服务或存储故障返回 isError 和分类 status/message，须先判断错误状态，不得据 valid:false 发起短信登录。必须等待 login 成功后再单独调用。",
+        description: "检查已认证身份对应用户已保存的瑞幸 Token。必须通过同济认证、OAuth 或 API Key 认证。不接受参数；所有结果包含 valid 和 message；确认有效返回 valid:true，未绑定或 Token 无效返回 valid:false。超时、限流、服务或存储故障返回 isError 和分类 status/message，须先判断错误状态，不得据 valid:false 发起短信登录。必须等待 login 成功后再单独调用。",
         inputSchema: z.object({}).strict(),
         outputSchema: z.object({ valid: z.boolean(), message: z.string() }),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },

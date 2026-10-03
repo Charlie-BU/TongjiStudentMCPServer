@@ -8,5 +8,5 @@ export const createTestSqlite = () => {
     const directory = mkdtempSync(join(tmpdir(), "mcp-credentials-"));
     const path = join(directory, "mcp.sqlite");
     const originalOpen = openDatabase;
-    return { open: () => originalOpen(path), close: () => rmSync(directory, { recursive: true, force: true }) };
+    return { oauthPath: join(directory, "oauth.sqlite"), open: () => originalOpen(path), close: () => rmSync(directory, { recursive: true, force: true }) };
 };

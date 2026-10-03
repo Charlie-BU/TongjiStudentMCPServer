@@ -65,9 +65,9 @@ it("does not interpret SQL injection or wildcard input", () => {
     }
 });
 
-it("registers and invokes the legacy tool without credentials", async () => {
+it("registers and invokes the legacy tool with authenticated context", async () => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: {} });
+    const server = createMcpServer({ invocation: { authentication: "api_key", userId: "fixture-api-key" } });
     const client = new Client({ name: "legacy-test", version: "1" });
     try {
         await server.connect(serverTransport);

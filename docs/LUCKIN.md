@@ -1,8 +1,8 @@
 # 瑞幸接入
 
-当前 11 个 `luckin.*` 工具均要求请求头 `X-User-Id`，无需同济登录。
-`X-Tongji-Access-Token` 可选；携带时 HTTP 入口先校验服务凭据，无效或身份服务故障则返回 403，不执行瑞幸工具。初始化和工具发现沿用同一校验。登录保存时，有 Token 记录 `is_from_tongji=true`，无 Token 为 false。
-用户标识需为单个非空字符串，仅含字母、数字、下划线或连字符。工具参数不接受 userId、Token。
+当前 11 个 `luckin.*` 工具均要求已认证身份。策略统一在 `src/auth/tool-policy.ts` 配置，工具本身不解析或验证身份头。
+
+携带同济 token 时，必须有非空 `X-User-Id`，入口验证 token 后透传 ID；失败返回 403，不回退。无同济 token 时，验证 `Authorization: Bearer <OAuth access_token/API Key>`，以凭据自身作为内部用户 ID，忽略请求中的 `X-User-Id`。初始化和工具发现同样要求认证。OAuth 授权和配置见 [身份认证与 OAuth](AUTH.md)。登录来源 `is_from_tongji` 仅作元数据。
 
 凭据保存在 `data/mcp.sqlite` 的 `user_luckin_credentials` 表，以 `user_id` 为主键。
 不新增手机号字段，不迁移旧凭据，不使用远端数据库或数据库连接环境变量。
@@ -11,7 +11,7 @@
 正常流程：`check({})` → 未绑定时经用户授权发送短信 → 收集验证码 → `login`
 → 写入完成后单独 `check({})` → 业务调用。手机号只用于短信登录。
 检查失败须先读取错误状态，不能将存储、上游或用户标识错误解释为 Token 过期。
-缺少用户标识时 check 返回 `user_id_required`，其他瑞幸工具返回 unauthorized；不访问瑞幸上游。
+身份失败在统一鉴权中拒绝，不访问瑞幸上游。
 工具完整参数和描述见 [工具目录](TOOLS.md)。
 
 瑞幸鉴权、登录检查和业务请求统一读取环境变量 `UPSTREAM_TIMEOUT_MS`，
@@ -19,9 +19,7 @@
 整次工具调用还可能包含入口服务凭据校验，因此总耗时可能超过 20 秒。
 超时表示结果未确认，不自动重发验证码、提交登录或订单写操作。
 
-Agent 同济用户使用实际用户 ID；匿名用户使用 `anonymous_<sessionID>`，同一会话复用凭据，
-新匿名会话不会继承旧会话登录态。独立调用方负责提供稳定且隔离的用户 ID；
-MCP 信任该请求头，网络入口应限定可信调用方，不能将它视为账号归属验证。
+Agent 同济用户使用上游用户 ID 与服务 token；外部调用者必须提供自己的 Bearer 凭据，不再接受 `anonymous_<sessionID>`。新 OAuth token 或新 API Key 是新身份，重新绑定瑞幸属于预期行为。
 
 校园工具仍要求同济服务 Token；不兼容旧用户身份请求头或旧凭据实现。
 SQLite 须使用持久化数据卷和一致性备份，多主机副本不自动共享瑞幸凭据。

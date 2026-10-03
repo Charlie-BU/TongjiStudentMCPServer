@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ToolInvocationContext } from "../transport/invocation-context";
+import type { ToolInvocationContext } from "../auth/types";
 
 import { registerLegacyTeacherReviewsTool } from "./tongji/course/legacy-teacher-reviews";
 import { registerAnnualBillTool } from "./tongji/user/annual_bill";

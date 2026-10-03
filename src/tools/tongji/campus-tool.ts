@@ -73,8 +73,8 @@ export const campusTool = <S extends z.ZodRawShape, O extends z.AnyZodObject>(de
             outputSchema: output,
             annotations: { readOnlyHint: !definition.write, destructiveHint: !!definition.write, idempotentHint: !definition.write, openWorldHint: true },
         }, async input => {
-            const { accessToken, userId } = context.invocation;
-            if (!accessToken || !userId) return createErrorResult("unauthorized", "未提供同济账号授权，请重新完成授权后再试。");
+            const { userId } = context.invocation;
+            const accessToken = context.invocation.accessToken!; // Guaranteed by centralized tool authorization.
             const invalid = definition.validate?.(input);
             if (invalid) return createErrorResult("invalid_arguments", invalid);
             try {

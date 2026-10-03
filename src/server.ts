@@ -1,4 +1,4 @@
-import { normalizeInvocation } from "./transport/invocation-context";
+import { withToolAuthorization } from "./auth/tools";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
     registerTools,
@@ -18,6 +18,8 @@ export const createMcpServer = (
         name: SERVER_NAME,
         version: SERVER_VERSION,
     });
-    registerTools(server, { invocation: normalizeInvocation(context.invocation) });
+    const authorized = withToolAuthorization(server, context.invocation);
+    registerTools(authorized.server, context);
+    authorized.check();
     return server;
 };

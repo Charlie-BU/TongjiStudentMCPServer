@@ -37,10 +37,10 @@
 pnpm test
 
 # 跑一个受影响文件
-node --no-experimental-strip-types --import tsx --test test/transport/invocation-context.test.ts
+node --no-experimental-strip-types --import tsx --test test/auth.test.ts
 
 # 只跑名称匹配的场景
-node --no-experimental-strip-types --import tsx --test --test-name-pattern='缺失 token' test/transport/invocation-context.test.ts
+node --no-experimental-strip-types --import tsx --test --test-name-pattern='缺失 token' test/auth.test.ts
 
 # 类型和产物校验（提交前必跑）
 pnpm test:typecheck
@@ -203,3 +203,8 @@ Tool 测试不应只断言 `server.tool` 或某个 mock “被调用一次”；
 ## 2026-09 同济 CAM 契约检查
 
 新增接口逐项契约与身份隔离见 test/tools/campus-contracts.test.ts；HTTP 服务凭据检查见 test/transport/http.test.ts。CAM 覆盖矩阵见 [API 迁移](TONGJI_API.md)。模型参数必须拒绝 userId/accessToken/Authorization；服务账号健康检查不得替代当前用户身份。
+
+
+## 当前认证协议（2026-10-03）
+
+上述历史用例中的独立 X-User-Id 和匿名身份不再是可用协议。当前鉴权回归以 `test/auth.test.ts`、`test/oauth.test.ts` 和 `test/transport/http.test.ts` 为准：身份矩阵、全部 59 个工具策略、伪造用户 ID、校园权限拒绝、同济失败不回退、OAuth PKCE/回调/resource/CSRF、授权码过期与并发重放、token 过期/永久/撤销、持久化与配置撤销。业务契约测试通过隔离的已认证上下文注入，不代表允许外部绕过鉴权。

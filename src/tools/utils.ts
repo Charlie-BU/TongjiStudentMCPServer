@@ -1,7 +1,6 @@
 import { TongjiBusinessError } from "../integration/tongji_openapi";
 import axios from "axios";
 import type { ToolErrorStatus } from "./types";
-import type { ToolInvocationContext } from "../transport/invocation-context";
 
 // unwrapResponseData 提取上游响应中的业务数据。
 export const unwrapResponseData = (response: unknown): unknown => {
@@ -100,9 +99,6 @@ export const toErrorResult = (error: unknown, config: ErrorMessageConfig) => {
     );
 };
 
-// readCurrentUserId 从工具调用上下文读取当前用户 ID。
-export const readCurrentUserId = (invocation: ToolInvocationContext): string | null =>
-    invocation.userId ?? null;
 
 // readCursor 从上游响应中读取分页游标。
 export const readCursor = (response: unknown, key: string): Record<string, string> => {

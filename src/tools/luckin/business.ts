@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ToolRegistrationContext } from "../registry";
-import { createErrorResult, readCurrentUserId } from "../utils";
+import { createErrorResult } from "../utils";
 import { readLuckinCredential } from "../../storage/luckin-credentials";
 import { createLuckinMcpAdapter } from "../../integration/luckin_coffee/mcp";
 import { LUCKIN_MCP_RESULT_SCHEMA, LuckinMcpError } from "../../integration/luckin_coffee/contract";
@@ -23,7 +23,7 @@ export const registerLuckinBusinessTool = <S extends z.AnyZodObject>(
 ): void => {
     server.registerTool(definition.name, {
         title: definition.title,
-        description: definition.description + " 使用 X-User-Id 对应用户在本地 SQLite 保存的瑞幸凭据。必须携带 X-User-Id；不需要同济授权，X-Tongji-Access-Token 可选。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。",
+        description: definition.description + " 使用已认证身份对应用户在本地 SQLite 保存的瑞幸凭据。必须通过同济认证、OAuth 或 API Key 认证。工具参数不接受 userId 或 Token。成功 data 保留上游 MCP content/structuredContent，业务 JSON 可能位于 content[].text。",
         inputSchema: definition.schema as z.AnyZodObject,
         outputSchema: createLuckinOutputSchema(LUCKIN_MCP_RESULT_SCHEMA),
         annotations: {
@@ -31,11 +31,7 @@ export const registerLuckinBusinessTool = <S extends z.AnyZodObject>(
             idempotentHint: !definition.mutation, openWorldHint: true
         },
     }, async (input) => {
-        let userId: string | null;
-        try {
-            userId = readCurrentUserId(context.invocation);
-            if (!userId) return createErrorResult("unauthorized", "缺少有效的 X-User-Id，请通过调用方提供用户身份。");
-        } catch { return createErrorResult("upstream_unavailable", "暂时无法识别当前用户，请稍后重试。"); }
+        const userId = context.invocation.userId;
         let invoked = false;
         try {
             const credential = await readLuckinCredential(userId);

@@ -21,7 +21,7 @@ const withClient = async (
         return response;
     };
     const [ct, st] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation: { accessToken: "test-token-not-for-yourtj" } });
+    const server = createMcpServer({ invocation: { authentication: "oauth", userId: "fixture-oauth-token" } });
     const client = new Client({ name: "test-yourtj-client", version: "1" });
     try {
         await server.connect(st);

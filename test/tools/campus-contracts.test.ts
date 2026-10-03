@@ -5,11 +5,11 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createMcpServer } from "../../src/server";
 import { campusContracts } from "../fixtures/campus-contracts";
-import type { ToolInvocationContext } from "../../src/transport/invocation-context";
+import { invocationForTest, type TestIdentity } from "../fixtures/auth";
 
-const withClient = async (invocation: ToolInvocationContext, run: (client: Client) => Promise<void>) => {
+const withClient = async (invocation: TestIdentity, run: (client: Client) => Promise<void>) => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createMcpServer({ invocation });
+    const server = createMcpServer({ invocation: invocationForTest(invocation) });
     const client = new Client({ name: "campus-contract-test", version: "1" });
     try { await server.connect(serverTransport); await client.connect(clientTransport); await run(client); }
     finally { await client.close(); await server.close(); }

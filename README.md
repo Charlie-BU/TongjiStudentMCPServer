@@ -4,13 +4,13 @@
 `TongjiStudentAgent` 提供受控的校园工具；它不保存对话历史、不调用模型、也不决定
 Agent 的工具选择或回答内容。
 
-当前注册 **59 个工具**：42 个同济校园工具、6 个公开课程/历史评价工具、11 个瑞幸工具。接口覆盖矩阵、身份协议和兼容变化见 [同济 API 迁移](docs/TONGJI_API.md)。CAM 文件保持自动生成。
+当前注册 **59 个工具**：42 个同济校园工具、6 个课程/历史评价工具、11 个瑞幸工具。接口覆盖矩阵、身份协议和兼容变化见 [同济 API 迁移](docs/TONGJI_API.md)。CAM 文件保持自动生成。
 
 项目使用 CommonJS 运行时与 TypeScript 的 CommonJS 编译配置；项目内相对导入可省略 `.js` 后缀。
 
 YourTJ 课程调用已迁移至新版五个课程 API；输入参数和输出字段有变更，见 [YourTJ 接入与迁移](docs/YOURTJ.md)。当前完整注册表与 JSON Schema 见 [Tool 目录](docs/TOOLS.md)。
 
-瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；全部瑞幸工具要求 `X-User-Id`；无需同济授权，`X-Tongji-Access-Token` 可选。凭据按用户 ID 保存至本地 SQLite。
+瑞幸提供三个鉴权工具及查店、选品、预览、创建、查单、取消等八个业务工具；全部瑞幸工具要求通过同济认证、OAuth 或 API Key 认证。凭据按认证后的用户 ID 保存至本地 SQLite；完整协议见 [身份认证与 OAuth](docs/AUTH.md)。
 CSRF 与登录 Cookie 由手写适配器处理，详见 [瑞幸短信登录工具](docs/LUCKIN.md)。
 
 ## 架构边界
@@ -24,7 +24,7 @@ Gateway
 
 - 传输：MCP Streamable HTTP，统一端点 `POST /mcp`。
 - 状态：服务不分配 MCP 会话 ID；Agent 保持对话状态。瑞幸凭据保存在实例的持久化 SQLite 中，多主机副本不自动共享凭据。
-- 身份：统一使用 `X-User-Id`。校园个人工具还要求 `X-Tongji-Access-Token`（客户端模式服务凭据）并验证服务身份；瑞幸只要求用户 ID；任意 MCP 请求携带同济 Token 时，入口均先校验，失败返回 403。工具入参不得提供身份或凭据。
+- 身份：`src/auth/` 集中鉴权与工具权限；同济路径验证服务 token 并透传非空 `X-User-Id`，失败不回退。外部路径验证 `Authorization: Bearer <OAuth access_token/API Key>` 并构造内部用户 ID，不使用外部 `X-User-Id`。校园工具只允许同济路径。工具入参不得提供身份或凭据。
 - 工具：按任务暴露领域工具，不把开放平台接口逐一暴露为工具。
 - 数据：上游响应必须在服务端归一、裁剪与脱敏后再作为 MCP Tool Result 返回。
 
@@ -33,7 +33,9 @@ Gateway
 ```text
 src/
 ├── config/                    # 监听与开关配置
-├── transport/                 # /mcp、认证边界与 HTTP 适配
+├── auth/                      # 统一身份认证、工具权限与完整工具配置
+├── oauth/                     # 授权码流程、授权页与 OAuth SQLite 存储
+├── transport/                 # /mcp 与 HTTP 适配
 ├── tools/                     # Tool 注册与输入/输出 Schema，按工具名分层（如 tongji/student/cet-score/）
 │   ├── registry.ts            # Tool Catalog 注册入口
 │   └── tongji/                # tongji.* 工具命名空间
@@ -51,8 +53,6 @@ src/
 │   ├── tongji_openapi/        # adapter.ts 统一认证与请求配置，methods.ts 集中上游方法
 │   ├── tongji_poby/           # 济星云适配器
 │   └── yourtj/                # YourTJ 适配器 index.ts 与 contract.ts
-├── privacy/                   # 后续字段白名单与脱敏策略
-├── observability/             # 后续日志、Trace、指标
 ├── server.ts                  # MCP Server 创建
 └── index.ts                   # 进程入口
 ```
@@ -70,6 +70,9 @@ pnpm dev
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
+| `ALLOWED_API_KEYS` | `[]` | API Key JSON 数组；空数组禁用 API Key 和 OAuth 授权。 |
+| `ACCESS_TOKEN_EXPIRE_SECONDS` | `2592000` | OAuth token 有效秒数，`-1` 永久；没有 refresh token。 |
+| `MCP_PUBLIC_URL` | 本地服务源地址 | 生产 HTTPS 源地址，不含 `/mcp`。 |
 | `APP_PORT` | `3100` | HTTP 监听端口，必须在 `1` 到 `65535` 之间。 |
 | `UPSTREAM_TIMEOUT_MS` | `20000` | 单次上游 HTTP 请求超时，单位毫秒，必须为 `1` 到 `2147483647` 之间的整数。 |
 
@@ -138,7 +141,7 @@ X-Tongji-Access-Token: <service_access_token>
 X-User-Id: <本轮用户 userId>
 ```
 
-本服务验证服务凭据后，将两项放入本次请求的独立 Tool 上下文。个人 API 的 userId 由适配器最后写入，模型参数不能覆盖。瑞幸仅要求 `X-User-Id`，可独立调用；同济 Token 可选，携带时仍需通过 HTTP 入口校验。凭据按 userId 查询。服务 token 不持久化，不得出现在 Tool 参数、结果或日志中。
+本服务验证同济服务凭据后，透传非空用户 ID；个人 API 的 userId 由适配器最后写入，模型参数不能覆盖。外部课程与瑞幸工具也可通过 OAuth 连接，或提供 `Authorization: Bearer <配置的 API Key>`。外部请求无需 `X-User-Id`，身份由入口验证 Bearer 后构造。同济 token 失败不回退。完整流程与配置见 [身份认证与 OAuth](docs/AUTH.md)。
 
 可用校验命令：
 
@@ -194,24 +197,21 @@ access token 注入、Fake OpenAPI 契约测试、空数据/上游未授权/上�
 
 | 字段 | SQLite 类型 | 含义 |
 | --- | --- | --- |
-| `user_id` | TEXT PRIMARY KEY NOT NULL | `X-User-Id` 提供的用户标识 |
+| `user_id` | TEXT PRIMARY KEY NOT NULL | 认证后的用户标识：同济路径为上游 ID，外部路径为 Bearer 凭据 |
 | `is_from_tongji` | INTEGER NOT NULL，限制 0/1 | 登录时携带同济 Token 为 true，否则 false；应用层返回 boolean |
 | `luckin_token` | TEXT NOT NULL | 瑞幸 Token，不在工具结果中返回 |
 | `token_date` / `token_timeout` | INTEGER NOT NULL | 瑞幸原始整数时间字段 |
 | `last_verified_at` | INTEGER，可空 | 最近成功验证的 Unix 毫秒时间 |
 
-所有 11 个瑞幸工具都必须携带 `X-User-Id`，包括发送短信。`X-Tongji-Access-Token`
-可选，携带时 HTTP 入口先校验服务凭据，Token 无效或身份服务不可用则返回 403。登录保存时按是否携带 Token 确定 `is_from_tongji`。该标志不是鉴权依据，
-新登录覆盖 Token 时也更新来源，读取和检查不会修改来源。
-用户标识只来自请求头，模型参数不能提供或覆盖。调用方须确保标识稳定且按用户隔离。
+所有 11 个瑞幸工具都要求认证。同济路径验证同济服务 token 并透传用户 ID；外部路径验证 OAuth token 或 API Key，以 Bearer 凭据本身构造用户 ID。外部 `X-User-Id` 被忽略。来源标志 `is_from_tongji` 仅用于记录，不作为访问控制条件。
 
-登录完成 SQLite 写入后才返回成功；检查成功时按用户和 Token 条件更新验证时间，
-避免旧检查覆盖并发登录的新 Token。缺少用户标识返回 `user_id_required` 检查错误，
-存储故障返回 `credential_store_unavailable`，不得据此自动发短信或重登录。
+登录完成 SQLite 写入后才返回成功；检查成功时按用户和 Token 条件更新验证时间，避免旧检查覆盖并发登录的新 Token。身份失败由统一鉴权拦截；存储故障返回 `credential_store_unavailable`，不得据此自动发短信或重登录。
+
+OAuth 数据库为 `data/oauth.sqlite`。外部 token 过期需重新授权；新 token 是新身份，原瑞幸绑定不会自动继承。API Key 轮换也产生新身份。
 
 部署须持久化 `/app/data`；同一环境的多主机副本不会自动共享本地凭据。
 备份应使用 SQLite 一致性备份，不能在运行中只复制主文件而忽略 WAL。
-请求头已从旧名称整体切换为 `X-User-Id`，不提供旧协议兼容。
+不兼容旧的无凭据或匿名 session ID 调用。
 
 ## GitLab CI 部署
 

@@ -20,7 +20,7 @@ build:
   stage: deploy
   image: alpine:3.22
   before_script:
-    - apk add --no-cache openssh-client sshpass
+    - apk add --no-cache openssh-client sshpass python3
   script:
     - |
       set -eu
@@ -53,12 +53,27 @@ build:
         rm -rf "$bundle"
       }
       trap cleanup EXIT
+      python3 - "$bundle/runtime.env" <<'PYENV'
+      import json, os, sys
+      from pathlib import Path
+      keys = json.loads(os.environ.get("ALLOWED_API_KEYS", "[]"))
+      if not isinstance(keys, list) or not keys or any(not isinstance(k, str) or len(k) < 32 or any(not 33 <= ord(c) <= 126 for c in k) for k in keys):
+          sys.exit("ALLOWED_API_KEYS must contain at least one valid API key for Agent discovery")
+      origin = os.environ.get("MCP_PUBLIC_URL", "")
+      if not origin or any(c in origin for c in "\r\n"):
+          sys.exit("MCP_PUBLIC_URL is required")
+      expiry = os.environ.get("ACCESS_TOKEN_EXPIRE_SECONDS", "2592000")
+      if expiry != "-1" and (not expiry.isascii() or not expiry.isdecimal() or int(expiry) < 1):
+          sys.exit("ACCESS_TOKEN_EXPIRE_SECONDS must be -1 or a positive integer")
+      values = {"ALLOWED_API_KEYS": json.dumps(keys, separators=(",", ":")), "MCP_PUBLIC_URL": origin, "ACCESS_TOKEN_EXPIRE_SECONDS": expiry}
+      Path(sys.argv[1]).write_text("".join(key + "=" + value + "\n" for key, value in values.items()))
+      PYENV
       printf '%s' "$CI_REGISTRY_PASSWORD" > "$bundle/registry-password"
       candidate=$(remote 'umask 077; mktemp -d /tmp/tongji-mcp.XXXXXXXX')
       case "$candidate" in /tmp/tongji-mcp.*) ;; *) exit 1 ;; esac
       case "$candidate" in *[!a-zA-Z0-9_./-]*) exit 1 ;; esac
       remote_tmp=$candidate
-      tar -C "$bundle" -cf "$bundle/payload.tar" registry-password
+      tar -C "$bundle" -cf "$bundle/payload.tar" registry-password runtime.env
       remote "tar -xf - -C '$remote_tmp'" < "$bundle/payload.tar"
       remote "sh -s -- '$MCP_IMAGE' '$container' '$remote_tmp' '$CI_REGISTRY' '$CI_REGISTRY_USER' '$upstream_timeout_ms'" <<'REMOTE'
       set -eu
@@ -87,6 +102,7 @@ build:
       healthy=false
       if docker run -d --name "$container" --restart unless-stopped --init \
         -e APP_PORT=3100 \
+        --env-file "$temp/runtime.env" \
         -e "UPSTREAM_TIMEOUT_MS=$upstream_timeout_ms" \
         -p 3100:3100 -v "$container-data:/app/data" \
         --security-opt no-new-privileges:true --cap-drop ALL \
